@@ -16,7 +16,8 @@ import { Label } from "@/components/ui/label"
 export function Login() {
   const [showPassword, setShowPassword] = useState(false);
   return (
-    <Card className="dark:bg-black absolute mx-0 w-[97%] sm:max-w-sm top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] overflow-hidden">
+    <div className="flex items-center h-screen pt-16 justify-center  ">
+    <Card className="dark:bg-black w-[97%] sm:max-w-md">
       <CardHeader>
         <CardTitle className="text-2xl">Login</CardTitle>
         <CardDescription>
@@ -64,5 +65,6 @@ export function Login() {
         </div>
       </CardContent>
     </Card>
+    </div>
   )
 }

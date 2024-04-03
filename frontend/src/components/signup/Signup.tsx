@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle
 } from "@/components/ui/card"
-import { AspectRatio } from "@/components/ui/aspect-ratio"
+
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { AxeIcon } from "lucide-react";
