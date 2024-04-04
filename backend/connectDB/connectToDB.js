@@ -3,7 +3,7 @@ const express = require('express');
 
 const port = 3000;
 const app = express();
-const URI = 'mongodb://localhost:27017';
+const URI = 'mongodb://127.0.0.1:27017/';
 let db;
 const connect = async()=>{
   try{
