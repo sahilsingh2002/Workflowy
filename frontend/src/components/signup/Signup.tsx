@@ -13,6 +13,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { AxeIcon } from "lucide-react";
+import './signup.css'
 
 export function Signup() {
   
@@ -54,27 +55,24 @@ export function Signup() {
     if (usernameCheckTimeout) clearTimeout(usernameCheckTimeout);
     
     
+    if(validUsername){
     setUsernameCheckTimeout(
       setTimeout(() => {
         
-        // Simulate API call
-        // Replace this wih your actual API call
-        if(validUsername){
-        // fetch(`/api/check-username?username=${username}`)
-        //   .then((response) => response.json())
-        //   .then((data) => {
+        
+        // api
             setIsUnique(true);
         //   });
 
-        }
         console.log("here");
       }, 3000)
-    );
+      );
+    }
  }, [username, validUsername]);
   return (
     
-       <div className="flex items-center h-full pt-16 justify-center ">
-      <Card className="dark:bg-black w-[97%] sm:max-w-md ">
+       <div className="flex justify-center items-center min-h-screen">
+      <Card className="dark:bg-black w-full sm:max-w-md">
         <CardHeader>
           <AxeIcon/>
           <CardTitle className="text-xl">Sign Up</CardTitle>
@@ -90,6 +88,7 @@ export function Signup() {
                 id="username"
                 type="text"
                 placeholder=""
+                className={`${!validUsername && username.length>0 && "border-red-500"}`}
                 onChange={(e)=>{
                   setUsername(e.target.value);
                   handleValid(e.target.value);
@@ -123,7 +122,7 @@ export function Signup() {
               <Label htmlFor="password">Password</Label>
               <div className="grid grid-flow-col grid-cols-2 gap-2">
               <Input id="password" className="col-span-2" type={showPassword?"text":"password"} />
-              <Button onClick={()=>{setShowPassword(!showPassword)}}>{showPassword?<FaRegEye/>:<FaRegEyeSlash/>}</Button>
+              <Button variant={!showPassword?"ghost":"default"} onClick={()=>{setShowPassword(!showPassword)}}>{showPassword?<FaRegEye/>:<FaRegEyeSlash/>}</Button>
 
               </div>
             </div>
