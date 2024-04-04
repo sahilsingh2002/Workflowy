@@ -1,0 +1,32 @@
+/* Add a CSS file or place this within your existing CSS */
+
+/* Ensure card remains centered */
+.flex {
+  display: flex;
+
+}
+
+/* Adjust card width and padding */
+.Card {
+  width: 100%;
+  padding: 1rem;
+}
+
+/* Adjust card content width */
+.CardContent {
+  width: 100%;
+}
+
+/* Ensure labels and inputs stack properly on small screens */
+.Label {
+  display: block;
+}
+
+.Input {
+  width: 100%;
+}
+
+/* Ensure buttons fill the width of the container */
+.Button {
+  width: 100%;
+}
