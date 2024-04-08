@@ -14,7 +14,7 @@ const IMAGES = {
 function Lander() {
   return (
     <div className='min-h-full flex flex-col'>
-      <div className='flex flex-col items-center justify-center md:justify-start text-center gap-y-8 flex-1'>
+      <div className='flex flex-col items-center pt-20 justify-center md:justify-start text-center gap-y-8 flex-1'>
       <Navbar/>
       <Heads/>
       <Heroes/>

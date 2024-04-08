@@ -8,7 +8,7 @@ const IMAGES = {
 function Logo() {
   return (
     <div id='LogoID' className='hidden md:flex items-center  gap-x-2'>
-        <img src={IMAGES.icon} className='w-20 h-20' alt="Icon" />
+        <img src={IMAGES.icon} className='w-[40px] h-[40px]' alt="Icon" />
         <p className={cn("font-semibold")}>Workflowy</p>
     </div>
   )

@@ -3,25 +3,23 @@ import { Button } from "@/components/ui/button"
 import {Link} from "react-router-dom"
 
 import { ModeToggle } from "../mode-toggle"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
-const IMAGES = {
-  image1 : new URL('../../assets/Workflowy_icon.png', import.meta.url).href
-}
+import { useScrollTop } from "@/hooks/use-scroll-top"
+import { cn } from "@/lib/utils"
+import Logo from "../logo/Logo"
+
+
 
 
 export default function Component() {
+  const scrolled = useScrollTop();
   return (
-    <header className="flex-col flex sm:flex-row  justify-between w-full  dark:bg-black items-center dark:text-white px-4 md:px-6">
-      <Link className="mr-6 flex w-fit justify-center items-center" to="#">
-        <Avatar className="lg:scale-150 my-4 ">
-  <AvatarImage src={IMAGES.image1} />
-  <AvatarFallback>WF</AvatarFallback>
-</Avatar>
-  <span className=" dark:text-white font-sans text-lg">Workflowy</span>
+    <header className={cn("flex-col z-50 fixed md:flex sm:flex-row bg-white dark:bg-black  justify-between w-full  items-center dark:text-white px-4 -mt-20 hidden md:px-6 h-20",scrolled && "border-b dark:border-black shadow-sm dark:shadow-white ")}>
+      <Link className="mx-6 flex  w-fit justify-center items-center  scale-150" to="/">
+        <Logo/>
       </Link>
       
-      <div className="flex items-center ">
+      <div className="flex items-center">
         <Link to="/login">
           <Button variant={"outline"} className="mr-3">Login</Button>
         </Link>
