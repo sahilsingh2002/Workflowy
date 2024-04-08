@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
+import axios from 'axios';
 import {
   Card,
   CardContent,
@@ -14,12 +15,30 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { AxeIcon } from "lucide-react";
 import './signup.css'
+interface ErrorResponse {
+  status: boolean;
+  status_code: number;
+  error: string;
+}
+interface SuccessResponse {
+  status: boolean;
+  status_code: number;
+  data: string;
+}
+
+type AxiosResponse<T> = {
+  status: number;
+  data: T;
+};
 
 export function Signup() {
   
   const [showPassword, setShowPassword] = useState(false);
   const [isUnique, setIsUnique] = useState(false);
   const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [validUsername, setValidUsername] = useState(false);
   const [isValid, setIsValid] = useState("Not a Valid username");
 
@@ -60,7 +79,7 @@ export function Signup() {
       setTimeout(() => {
         
         
-        // api
+        
             setIsUnique(true);
         //   });
 
@@ -69,6 +88,30 @@ export function Signup() {
       );
     }
  }, [username, validUsername]);
+
+ const signup_user = async()=>{
+  const user = {
+    name:name,
+    email:email,
+    username:username,
+    password:password
+  }
+ 
+    const sendreqConfig = {
+    method:"POST",
+    url:'/api/signup',
+    data:user
+  }
+  try{
+    const result = await axios(sendreqConfig);
+    console.log(result);
+
+  }
+  catch(err){
+    console.log(err);
+  }
+  }
+ 
   return (
     
        <div className="flex justify-center items-center min-h-screen">
@@ -105,7 +148,7 @@ export function Signup() {
             
               <div className="grid gap-2">
                 <Label htmlFor="name">Name</Label>
-                <Input id="name" placeholder="Max Robinson" required />
+                <Input id="name" placeholder="Max Robinson" required onChange={(e)=>{setName(e.target.value)}} />
               </div>
              
             
@@ -116,17 +159,18 @@ export function Signup() {
                 type="email"
                 placeholder="m@example.com"
                 required
+                onChange={(e)=>{setEmail(e.target.value)}} 
               />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
               <div className="grid grid-flow-col grid-cols-2 gap-2">
-              <Input id="password" className="col-span-2" type={showPassword?"text":"password"} />
+              <Input id="password" className="col-span-2" type={showPassword?"text":"password"} onChange={(e)=>{setPassword(e.target.value)}} />
               <Button variant={!showPassword?"ghost":"default"} onClick={()=>{setShowPassword(!showPassword)}}>{showPassword?<FaRegEye/>:<FaRegEyeSlash/>}</Button>
 
               </div>
             </div>
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full" onClick={signup_user}>
               Create an account
             </Button>
             <Button variant="outline" className="w-full">

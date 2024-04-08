@@ -23,7 +23,7 @@ const disconnect = async()=>{
     console.log("disconnected from DB"); 
   }
 }
-const getDB =   ()=>{
+const getDB =()=>{
   return db;
 }
 

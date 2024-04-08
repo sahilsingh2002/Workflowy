@@ -1,13 +1,13 @@
 const {User} = require('../connectDB/allCollections');
 const jwt = require ("jsonwebtoken");
-module.exports.get_signup=(req,res)=>{
-  return 0;
-}
 const handleErr=({name,email,password})=>{
   if(!name || !email || !password){
     return (false);
   }
   return (true);
+}
+module.exports.get_signup = (req,res)=>{
+  res.send({"name":"ajkldasasd"});
 }
 module.exports.post_signup=(req,res)=>{
   const {name,email,password} =req.body;
@@ -20,8 +20,6 @@ module.exports.post_signup=(req,res)=>{
         res.json({status:200,message:"User Created Successfully"});
       }
       res.json({status:false,message:"send all data"});
-    
-    
   }
   catch(err){
     console.log(err);
@@ -42,6 +40,6 @@ module.exports.post_login=(req,res)=>{
     res.json({status:true});
   }
   catch(err){
-    res.json({status:false,message:"err: "+err});
+    res.json({status:false,message:"err: " + err});
   }
 }

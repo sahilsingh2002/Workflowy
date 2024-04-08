@@ -7,7 +7,7 @@ import { BrowserRouter } from 'react-router-dom'
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <BrowserRouter>
   <React.StrictMode>
-    <div className='dark:bg-black h-screen'> {/*this md: is for signup page*/ }
+    <div className='dark:bg-black h-full'> 
     <App />
     </div>
   </React.StrictMode>

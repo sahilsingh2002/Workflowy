@@ -71,7 +71,7 @@ useEffect(()=>{
    }
 
   return (
-    <div className={`fixed h-screen ${isCollapsed ? "w-screen":"w-[80%]"}  bg-white dark:bg-slate-900  `}>
+    <div className={`fixed h-screen ${isCollapsed ? "w-0":"w-fit"}  bg-white dark:bg-slate-900  dark:text-white `}>
 
     <aside ref={sidebarRef} id="sidebar"  className={cn(
           "group/sidebar h-full bg-secondary overflow-y-auto relative flex w-60 flex-col z-[99999]",
@@ -87,7 +87,7 @@ useEffect(()=>{
             isMobile && "opacity-100"
           )}
         >
-          <ChevronsLeft className="h-6 w-6" />
+          <ChevronsLeft className="h-6 w-6 " />
         </div>
         <div  className="mb-10 flex items-center rounded-lg px-3 py-2 text-slate-900 dark:text-white">
           <svg className="h-5 w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3" /></svg>

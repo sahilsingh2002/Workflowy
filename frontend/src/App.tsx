@@ -6,6 +6,7 @@ import './App.css'
 import { useLocation } from 'react-router-dom'
 
 import  Navbar  from './components/navbar/Navbar'
+import Lander from './pages/Lander'
 
 
 
@@ -18,7 +19,7 @@ function App() {
       <Route path='/login' element={<Login_page/>}/>
       <Route path='/signup' element={<Signup_page/>}/>
       <Route path='/home' element={<Home_page/>}/>
-      <Route path='/' element={<Navigate to="/home"/>}/>
+      <Route path='/' element={<Lander/>}/>
 
     </Routes>
 
