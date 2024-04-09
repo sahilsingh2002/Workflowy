@@ -64,7 +64,6 @@ export function Signup() {
     }
     
     
-    // Add more constraints as needed
     
     
   }
@@ -76,14 +75,30 @@ export function Signup() {
     
     if(validUsername){
     setUsernameCheckTimeout(
-      setTimeout(() => {
-        
-        
-        
-            setIsUnique(true);
-        //   });
+      setTimeout(async() => {
+        try{
+          const sendreqConfig = {
+            method:"POST",
+            data:{
+              username:username,
+            },
+            url:"/api/username"
+  
+          }
+          const result = await axios(sendreqConfig);
+          console.log(result);
+        }
+        catch(err){
+          console.log(err);
+        }
 
-        console.log("here");
+        
+        
+        
+            
+         
+
+        
       }, 3000)
       );
     }

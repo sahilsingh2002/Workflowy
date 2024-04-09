@@ -5,6 +5,21 @@ const handleUserExists = async ({ username, user }) => {
   return existingUser ? true : false;
 };
 
+module.exports.isUser = async(req,res)=>{
+  const {username} = req.body;
+  try{
+    const user = User();
+    const userExists = await handleUserExists({ username, user });
+    if(userExists){
+      return res.status(400).json({ status: false, message: "Username already exists" });
+    }
+    return res.status(201).json({ status: true, message: "User created successfully" });
+  }
+  catch(err){
+    console.error("Error in username:", err);
+    return res.status(500).json({ status: false, message: "An error occurred" });
+  }
+}
 module.exports.post_signup = async (req, res) => {
   const { username, email, password } = req.body;
   try {
