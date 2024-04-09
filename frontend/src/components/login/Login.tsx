@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useState } from "react";
 import { FaRegEye, FaRegEyeSlash, FaGoogle } from "react-icons/fa";
 import axios from "axios";
@@ -29,7 +29,7 @@ export function Login() {
     formState: { errors },
   } = useForm<Inputs>()
   const onSubmit: SubmitHandler<Inputs> = ({username,password}) =>login_user(username,password);
-  const navigate = useNavigate();
+
   const [showPassword, setShowPassword] = useState(false);
 
   const login_user = async(username:string, password:string)=>{
@@ -43,13 +43,16 @@ export function Login() {
         }
       });
       console.log(result.data);
-      navigate("/home");
+     
     }
     catch(err){
       
       console.log("error",err);
     }
   }
+  
+
+  
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex w-full items-center h-screen justify-center pt-16 lg:overflow-auto overflow-y-scroll">

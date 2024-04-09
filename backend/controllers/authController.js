@@ -67,9 +67,11 @@ module.exports.post_signup = async (req, res) => {
   }
 };
 module.exports.authing = async(req,res)=>{
-  const userc = req.user;
-  console.log(userc);
-  res.json({ user: req.user });
+  const userId = req.user.id;
+  console.log(req.user);
+
+  // Fetch details based on userId and send response
+  res.json({ userId: userId, details: 'Details specific to the user' });
 }
 
 module.exports.post_login = async (req, res) => {
@@ -88,7 +90,7 @@ module.exports.post_login = async (req, res) => {
       return res.status(400).json({ status: false, message: "Incorrect password" });
     }
     const token = generateToken({ id:userData._id });
-    res.cookie("user",token,{maxAge: 3600});
+    res.cookie("user",token,{maxAge: 3600*24, domain:"localhost", path:'/'});
 
     return res.json({ status: true, message: "Login successful" });
   } catch (err) {

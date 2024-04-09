@@ -1,30 +1,26 @@
 const passport = require('passport');
-const { ExtractJwt, Strategy: JwtStrategy } = require('passport-jwt');
-
-// Setup Passport.js JWT strategy
-passport.use(new JwtStrategy({
-  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-  secretOrKey: 'your_secret_key'
-}, (jwtPayload, done) => {
-    console.log(jwtPayload);
-  const user = jwtPayload;
-  
-  if (user) {
-    return done(null, user);
-  } else {
-    return done(null, false);
+const passportJWT = require('passport-jwt');
+const JWTStrategy = passportJWT.Strategy;
+const ExtractJWT = passportJWT.ExtractJwt;
+const cookieParser = require('cookie-parser');
+const cookieExtractor = (req) => {
+  let token = null;
+  if (req && req.cookies) {
+    token = req.cookies.user; // Assuming the JWT token is stored in a cookie named 'user'
   }
-}));
-
-// Middleware to authenticate user using Passport.js
-const authenticateUser = (req, res, next) => {
-  passport.authenticate('jwt', { session: false }, (err, user) => {
-    if (err || !user) {
-      return res.status(401).json({ message: 'Unauthorized' });
-    }
-    req.user = user;
-    next();
-  })(req, res, next);
+  return token;
 };
 
-module.exports = authenticateUser;
+const jwtSecret = 'workflowy_adm'; // Replace with your actual secret key
+
+// Configure Passport.js to use JWT strategy
+passport.use(new JWTStrategy({
+  jwtFromRequest: cookieExtractor,
+  secretOrKey: jwtSecret
+}, (jwtPayload, done) => {
+  console.log(jwtPayload);
+  const user = { id: jwtPayload.userId }; // Dummy user object for demonstration
+  return done(null, user);
+}));
+
+module.exports.authenticateUser = passport.authenticate('jwt', { session: false });
