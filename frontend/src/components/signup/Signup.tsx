@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Link } from "react-router-dom"
+import { Link,useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import axios from 'axios';
@@ -11,34 +11,31 @@ import {
   CardTitle
 } from "@/components/ui/card"
 
+
+
+
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { AxeIcon } from "lucide-react";
 import './signup.css'
-interface ErrorResponse {
-  status: boolean;
-  status_code: number;
-  error: string;
-}
-interface SuccessResponse {
-  status: boolean;
-  status_code: number;
-  data: string;
-}
+import { useForm, SubmitHandler } from "react-hook-form"
 
-type AxiosResponse<T> = {
-  status: number;
-  data: T;
-};
+
 
 export function Signup() {
+  const navigate = useNavigate();
+  type Inputs = {
+    username: string
+    name: string
+    password: string
+    email: string
+  }
   
   const [showPassword, setShowPassword] = useState(false);
+
   const [isUnique, setIsUnique] = useState(false);
   const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
+  
   const [validUsername, setValidUsername] = useState(false);
   const [isValid, setIsValid] = useState("Not a Valid username");
 
@@ -76,40 +73,44 @@ export function Signup() {
     if(validUsername){
     setUsernameCheckTimeout(
       setTimeout(async() => {
+        const sendreqConfig = {
+          method:"POST",
+          data:{
+            username:username,
+          },
+          url:"/api/username"
+
+        }
         try{
-          const sendreqConfig = {
-            method:"POST",
-            data:{
-              username:username,
-            },
-            url:"/api/username"
-  
-          }
           const result = await axios(sendreqConfig);
-          console.log(result);
+          console.log(result.data);
+          setIsUnique(true);
+          setIsValid(result.data.message);
+      
         }
         catch(err){
-          console.log(err);
-        }
-
-        
-        
-        
-            
-         
-
-        
+            const error = err.response.data;
+            setIsUnique(false);
+          setIsValid(error.message);
+        }  
       }, 3000)
       );
     }
  }, [username, validUsername]);
 
- const signup_user = async()=>{
+ interface Datas{
+  name:string
+  username:string
+  password:string
+  email:string
+ }
+
+ const signup_user = async(data:Datas)=>{
   const user = {
-    name:name,
-    email:email,
-    username:username,
-    password:password
+    name:data.name,
+    email:data.email,
+    username:data.username,
+    password:data.password
   }
  
     const sendreqConfig = {
@@ -119,17 +120,25 @@ export function Signup() {
   }
   try{
     const result = await axios(sendreqConfig);
-    console.log(result);
+    navigate("/home");
+    
 
   }
   catch(err){
-    console.log(err);
+      const error = err.response.data;
+    console.log(error);
   }
   }
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors, isValid: isFormValid }
+  } = useForm<Inputs>()
+  const onSubmit: SubmitHandler<Inputs> = (data) => {signup_user(data);}
  
   return (
-    
-       <div className="flex justify-center items-center min-h-screen">
+    <div className="flex justify-center items-center min-h-screen">
       <Card className="dark:bg-black w-full sm:max-w-md">
         <CardHeader>
           <AxeIcon/>
@@ -139,6 +148,7 @@ export function Signup() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="username">Username</Label>
@@ -147,10 +157,10 @@ export function Signup() {
                 type="text"
                 placeholder=""
                 className={`${!validUsername && username.length>0 && "border-red-500"}`}
+                {...register("username")}
                 onChange={(e)=>{
                   setUsername(e.target.value);
                   handleValid(e.target.value);
-                  
                 }}
                 required
               />
@@ -163,7 +173,7 @@ export function Signup() {
             
               <div className="grid gap-2">
                 <Label htmlFor="name">Name</Label>
-                <Input id="name" placeholder="Max Robinson" required onChange={(e)=>{setName(e.target.value)}} />
+                <Input id="name" placeholder="Max Robinson" required {...register("name")} />
               </div>
              
             
@@ -174,18 +184,18 @@ export function Signup() {
                 type="email"
                 placeholder="m@example.com"
                 required
-                onChange={(e)=>{setEmail(e.target.value)}} 
+                {...register("email")}
               />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
               <div className="grid grid-flow-col grid-cols-2 gap-2">
-              <Input id="password" className="col-span-2" type={showPassword?"text":"password"} onChange={(e)=>{setPassword(e.target.value)}} />
-              <Button variant={!showPassword?"ghost":"default"} onClick={()=>{setShowPassword(!showPassword)}}>{showPassword?<FaRegEye/>:<FaRegEyeSlash/>}</Button>
+              <Input id="password" className="col-span-2" type={showPassword?"text":"password"} {...register("password")}/>
+              <Button variant={!showPassword?"ghost":"default"} onClick={(e)=>{e.preventDefault();setShowPassword(!showPassword)}}>{showPassword?<FaRegEye/>:<FaRegEyeSlash/>}</Button>
 
               </div>
             </div>
-            <Button type="submit" className="w-full" onClick={signup_user}>
+            <Button type="submit" className="w-full" disabled={!isFormValid || !isUnique}>
               Create an account
             </Button>
             <Button variant="outline" className="w-full">
@@ -198,6 +208,7 @@ export function Signup() {
               Sign in
             </Link>
           </div>
+      </form>
         </CardContent>
       </Card>
     </div>

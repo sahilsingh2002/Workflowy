@@ -43,6 +43,7 @@ export function Login() {
         }
       });
       console.log(result.data);
+      navigate("/home");
     }
     catch(err){
       
