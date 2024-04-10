@@ -3,8 +3,16 @@ import {ElementRef, useRef, useState, useEffect} from 'react'
 import {useMediaQuery} from 'usehooks-ts';
 import { useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { useSelector } from 'react-redux';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { Button } from '../ui/button';
 
 function Sidebar() {
+  const user = useSelector(state=>state.user);
 
   const {pathname} = useLocation();
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -57,7 +65,6 @@ useEffect(()=>{
       navbarRef.current.style.setProperty("left", isMobile ? "100%":"240px");
       setTimeout(()=>setIsResetting(false),300);
     }
-
   }
    const collapse = ()=>{
     if(sidebarRef.current && navbarRef.current){
@@ -71,7 +78,7 @@ useEffect(()=>{
    }
 
   return (
-    <div className={`fixed h-screen ${isCollapsed ? "w-0":"w-fit"}  bg-white dark:bg-slate-900  dark:text-white `}>
+    <div className={`relative h-screen ${isCollapsed ? "w-0":"w-fit"}  bg-white dark:bg-slate-900  dark:text-white `}>
 
     <aside ref={sidebarRef} id="sidebar"  className={cn(
           "group/sidebar h-full bg-secondary overflow-y-auto relative flex w-60 flex-col z-[99999]",
@@ -137,12 +144,23 @@ useEffect(()=>{
         </ul>
         <div className="mt-auto flex">
           <div className="flex w-full justify-between">
-            <span className="text-sm font-medium text-black dark:text-white">email@example.com</span>
+            <span className="text-sm font-medium text-black dark:text-white">{user.email}</span>
+            <Popover>
+            <PopoverTrigger>
+            <Button variant={"ghost"}>
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" aria-roledescription="more menu" fill="none" stroke="currentColor" stroke-width="2" className="h-5 w-5 text-black lucide lucide-more-horizontal dark:text-white" stroke-linecap="round" stroke-linejoin="round" >
               <circle cx="12" cy="12" r="1" />
               <circle cx="19" cy="12" r="1" />
               <circle cx="5" cy="12" r="1" />
             </svg>
+            </Button>
+            </PopoverTrigger>
+            <PopoverContent className='z-[99999] bg-white dark:bg-black'>
+              <p>hello</p>
+              <p>hello</p>
+              <p>hello</p>
+            </PopoverContent>
+            </Popover>
           </div>
         </div>
       </div>

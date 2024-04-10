@@ -2,6 +2,7 @@
 const express = require('express');
 const {connect} = require('./connectDB/connectToDB');
 const authRoutes = require('./routes/authRoutes')
+const cookieParser = require('cookie-parser')
 
 const cors = require('cors');
 
@@ -11,8 +12,10 @@ const app = express();
 
 app.use(express.json());
 app.use(cors({ origin: true, credentials: true }));
+app.use(cookieParser());
 connect();
 app.listen(port,()=>{
   console.log("app started on port " + port);
 });
 app.use('/api',authRoutes);
+app.use('/',cookieParser);

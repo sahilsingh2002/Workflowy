@@ -6,5 +6,5 @@ const router = Router();
 router.post('/signup',post_signup);
 router.post('/login',post_login);
 router.post('/username',isUser);
-router.get('/auth',authenticateUser,authing);
+router.post('/authenticate',authenticateUser,authing);
 module.exports = router;

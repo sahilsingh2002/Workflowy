@@ -3,6 +3,8 @@ import { Link,useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import axios from 'axios';
+import { useDispatch } from "react-redux";
+import {changeUser} from '../../redux/slices/userSlice'
 import {
   Card,
   CardContent,
@@ -23,6 +25,7 @@ import { useForm, SubmitHandler } from "react-hook-form"
 
 
 export function Signup() {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   type Inputs = {
     username: string
@@ -82,8 +85,8 @@ export function Signup() {
 
         }
         try{
-          const result = await axios(sendreqConfig);
-          console.log(result.data);
+          const result = await axios(sendreqConfig); 
+          dispatch(changeUser(result.data.data));
           setIsUnique(true);
           setIsValid(result.data.message);
       
@@ -120,6 +123,7 @@ export function Signup() {
   }
   try{
     const result = await axios(sendreqConfig);
+    console.log(result);
     navigate("/home");
     
 
