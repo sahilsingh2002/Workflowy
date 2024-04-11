@@ -1,9 +1,9 @@
 import React from 'react'
 const IMAGES = {
-    doc : new URL("../../assets/documents.png" , import.meta.url).href,
-    read : new URL("../../assets/reading.png" , import.meta.url).href,
-    doc_dark : new URL("../../assets/documents-dark.png" , import.meta.url).href,
-    read_dark : new URL("../../assets/reading-dark.png" , import.meta.url).href,
+    doc : new URL("../../assets/lander/documents.png" , import.meta.url).href,
+    read : new URL("../../assets/lander/reading.png" , import.meta.url).href,
+    doc_dark : new URL("../../assets/lander/documents-dark.png" , import.meta.url).href,
+    read_dark : new URL("../../assets/lander/reading-dark.png" , import.meta.url).href,
 
     
   }

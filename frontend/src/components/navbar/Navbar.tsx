@@ -14,7 +14,7 @@ import Logo from "../logo/Logo"
 export default function Component() {
   const scrolled = useScrollTop();
   return (
-    <header className={cn("flex-col z-50 fixed md:flex sm:flex-row bg-white dark:bg-black  justify-between w-full  items-center dark:text-white px-4 -mt-20 hidden md:px-6 h-20",scrolled && "border-b dark:border-black shadow-sm dark:shadow-white ")}>
+    <header className={cn("flex-col z-[99999] fixed md:flex sm:flex-row bg-white dark:bg-black  justify-between w-full  items-center dark:text-white px-4 -mt-20 hidden md:px-6 h-20",scrolled && "border-b dark:border-black shadow-sm dark:shadow-white ")}>
       <Link className="mx-6 flex  w-fit justify-center items-center  scale-150" to="/">
         <Logo/>
       </Link>

@@ -1,7 +1,9 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link,useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { FaRegEye, FaRegEyeSlash, FaGoogle } from "react-icons/fa";
 import axios from "axios";
+import { useDispatch } from "react-redux";
+import {changeUser} from '../../redux/slices/userSlice'
 
 
 import { Button } from "@/components/ui/button";
@@ -22,6 +24,8 @@ type Inputs = {
 }
 
 export function Login() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
@@ -29,7 +33,7 @@ export function Login() {
     formState: { errors },
   } = useForm<Inputs>()
   const onSubmit: SubmitHandler<Inputs> = ({username,password}) =>login_user(username,password);
-  const navigate = useNavigate();
+
   const [showPassword, setShowPassword] = useState(false);
 
   const login_user = async(username:string, password:string)=>{
@@ -40,15 +44,24 @@ export function Login() {
         data: {
           username,
           password,
-        }
+        },
+        withCredentials: true // This enables sending cookies with cross-origin requests
+
       });
-      console.log(result.data);
+      dispatch(changeUser(result.data.data));
+
+      navigate("/home");
+     
     }
     catch(err){
       
       console.log("error",err);
     }
+
   }
+  
+
+  
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex w-full items-center h-screen justify-center pt-16 lg:overflow-auto overflow-y-scroll">

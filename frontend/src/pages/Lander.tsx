@@ -6,10 +6,7 @@ import Footer from '@/components/footer/Footer'
 
 
 
-const IMAGES = {
-  image1 : new URL('../assets/documents.png', import.meta.url).href,
-  image2 : new URL('../assets/documents-dark.png', import.meta.url).href
-}
+
 
 function Lander() {
   return (
