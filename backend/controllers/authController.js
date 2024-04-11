@@ -74,6 +74,7 @@ module.exports.authing = async(req,res)=>{
     const userId = req.id;
     const user = User();
     const result = await user.findOne({},{_id:userId});
+    console.log(result);
   
     res.json({ name:result.name, email:result.email, username:result.username});
   }
@@ -87,10 +88,7 @@ module.exports.authing = async(req,res)=>{
 }
 
 module.exports.post_login = async (req, res) => {
-  
-  
-  
- 
+
   const { username, password } = req.body;
   try {
     const user = User();
@@ -118,3 +116,8 @@ module.exports.post_login = async (req, res) => {
     return res.status(500).json({ status: false, message: "An error occurred" });
   }
 };
+module.exports.Logout_user = (req,res)=>{
+  res.cookie("user",'', {maxAge:0, path: '/', domain: 'localhost' });
+  res.end();
+  
+}

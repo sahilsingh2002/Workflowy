@@ -11,10 +11,8 @@ import  Navbar  from '@/components/navbar/Navbar';
 
 function Home_page() {
 
-  const User = useSelector(state=>state.user);
-  console.log(User);
-  
  
+  
   return (
     <div className='h-full flex dark:bg-[#1F1F1F]'>
      <Navbar/>

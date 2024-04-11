@@ -4,6 +4,7 @@ import {useMediaQuery} from 'usehooks-ts';
 import { useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useSelector } from 'react-redux';
+import axios from 'axios';
 import {
   Popover,
   PopoverContent,
@@ -76,7 +77,20 @@ useEffect(()=>{
       setTimeout(()=>setIsResetting(false),300);
     }
    }
-
+   const Logout = async()=>{
+    const sendReqConfig = {
+      method:"GET",
+      url:"/api/logout",
+      
+    }
+  try{
+      const result = await axios(sendReqConfig);
+      window.location.reload();
+  }
+  catch(err){
+    console.log("Error : ",err);
+  }
+   }
   return (
     <div className={`relative h-screen ${isCollapsed ? "w-0":"w-fit"}  bg-white dark:bg-slate-900  dark:text-white `}>
 
@@ -156,9 +170,7 @@ useEffect(()=>{
             </Button>
             </PopoverTrigger>
             <PopoverContent className='z-[99999] bg-white dark:bg-black'>
-              <p>hello</p>
-              <p>hello</p>
-              <p>hello</p>
+              <Button onClick={Logout}>Logout</Button>
             </PopoverContent>
             </Popover>
           </div>

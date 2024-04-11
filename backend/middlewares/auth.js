@@ -3,6 +3,7 @@ const cookieParser = require('cookie-parser');
 module.exports.authenticateUser = async(req,res,next)=>{
   try{
     const token = req.cookies.user;
+    console.log(token);
     
     if(token){
       const secret = "workflowy_adm";
@@ -14,6 +15,7 @@ module.exports.authenticateUser = async(req,res,next)=>{
         else{
           const id = decoded.id;
           req.id = id;
+          console.log(req.id);
           next();
         }
       })
