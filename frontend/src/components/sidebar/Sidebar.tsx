@@ -11,6 +11,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { Button } from '../ui/button';
+import UserItem from '../useritem/UserItem';
 
 function Sidebar() {
   const user = useSelector(state=>state.user);
@@ -77,20 +78,7 @@ useEffect(()=>{
       setTimeout(()=>setIsResetting(false),300);
     }
    }
-   const Logout = async()=>{
-    const sendReqConfig = {
-      method:"GET",
-      url:"/api/logout",
-      
-    }
-  try{
-      const result = await axios(sendReqConfig);
-      window.location.reload();
-  }
-  catch(err){
-    console.log("Error : ",err);
-  }
-   }
+   
   return (
     <div className={`relative h-screen ${isCollapsed ? "w-0":"w-fit"}  bg-white dark:bg-slate-900  dark:text-white `}>
 
@@ -110,10 +98,7 @@ useEffect(()=>{
         >
           <ChevronsLeft className="h-6 w-6 " />
         </div>
-        <div  className="mb-10 flex items-center rounded-lg px-3 py-2 text-slate-900 dark:text-white">
-          <svg className="h-5 w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3" /></svg>
-          <span className="ml-3 text-base font-semibold">Workflowy</span>
-        </div>
+        <UserItem/>
         <ul className="space-y-2 text-sm font-medium">
           <li>
             <a  className="flex items-center rounded-lg px-3 py-2 text-slate-900 hover:bg-slate-100 dark:text-white dark:hover:bg-slate-700">
@@ -156,25 +141,6 @@ useEffect(()=>{
             </a>
           </li>
         </ul>
-        <div className="mt-auto flex">
-          <div className="flex w-full justify-between">
-            <span className="text-sm font-medium text-black dark:text-white">{user.email}</span>
-            <Popover>
-            <PopoverTrigger>
-            <Button variant={"ghost"}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" aria-roledescription="more menu" fill="none" stroke="currentColor" stroke-width="2" className="h-5 w-5 text-black lucide lucide-more-horizontal dark:text-white" stroke-linecap="round" stroke-linejoin="round" >
-              <circle cx="12" cy="12" r="1" />
-              <circle cx="19" cy="12" r="1" />
-              <circle cx="5" cy="12" r="1" />
-            </svg>
-            </Button>
-            </PopoverTrigger>
-            <PopoverContent className='z-[99999] bg-white dark:bg-black'>
-              <Button onClick={Logout}>Logout</Button>
-            </PopoverContent>
-            </Popover>
-          </div>
-        </div>
       </div>
       <div
           onMouseDown={handleMouseDown}
