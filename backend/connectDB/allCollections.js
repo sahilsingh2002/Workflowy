@@ -24,4 +24,4 @@ const Tasks = ()=>{
   return tasks;
 }
 
-module.exports = {User};
+module.exports = {User,Workspaces,Pages,Tasks};

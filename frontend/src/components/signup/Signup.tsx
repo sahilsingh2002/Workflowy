@@ -69,6 +69,7 @@ export function Signup() {
   }
   const [usernameCheckTimeout, setUsernameCheckTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
+    console.log("here");
     
     if (usernameCheckTimeout) clearTimeout(usernameCheckTimeout);
     
@@ -86,20 +87,20 @@ export function Signup() {
         }
         try{
           const result = await axios(sendreqConfig); 
-          dispatch(changeUser(result.data.data));
+          console.log(result);
           setIsUnique(true);
-          setIsValid(result.data.message);
+          setIsValid(result?.data?.message);
       
         }
         catch(err){
-            const error = err.response.data;
+            const error = err;
             setIsUnique(false);
-          setIsValid(error.message);
+          console.log(error);
         }  
       }, 3000)
       );
     }
- }, [username, validUsername]);
+ }, [username, validUsername,dispatch]);
 
  interface Datas{
   name:string
@@ -113,7 +114,8 @@ export function Signup() {
     name:data.name,
     email:data.email,
     username:data.username,
-    password:data.password
+    password:data.password,
+    
   }
  
     const sendreqConfig = {
@@ -124,7 +126,8 @@ export function Signup() {
   try{
     const result = await axios(sendreqConfig);
     console.log(result);
-    navigate("/home");
+    dispatch(changeUser(user));
+    // navigate("/home");
     
 
   }

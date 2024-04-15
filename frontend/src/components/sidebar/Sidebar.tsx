@@ -1,20 +1,20 @@
-import { ChevronsLeft, MenuIcon } from 'lucide-react'
+import { ChevronsLeft, MenuIcon, PlusCircle, Search, Settings } from 'lucide-react'
 import {ElementRef, useRef, useState, useEffect} from 'react'
 import {useMediaQuery} from 'usehooks-ts';
 import { useLocation } from 'react-router-dom';
+
 import { cn } from '@/lib/utils';
 import { useSelector } from 'react-redux';
-import axios from 'axios';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import { Button } from '../ui/button';
 import UserItem from '../useritem/UserItem';
+import Item from '../item/Item';
+import { toast } from 'sonner';
 
+import axios from 'axios';
+import { set } from 'react-hook-form';
 function Sidebar() {
   const user = useSelector(state=>state.user);
+  const [loading, setLoading] = useState(false);
+  const [createResult, setCreateResult] = useState(null);
 
   const {pathname} = useLocation();
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -23,6 +23,7 @@ function Sidebar() {
   const navbarRef = useRef<ElementRef<"div">>(null);
   const [isResetting, setIsResetting] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(isMobile);
+  const [pages,setPages] = useState([]);
 
 
 useEffect(()=>{
@@ -79,6 +80,73 @@ useEffect(()=>{
     }
    }
    
+   const handleCreate = async()=>{
+    setLoading(false);
+    const sendReqConfig = {
+      method:"POST",
+      url:"/api/workspace/add",
+      data:{
+        username:user.username,
+      }
+    }
+    try {
+      const result = await axios(sendReqConfig);
+      
+      setCreateResult(result.data);
+      toast.success("Workspace created successfully");
+      getWork();
+    } catch (error) {
+      toast.error("Failed to create workspace");
+    } finally {
+      setLoading(false);
+    }
+   }
+
+   const handleGetpage = async(id)=>{
+    console.log(id);
+      const sendReqConfig = {
+        method:"POST",
+        url:"/api/workspace/getPage",
+        data:{
+          id:id,
+        }
+
+      }
+      try {
+        const result = await axios(sendReqConfig);
+        console.log(result);
+      } catch (error) {
+        console.log("Error : ",error);
+      }
+   }
+   const getWork = async()=>{
+     const sendReqConfig = {
+       method:"POST",
+       url:"/api/workspace/getworkspaces",
+       data:{
+         username:user.username,
+       }
+     }
+     try{
+       const result = await axios(sendReqConfig);
+       const newPages = [...result?.data?.workspacer];
+       setPages(newPages);
+       console.log(result);
+     }
+     catch(err){
+       console.log("Error : ",err);
+     }
+     
+     
+   }
+   useEffect(()=>{
+    getWork();
+   },[]);
+   useEffect(() => {
+    if (loading) {
+      toast.info("Creating workspace...");
+    }
+  }, [loading]);
   return (
     <div className={`relative h-screen ${isCollapsed ? "w-0":"w-fit"}  bg-white dark:bg-slate-900  dark:text-white `}>
 
@@ -98,49 +166,25 @@ useEffect(()=>{
         >
           <ChevronsLeft className="h-6 w-6 " />
         </div>
+        <div>
         <UserItem/>
-        <ul className="space-y-2 text-sm font-medium">
-          <li>
-            <a  className="flex items-center rounded-lg px-3 py-2 text-slate-900 hover:bg-slate-100 dark:text-white dark:hover:bg-slate-700">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 lucide lucide-home" width="24" height="24" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" >
-                <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                <polyline points="9 22 9 12 15 12 15 22" />
-              </svg>
-              <span className="ml-3 flex-1 whitespace-nowrap">Home</span>
-            </a>
-          </li>
-          <li>
-            <a  className="flex items-center rounded-lg px-3 py-2 text-slate-900 hover:bg-slate-100 dark:text-white dark:hover:bg-slate-700">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 lucide lucide-users" width="24" height="24" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" >
-                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-              </svg>
-              <span className="ml-3 flex-1 whitespace-nowrap">Customers</span>
-            </a>
-          </li>
-          <li>
-            <a  className="flex items-center rounded-lg px-3 py-2 text-slate-900 hover:bg-slate-100 dark:text-white dark:hover:bg-slate-700">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 lucide lucide-package" width="24" height="24" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" >
-                <path d="M16.5 9.4 7.55 4.24" />
-                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-                <polyline points="3.29 7 12 12 20.71 7" />
-                <line x1="12" x2="12" y1="22" y2="12" />
-              </svg>
-              <span className="ml-3 flex-1 whitespace-nowrap">Products</span>
-            </a>
-          </li>
-          <li>
-            <a  className="flex items-center rounded-lg px-3 py-2 text-slate-900 hover:bg-slate-100 dark:text-white dark:hover:bg-slate-700">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 lucide lucide-settings" width="24" height="24" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" >
-                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
-                <circle cx="12" cy="12" r="3" />
-              </svg>
-              <span className="ml-3 flex-1 whitespace-nowrap">Settings</span>
-            </a>
-          </li>
-        </ul>
+          <Item
+          label='search'
+          icon={Search}
+          isSearch
+          onClick={()=>{}}/>
+          <Item
+          label='settings'
+          icon={Settings}
+          
+          onClick={()=>{}}/>
+          <Item onClick = {handleCreate} label = "New page" icon = {PlusCircle}/>
+        </div>
+        <div>
+          {pages.map(({name,id})=>(
+            <div role='button' className='hover:bg-gray-200' onClick = {()=>handleGetpage(id)}>{name}</div>
+          ))}
+        </div>
       </div>
       <div
           onMouseDown={handleMouseDown}

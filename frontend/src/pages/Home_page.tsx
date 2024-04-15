@@ -1,6 +1,6 @@
 import Sidebar from '@/components/sidebar/Sidebar'
 import  Home  from '@/components/home/Home'
-
+import { Toaster } from "@/components/ui/sonner"
 import { useSelector } from 'react-redux';
 import  Navbar  from '@/components/navbar/Navbar';
 
@@ -17,8 +17,10 @@ function Home_page() {
     <div className='h-full flex dark:bg-[#1F1F1F]'>
      <Navbar/>
       <Sidebar/>
+
       <main className='flex-1 h-screen overflow-y-auto'>
       <Home/>
+      <Toaster/>
       </main>
       
 
