@@ -1,15 +1,15 @@
-import React from 'react'
+
 import {
   Avatar,
   AvatarImage
 } from '@/components/ui/avatar';
-import { Button } from '../ui/button';
+
 import axios from 'axios';
 
 import {
   DropdownMenu,
   DropdownMenuTrigger,
-  DropdownMenuLabel,
+  
   DropdownMenuItem,
   DropdownMenuContent,
   DropdownMenuSeparator
