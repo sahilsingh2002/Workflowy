@@ -6,13 +6,12 @@ import { useEffect, useState } from "react"
 import axios from "axios"
 import { useSelector } from "react-redux"
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
+
 import { toast } from 'sonner';
 
 
@@ -108,22 +107,28 @@ function DocumentList() {
         No pages available
       </p>
      
-      <DropdownMenu >
-      <DropdownMenuTrigger className="w-full flex">Pages</DropdownMenuTrigger>
-      <DropdownMenuContent className="w-60">
+      <Accordion type="single" collapsible>
+      
+
+      
+      <AccordionItem value="items">
+      <AccordionTrigger className="w-full flex">Pages</AccordionTrigger>
+      <AccordionContent>
 
       {pages.map(({name,id})=>(
-            <DropdownMenuItem key={id} className='hover:bg-gray-200' onClick={()=>{handleGetpage(id)}}>
+        <div  key={id} className='hover:bg-gray-200' onClick={()=>{handleGetpage(id)}}>
               <Item Id={id} label={name} icon={FileIcon} onArchive = {()=>{Archived(id)}}>
                 </Item>
-                </DropdownMenuItem>
+                </div>
           ))}
-      </DropdownMenuContent>
-      <DropdownMenuSeparator/>
-
       <Item onClick = {handleCreate} label = "New page" icon = {PlusCircle}/>
+          </AccordionContent>
+      </AccordionItem>
+      
+      
 
-      </DropdownMenu>
+
+      </Accordion>
       
      
     </>
