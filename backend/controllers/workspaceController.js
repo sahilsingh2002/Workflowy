@@ -1,20 +1,26 @@
 const {User,Workspaces, Pages, Tasks} = require("../connectDB/allCollections");
 
+// boards : user : objectId(ref - user), icon:string, default : 📃,  title:string default:untitled, description string, default: add description here, 🟢 you can add multiline desc. here., position : type:number, favourite L { type:boolean, def false} favpos type:number, default:0 
+
 module.exports.addWorkspace = async(req,res)=>{
     const {username,parentId} = req.body;
    
     try{
         const workspace = Workspaces();
+        const boardcount = await workspace.countDocuments();
+        
+        
+       
         const user = User();
         const userDetails = await user.findOne({username:username});
         
         
-        const result = await workspace.insertOne({name:"untitled",content:"",owner:userDetails?._id,isArchived:false,isPublished:false,parentId:parentId,created_at:Date.now()});
+        const result = await workspace.insertOne({name:"untitled",content:"",position:boardcount,owner:userDetails?._id,created_at:Date.now()});
         const response = await user.updateOne(
             {_id:userDetails._id},
         {$push:{"workspaces":result.insertedId}});
         
-        res.status(201).json({status:true,name:"untitled"});
+        res.status(201).json({status:true,name:"untitled",board:result});
         
     }
    
