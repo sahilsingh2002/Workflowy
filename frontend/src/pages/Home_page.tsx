@@ -14,17 +14,11 @@ function Home_page() {
  
   
   return (
-    <div className='h-full flex dark:bg-[#1F1F1F]'>
-     <Navbar/>
-      <Sidebar/>
-
+    <div className='flex jusify-center w-full'>
       <main className='flex-1 h-screen overflow-y-auto'>
       <Home/>
       <Toaster/>
       </main>
-      
-
-     
    </div>
     
   )

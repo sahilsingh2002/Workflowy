@@ -1,3 +1,4 @@
+const { ObjectId } = require('mongodb');
 const {User,Workspaces, Pages, Tasks} = require("../connectDB/allCollections");
 
 // boards : user : objectId(ref - user), icon:string, default : 📃,  title:string default:untitled, description string, default: add description here, 🟢 you can add multiline desc. here., position : type:number, favourite L { type:boolean, def false} favpos type:number, default:0 
@@ -8,17 +9,15 @@ module.exports.addWorkspace = async(req,res)=>{
     try{
         const workspace = Workspaces();
         const boardcount = await workspace.countDocuments();
-        
+        const position = boardcount>0?boardcount:0;
         
        
         const user = User();
         const userDetails = await user.findOne({username:username});
         
         
-        const result = await workspace.insertOne({name:"untitled",content:"",position:boardcount,owner:userDetails?._id,created_at:Date.now()});
-        const response = await user.updateOne(
-            {_id:userDetails._id},
-        {$push:{"workspaces":result.insertedId}});
+        const result = await workspace.insertOne({name:"untitled",content:"add description here, 🟢 you can add multiline desc. here.",position:position,owner:userDetails?._id,icon:"📃",favourite:false,favpos:0,created_at:Date.now()});
+        
         
         res.status(201).json({status:true,name:"untitled",board:result});
         
@@ -30,23 +29,24 @@ module.exports.addWorkspace = async(req,res)=>{
           }
 }
 module.exports.getWorkspaces = async (req, res) => {
-    const { username } = req.body;
+    const { username } = req.query;
     try {
         const user = User();
         const workspace = Workspaces();
         const userDetails = await user.findOne({ username: username });
-        const workspaceIds = userDetails.workspaces;
+        const cursor = await workspace.find({ owner: userDetails?._id }).sort('-position');
+        const workspaceIds = await cursor.toArray();
+       console.log(workspaceIds);
 
         var allnames = [];
-        await Promise.all(workspaceIds.map(async (id) => {
-            const work = await workspace.findOne({ _id: id, isArchived: false }); // Filter by _id and isArchived
-            if (work) {
+        await Promise.all(workspaceIds.map(async (work) => {
+            
                 const data = { name: work.name, id: work._id };
                 allnames.push(data);
-            }
+            
         }));
         console.log(allnames);
-        res.status(200).json({ status: true, workspacer: allnames });
+        res.status(200).json(workspaceIds);
     } catch (error) {
         console.error(error);
         res.status(500).json({ status: false, message: "Internal server error" });
@@ -54,12 +54,12 @@ module.exports.getWorkspaces = async (req, res) => {
 }
 
 module.exports.getOnepage = async(req,res)=>{
-    const id = req.body.id;
+    const id = req.query.id;
     console.log(id);
     const workspace = Workspaces();
     try {
-        const result = await workspace.findOne({_id:id});
-        console.log(result);
+        const result = await workspace.findOne({ _id: new ObjectId(id) });
+        
         res.status(200).json({status:true,page:{result}});
     } catch (error) {
         console.error(error);

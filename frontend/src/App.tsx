@@ -12,6 +12,8 @@ import LoadingSpinner from './components/LoadingSpinner'
 
 import Lander from './pages/Lander'
 import { changeUser } from './redux/slices/userSlice'
+import Workspaces from './pages/Workspaces'
+import Sidebar from './components/sidebar/Sidebar'
 
 
 
@@ -64,18 +66,21 @@ function App() {
        <LoadingSpinner/>
        </>
      ):(  
-      <>
+      <div className='h-full flex dark:bg-[#1F1F1F]'>
     
-       {userdetails.username.length > 0 && <Navigate to="/home" />}
+    {(userdetails.username.length > 0) && <Sidebar/>}
+       
           {(!(userdetails.username.length > 0)) && (pathname !== '/login' && pathname !== '/signup') && <Navigate to="/login" />}
     <Routes>
-      <Route path='/login' element={<Login_page/>}/>
-      <Route path='/signup' element={<Signup_page/>}/>
+      <Route path='/login' element={userdetails.username.length > 0 ? <Navigate to="/home" />:<Login_page/>}/>
+      <Route path='/signup' element={userdetails.username.length > 0 ? <Navigate to="/home" />:<Signup_page/>}/>
       <Route path='/home' element={<Home_page/>}/>
       <Route path='/' element={<Lander/>}/>
+      <Route path='/workspace' element={<Navigate to="/home" />}/>
+      <Route path='/workspace/:workspaceId' element={<Workspaces/>}/>
 
     </Routes>
-    </>
+    </div>
     )
     }
     </ThemeProvider>

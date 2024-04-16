@@ -57,7 +57,7 @@ module.exports.post_signup = async (req, res) => {
     }
 
 
-    const result = await user.insertOne({ username,name, email, password: hashPass, workspaces:[] });
+    const result = await user.insertOne({ username,name, email, password: hashPass });
     const id = result.insertedId;
     const token = generateToken({ id });
     res.cookie("user",token,{maxAge: 3600});

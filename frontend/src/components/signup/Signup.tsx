@@ -145,7 +145,7 @@ export function Signup() {
   const onSubmit: SubmitHandler<Inputs> = (data) => {signup_user(data);}
  
   return (
-    <div className="flex justify-center items-center min-h-screen">
+    <div className="flex justify-center w-full items-center ">
       <Card className="dark:bg-black w-full sm:max-w-md">
         <CardHeader>
           <AxeIcon/>

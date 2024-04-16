@@ -64,7 +64,7 @@ export function Login() {
   
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex w-full items-center h-screen justify-center pt-16 lg:overflow-auto overflow-y-scroll">
+    <form onSubmit={handleSubmit(onSubmit)} className="flex justify-center w-full min-h-screen items-center">
       <Card className="dark:bg-black w-full sm:max-w-md overflow-auto">
         <CardHeader>
           <CardTitle className="text-2xl">Login</CardTitle>
