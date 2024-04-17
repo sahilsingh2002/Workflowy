@@ -1,8 +1,12 @@
+import Sidebar from '@/components/sidebar/Sidebar'
 import React from 'react'
 
 function Workspaces() {
   return (
-    <div>Workspaces</div>
+    <div className='flex'>
+      <Sidebar/>
+      Workspaces
+      </div>
   )
 }
 

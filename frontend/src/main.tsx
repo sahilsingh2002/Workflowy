@@ -9,11 +9,11 @@ import { store } from './redux/store.ts'
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <Provider store={store}>
   <BrowserRouter>
-  <React.StrictMode>
+
     <div className='dark:bg-black h-full'> 
     <App />
     </div>
-  </React.StrictMode>
+ 
   </BrowserRouter>
   </Provider>
 )

@@ -1,8 +1,9 @@
-import { ChevronsLeft, MenuIcon,  Search, Settings } from 'lucide-react'
-import {ElementRef, useRef, useState, useEffect} from 'react'
+import { ChevronDownIcon, ChevronsLeft, MenuIcon,  Search, Settings } from 'lucide-react'
+import {ElementRef, useRef, useState, useEffect, useCallback} from 'react'
 import {useMediaQuery} from 'usehooks-ts';
 
-import {DragDropContext, Draggable,Droppable} from 'react-beautiful-dnd'
+// import {DragDropContext, Draggable,Droppable} from 'react-beautiful-dnd'
+import {DragDropContext, Draggable, Droppable} from 'react-beautiful-dnd'
 
 
 
@@ -29,7 +30,8 @@ import { Button } from '../ui/button';
 
 
 function Sidebar() {
-   const {workspaceId} = useParams();
+  const [isDragging, setIsDragging] = useState(false);
+  let { workspaceId } = useParams();
   const navigate = useNavigate();
   const [activeIndex,setActiveIndex] = useState(0);
 
@@ -108,7 +110,8 @@ useEffect(()=>{
    }
 
   
-  const getWork = async()=>{
+ 
+   const getWork = async()=>{
     const sendReqConfig = {
       method:"GET",
       url:`/api/workspace/getworkspaces?username=${user.username}`,
@@ -117,10 +120,7 @@ useEffect(()=>{
       const result = await axios(sendReqConfig);
       console.log(result);
       dispatch(setWork([...result.data]));
-      if(result.data.length>0 && workspaceId===undefined){
-        navigate(`/workspace/${result.data[0]._id}`);
-        
-      }
+      
       
       
       
@@ -129,19 +129,22 @@ useEffect(()=>{
       console.log("Error : ",err);
     }
   }
-
-  const updateActive = (listWork:[])=>{
-    const activeItem = listWork.findIndex(e=>e.id===workspaceId);
-    console.log(activeItem,listWork);
-    setActiveIndex(activeItem);
-  }
   useEffect(()=>{
+    
     getWork();
     
   },[]);
   useEffect(()=>{
+    const updateActive = (listWork:[])=>{
+      const activeItem = listWork.findIndex(e=>e._id===workspaceId);
+      if(listWork.length>0 && workspaceId===undefined){
+        navigate(`/workspace/${listWork[0]._id}`);
+      }
+      console.log(activeItem,listWork,workspaceId);
+      setActiveIndex(activeItem);
+    }
     updateActive(workspace.value);
-  },[workspace.value,workspaceId]);
+  },[workspace.value,workspaceId,navigate]);
   
   
   
@@ -170,10 +173,10 @@ useEffect(()=>{
     }
     try {
       const result = await axios(sendReqConfig);
-      console.log(result);
+     
       
       toast.success("Workspace created successfully");
-      getWork();
+      // getWork();
       navigate(`/workspace/${result.data.board.insertedId}`)
     } catch (error) {
       toast.error("Failed to create workspace");
@@ -182,18 +185,54 @@ useEffect(()=>{
     }
    }
    
-   const onDragEnd = ()=>{
+   const onDragEnd = async ({source,destination})=>{
+    setIsDragging(false);
+    const newList = [...workspace.value];
+    const [removed] = newList.splice(source.index,1);
+    newList.splice(destination.index,0,removed);
+
+    const activeItem = newList.findIndex(e=>e._id===workspaceId);
+    setActiveIndex(activeItem);
+    dispatch(setWork(newList));
+    try{
+      const sendReqConfig = {
+        method:"PATCH",
+        url:`/api/workspace/`,
+        data:{
+          workspaces:newList,
+        }
+      }
+      const result = await axios(sendReqConfig);
+      console.log(result);
+    }
+    catch(err){
+      console.log("Error : ",err);
+    }
 
    }
    console.log(activeIndex);
    
-
-  
+   const debounce = (func, delay) => {
+    let timeout;
+    return function () {
+      const context = this;
+      const args = arguments;
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func.apply(context, args), delay);
+    };
+  };
+  const debouncedHandleDragEnd = useCallback(
+    debounce(onDragEnd, 300),
+    [workspace]
+  );
+  const handleDragStart = () => {
+    setIsDragging(true);
+  };
   return (
     <div className={`relative h-screen ${isCollapsed ? "w-0":"w-fit"}  bg-white dark:bg-slate-900  dark:text-white `}>
 
     <aside ref={sidebarRef} id="sidebar"  className={cn(
-          "group/sidebar h-full bg-secondary overflow-y-auto relative flex w-60 flex-col z-[99999]",
+          "group/sidebar h-screen bg-secondary overflow-y-auto relative flex w-60 flex-col z-[99999]",
           isResetting && "transition-all ease-in-out duration-300",
           isMobile && "w-0"
         )}>
@@ -226,55 +265,47 @@ useEffect(()=>{
       </p>
 
 
-      
-      <DragDropContext onDragEnd = {onDragEnd}>
+
+    
+      <DragDropContext onDragEnd = {onDragEnd} onDragStart={handleDragStart}>
+      <Accordion type='multiple'>
+        <AccordionItem value='accordion'>
+
+
+        <AccordionTrigger>
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+              Pages
+            </p>
+          </div>
+        </AccordionTrigger>
      
         <Droppable key = {'list-workspace-droppable'} droppableId = {'list-workspace-droppable'}>
           {(provided)=>(
             <div ref = {provided.innerRef} {...provided.droppableProps}>
               {
                 workspace.value.map((item,index)=>(
-                  <Draggable key = {item._id} DraggableId = {item._id} index = {index}>
+                  <Draggable key = {item._id} draggableId = {item._id} index = {index}>
                     {(provided,snapshot)=>(
-                      <div onClick={() => {
-                        updateActive(workspace.value);
+                      <AccordionContent  onClick={() => {
                         navigate(`/workspace/${item._id}`);
-                      }} ref = {provided.innerRef}{...provided.dragHandleProps}{...provided.draggableProps} className={`${index==activeIndex && 'bg-red-400'} pl-[20px] ${snapshot.isDragging?'cursor-grab':'cursor-pointer!important'}  w-full  flex items-center`}>
+                      }} ref = {provided.innerRef}{...provided.dragHandleProps}{...provided.draggableProps} className={`${index==activeIndex && 'bg-slate-400 dark:bg-slate-600'} pl-[20px] ${snapshot.isDragging?'cursor-grab':'cursor-pointer!important'}  w-full hover:bg-neutral-400 dark:hover:bg-neutral-500  flex items-center`}>
                         {item.icon} {item.name}
-                      </div>
+                      </AccordionContent>
                     )}
                   </Draggable>
                 ))
               }
+              {provided.placeholder}
             </div>
           )}
 
         </Droppable>
+        </AccordionItem>
+        </Accordion>
        
       </DragDropContext>
-      {/* <Accordion type="single" collapsible>
-      
-
-      
-      <AccordionItem value="items">
-      <AccordionTrigger className="w-full flex">Pages</AccordionTrigger>
-      <AccordionContent>
-
-      {pages.map(({name,id})=>(
-        <div  key={id} className='hover:bg-gray-200' onClick={()=>{handleGetpage(id)}}>
-              <Item Id={id} label={name} icon={FileIcon} onArchive = {()=>{Archived(id)}}>
-                </Item>
-                </div>
-          ))}
-      <Item onClick = {handleCreate} label = "New page" icon = {PlusCircle}/>
-          </AccordionContent>
-      </AccordionItem>
-      
-      
-
-
-      </Accordion> */}
-      
+   
      
     </>
         </div>

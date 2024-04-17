@@ -1,4 +1,4 @@
-const { ObjectId } = require('mongodb');
+const { Db } = require("mongodb");
 const {User,Workspaces, Pages, Tasks} = require("../connectDB/allCollections");
 
 // boards : user : objectId(ref - user), icon:string, default : 📃,  title:string default:untitled, description string, default: add description here, 🟢 you can add multiline desc. here., position : type:number, favourite L { type:boolean, def false} favpos type:number, default:0 
@@ -80,5 +80,27 @@ module.exports.archive = async(req,res)=>{
         console.error(error);
         res.status(500).json({ status: false, message: "Internal server error" });
         
+    }
+}
+module.exports.updatePosition = async(req,res)=>{
+    const { workspaces} = req.body;
+    const workspace = Workspaces();
+    try{
+        for(const key in workspaces.reverse()){
+            const worksp = workspaces[key];
+            const filter = { _id: worksp._id };
+            const updateDocument = {
+                $set: {
+                    position:key,
+                },
+             };
+           
+           const result =  await workspace.updateOne(filter, updateDocument);
+        }
+        res.status(200).json('updated');
+    }
+    catch(err){
+        console.error("Error in updatePosition:", err);
+        return res.status(500).json({ status: false, message: "An error occurred" });
     }
 }

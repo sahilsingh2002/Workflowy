@@ -68,10 +68,10 @@ function App() {
      ):(  
       <div className='h-full flex dark:bg-[#1F1F1F]'>
     
-    {(userdetails.username.length > 0) && <Sidebar/>}
        
-          {(!(userdetails.username.length > 0)) && (pathname !== '/login' && pathname !== '/signup') && <Navigate to="/login" />}
+          {(!(userdetails.username.length > 0)) && (pathname !== '/login' && pathname !== '/signup') && <Navigate to="/" />}
     <Routes>
+    
       <Route path='/login' element={userdetails.username.length > 0 ? <Navigate to="/home" />:<Login_page/>}/>
       <Route path='/signup' element={userdetails.username.length > 0 ? <Navigate to="/home" />:<Signup_page/>}/>
       <Route path='/home' element={<Home_page/>}/>

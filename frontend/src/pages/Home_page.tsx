@@ -15,6 +15,7 @@ function Home_page() {
   
   return (
     <div className='flex jusify-center w-full'>
+      <Sidebar/>
       <main className='flex-1 h-screen overflow-y-auto'>
       <Home/>
       <Toaster/>

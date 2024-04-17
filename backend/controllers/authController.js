@@ -60,7 +60,7 @@ module.exports.post_signup = async (req, res) => {
     const result = await user.insertOne({ username,name, email, password: hashPass });
     const id = result.insertedId;
     const token = generateToken({ id });
-    res.cookie("user",token,{maxAge: 3600});
+    res.cookie("user",token,{maxAge: 3600*24});
     return res.status(201).json({ status: true, message: "User created successfully", data:{
       username, email, name
     } });
