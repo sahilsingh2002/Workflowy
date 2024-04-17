@@ -6,7 +6,7 @@ router.use(authenticateUser);
 router.post("/add",addWorkspace);
 router.get("/getworkspaces",getWorkspaces);
 router.get("/getPage",getOnepage);
-router.post("/archive",archive);
+
 
 router.patch("/",updatePosition)
 module.exports = router

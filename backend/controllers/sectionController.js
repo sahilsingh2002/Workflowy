@@ -1,1 +1,1 @@
-// section schema : board:objectId ref board required, title: string,untitled,
+// section schema : board:objectId ref board required, title: string,untitled

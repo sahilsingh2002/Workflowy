@@ -1,5 +1,5 @@
-const { Db } = require("mongodb");
-const {User,Workspaces, Pages, Tasks} = require("../connectDB/allCollections");
+const { ObjectId } = require("mongodb");
+const {User,Workspaces, Sections, Tasks} = require("../connectDB/allCollections");
 
 // boards : user : objectId(ref - user), icon:string, default : 📃,  title:string default:untitled, description string, default: add description here, 🟢 you can add multiline desc. here., position : type:number, favourite L { type:boolean, def false} favpos type:number, default:0 
 
@@ -16,10 +16,13 @@ module.exports.addWorkspace = async(req,res)=>{
         const userDetails = await user.findOne({username:username});
         
         
-        const result = await workspace.insertOne({name:"untitled",content:"add description here, 🟢 you can add multiline desc. here.",position:position,owner:userDetails?._id,icon:"📃",favourite:false,favpos:0,created_at:Date.now()});
+        const result = await workspace.insertOne({name:"untitled",sections:[],content:"add description here, 🟢 you can add multiline desc. here.",position:position,owner:userDetails?._id,icon:"📃",favourite:false,favpos:0,created_at:Date.now()});
+        const need = result.insertedId;
+        console.log(need);
+        const data = await workspace.findOne({_id:need});
+
         
-        
-        res.status(201).json({status:true,name:"untitled",board:result});
+        res.status(201).json({status:true,name:"untitled",board:data});
         
     }
    
@@ -55,11 +58,25 @@ module.exports.getWorkspaces = async (req, res) => {
 
 module.exports.getOnepage = async(req,res)=>{
     const id = req.query.id;
-    console.log(id);
+    
     const workspace = Workspaces();
+    const sectioner = Sections();
+    const tasker = Tasks();
     try {
         const result = await workspace.findOne({ _id: new ObjectId(id) });
+        console.log(result);
+        if(!result) return res.status(404).json("board not found");
+        const sections = await sectioner.findOne({workspace:id});
+        if(sections){
+
+            for(const section of sections){
+                const tasks = await tasker.find({section:section._id}).populate('section').sort('-position');
+                section = tasks;
+            }
+            result.sections = sections;
+        }
         
+         
         res.status(200).json({status:true,page:{result}});
     } catch (error) {
         console.error(error);
@@ -101,6 +118,35 @@ module.exports.updatePosition = async(req,res)=>{
     }
     catch(err){
         console.error("Error in updatePosition:", err);
+        return res.status(500).json({ status: false, message: "An error occurred" });
+    }
+}
+module.exports.update = async(req,res)=>{
+    const {id} = req.params;
+    const {title,description, favourite} = req.body;
+    const workspace = Workspaces();
+    try {
+        if(title ==='') req.body.title = 'Untitled';
+        if(description ==='') req.body.description = 'Add description here';
+        const currWorkspace = await workspace.findOne({_id:id});
+        if(!currWorkspace) return res.status(404).json("board not found");
+        if(favourite!==undefined && currWorkspace.favourite!==favourite){
+            const cursor = await workspace.find({owner:currWorkspace.owner,favourite:true,_id:{$ne:id}})
+            const favourites = await cursor.toArray();
+            if(favourite) req.body.favpos = favourites.length>0?favouritecount:0;
+            else{
+                for(const key in favourites){
+                    const element = favourites[key];
+                    await element.update({
+                        favpos:key
+                    })
+                }
+            }
+        } 
+        const worksp = await workspace.findOneAndUpdate({_id:id},
+        {"$set":req.body})
+        res.status(200).json({status:true,board:worksp});
+    } catch (error) {
         return res.status(500).json({ status: false, message: "An error occurred" });
     }
 }

@@ -1,4 +1,4 @@
-import { ChevronDownIcon, ChevronsLeft, MenuIcon,  Search, Settings } from 'lucide-react'
+import { ChevronDownIcon, ChevronsLeft, File, MenuIcon,  Search, Settings } from 'lucide-react'
 import {ElementRef, useRef, useState, useEffect, useCallback} from 'react'
 import {useMediaQuery} from 'usehooks-ts';
 
@@ -149,19 +149,6 @@ useEffect(()=>{
   
   
  
-  const handleGetpage = async(id)=>{
-    console.log(id);
-      const sendReqConfig = {
-        method:"GET",
-        url:`/api/workspace/getPage?id=${id}`,
-    }
-      try {
-        const result = await axios(sendReqConfig);
-        console.log(result);
-      } catch (error) {
-        console.log("Error : ",error);
-      }
-   }
    const handleCreate = async()=>{
     setLoading(true);
     const sendReqConfig = {
@@ -173,11 +160,16 @@ useEffect(()=>{
     }
     try {
       const result = await axios(sendReqConfig);
-     
+
+   
       
       toast.success("Workspace created successfully");
+      const newList = [result?.data.board,...workspace.value];
+      dispatch(setWork(newList));
+     
+
       // getWork();
-      navigate(`/workspace/${result.data.board.insertedId}`)
+      navigate(`/workspace/${result.data.board._id}`)
     } catch (error) {
       toast.error("Failed to create workspace");
     } finally {
@@ -260,6 +252,16 @@ useEffect(()=>{
           
           onClick={()=>{}}/>
          <>
+
+
+         <p className='text-sm font-medium text-muted-foreground/80 flex justify-between items-center gap-2'>
+          <span className='flex gap-2'>
+          <File/>pages
+          </span>
+          <Button variant={"ghost"} onClick={handleCreate}>
+          <ChevronDownIcon/>
+          </Button>
+          </p>
    <p className={cn(`hidden text-sm font-medium text-muted-foreground/80 last:block`)}>
         No pages available
       </p>
@@ -268,17 +270,8 @@ useEffect(()=>{
 
     
       <DragDropContext onDragEnd = {onDragEnd} onDragStart={handleDragStart}>
-      <Accordion type='multiple'>
-        <AccordionItem value='accordion'>
+     
 
-
-        <AccordionTrigger>
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-              Pages
-            </p>
-          </div>
-        </AccordionTrigger>
      
         <Droppable key = {'list-workspace-droppable'} droppableId = {'list-workspace-droppable'}>
           {(provided)=>(
@@ -287,11 +280,12 @@ useEffect(()=>{
                 workspace.value.map((item,index)=>(
                   <Draggable key = {item._id} draggableId = {item._id} index = {index}>
                     {(provided,snapshot)=>(
-                      <AccordionContent  onClick={() => {
+                      <div  onClick={() => {
+                       
                         navigate(`/workspace/${item._id}`);
-                      }} ref = {provided.innerRef}{...provided.dragHandleProps}{...provided.draggableProps} className={`${index==activeIndex && 'bg-slate-400 dark:bg-slate-600'} pl-[20px] ${snapshot.isDragging?'cursor-grab':'cursor-pointer!important'}  w-full hover:bg-neutral-400 dark:hover:bg-neutral-500  flex items-center`}>
+                      }} ref = {provided.innerRef}{...provided.dragHandleProps}{...provided.draggableProps} className={`${index==activeIndex && 'bg-slate-400 dark:bg-slate-600'} pl-[20px] ${snapshot.isDragging?'cursor-grab':'cursor-pointer!important'} py-2  w-full hover:bg-neutral-400 dark:hover:bg-neutral-500  flex items-center text-sm font-medium text-muted-foreground/80`}>
                         {item.icon} {item.name}
-                      </AccordionContent>
+                      </div>
                     )}
                   </Draggable>
                 ))
@@ -301,8 +295,7 @@ useEffect(()=>{
           )}
 
         </Droppable>
-        </AccordionItem>
-        </Accordion>
+        
        
       </DragDropContext>
    
