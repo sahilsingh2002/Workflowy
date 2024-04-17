@@ -4,6 +4,7 @@ import {useMediaQuery} from 'usehooks-ts';
 
 // import {DragDropContext, Draggable,Droppable} from 'react-beautiful-dnd'
 import {DragDropContext, Draggable, Droppable} from 'react-beautiful-dnd'
+import {DndContext, useDroppable} from '@dnd-kit/core'
 
 
 
@@ -30,6 +31,18 @@ import { Button } from '../ui/button';
 
 
 function Sidebar() {
+  function Droppable(props) {
+    const {setNodeRef} = useDroppable({
+      id: props.id,
+    });
+    
+    return (
+      <div ref={setNodeRef}>
+        {props.children}
+      </div>
+    );
+  }
+  
   const [isDragging, setIsDragging] = useState(false);
   let { workspaceId } = useParams();
   const navigate = useNavigate();
@@ -185,7 +198,7 @@ useEffect(()=>{
     }
    }
    
-   const onDragEnd = async ({source,destination})=>{
+   const onDragEnder = async ({source,destination})=>{
     setIsDragging(false);
     const newList = [...workspace.value];
     const [removed] = newList.splice(source.index,1);
@@ -222,7 +235,7 @@ useEffect(()=>{
     };
   };
   const debouncedHandleDragEnd = useCallback(
-    debounce(onDragEnd, 300),
+    debounce(onDragEnder, 300),
     [workspace]
   );
   const handleDragStart = () => {
@@ -267,7 +280,7 @@ useEffect(()=>{
 
 
     
-      <DragDropContext onDragEnd = {onDragEnd} onDragStart={handleDragStart}>
+      <DndContext onDragEnd = {onDragEnder} onDragStart={handleDragStart}>
       <Accordion type='multiple'>
         <AccordionItem value='accordion'>
 
@@ -285,7 +298,7 @@ useEffect(()=>{
             <div ref = {provided.innerRef} {...provided.droppableProps}>
               {
                 workspace.value.map((item,index)=>(
-                  <Draggable key = {item._id} draggableId = {item._id} index = {index}>
+                  <div key = {item._id} draggableId = {item._id} index = {index}>
                     {(provided,snapshot)=>(
                       <AccordionContent  onClick={() => {
                         navigate(`/workspace/${item._id}`);
@@ -293,7 +306,7 @@ useEffect(()=>{
                         {item.icon} {item.name}
                       </AccordionContent>
                     )}
-                  </Draggable>
+                  </div>
                 ))
               }
               {provided.placeholder}
@@ -304,7 +317,7 @@ useEffect(()=>{
         </AccordionItem>
         </Accordion>
        
-      </DragDropContext>
+      </DndContext>
    
      
     </>
