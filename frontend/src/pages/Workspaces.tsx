@@ -11,6 +11,7 @@ import { TiStarFullOutline } from "react-icons/ti";
 import Picker from '@/components/emoji-picker/Picker';
 import { useDispatch, useSelector } from 'react-redux';
 import { setWork } from '@/redux/slices/workspaceSlice';
+import { setFav } from '@/redux/slices/favouriteSlice';
 function Workspaces() {
   let timer;
   const timeout = 500;
@@ -23,6 +24,7 @@ function Workspaces() {
   const [icon, setIcon] = useState('');
   
   const workspaces = useSelector(state=>state.workspace.value);
+  const favlist = useSelector(state=>state.favourite.value);
   
   useEffect(()=>{
     const handleGetpage = async(id:string)=>{
@@ -52,10 +54,16 @@ function Workspaces() {
     clearTimeout(timer);
     const newTitle = e.target.value;
     setTitle(newTitle);
-    
     const temp = [...workspaces];
         const index = temp.findIndex(e=>e._id === workspaceId);
         temp[index]={...temp[index], name: newTitle}
+        if(isFav){
+          const tempfav = [...favlist];
+        const favindex = tempfav.findIndex(e=>e._id === workspaceId);
+        tempfav[favindex]={...tempfav[favindex], name: newTitle}
+        dispatch(setFav(tempfav));
+        }
+
         dispatch(setWork(temp));
         timer = setTimeout(async()=>{
           const sendReqConfig = {
@@ -88,6 +96,12 @@ function Workspaces() {
     const temp = [...workspaces];
         const index = temp.findIndex(e=>e._id === workspaceId);
         temp[index]={...temp[index], content: newDesc}
+        if(isFav){
+          const tempfav = [...favlist];
+        const favindex = tempfav.findIndex(e=>e._id === workspaceId);
+        tempfav[favindex]={...tempfav[favindex], content: newDesc}
+        dispatch(setFav(tempfav));
+        }
         dispatch(setWork(temp));
         timer = setTimeout(async()=>{
           const sendReqConfig = {
@@ -116,6 +130,12 @@ function Workspaces() {
     const temp = [...workspaces];
     const index = temp.findIndex(e=>e._id === workspaceId);
     temp[index]={...temp[index], icon: newIcon}
+    if(isFav){
+      const tempfav = [...favlist];
+    const favindex = tempfav.findIndex(e=>e._id === workspaceId);
+    tempfav[favindex]={...tempfav[favindex], icon: newIcon}
+    dispatch(setFav(tempfav));
+    }
     dispatch(setWork(temp));
      const sendReqConfig = {
        method:"PUT",
@@ -139,6 +159,12 @@ function Workspaces() {
     }
   }
    const addFav = async()=>{
+    if(isFav){
+      const tempfav = [...favlist];
+    const favindex = tempfav.findIndex(e=>e._id === workspaceId);
+    tempfav[favindex]={...tempfav[favindex], favourite: !isFav}
+    dispatch(setFav(tempfav));
+    }
     setIsFav(!isFav);
     const temp = [...workspaces];
     const index = temp.findIndex(e=>e._id === workspaceId);

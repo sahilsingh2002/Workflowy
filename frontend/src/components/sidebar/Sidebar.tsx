@@ -45,6 +45,7 @@ function Sidebar() {
   const navbarRef = useRef<ElementRef<"div">>(null);
   const [isResetting, setIsResetting] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(isMobile);
+  
  
 
   
@@ -115,10 +116,6 @@ useEffect(()=>{
       const result = await axios(sendReqConfig);
       console.log(result);
       dispatch(setWork([...result.data]));
-      
-      
-      
-      
     }
     catch(err){
       console.log("Error : ",err);
@@ -199,19 +196,20 @@ useEffect(()=>{
    }
    console.log(activeIndex);
    
-   const debounce = (func, delay) => {
-    let timeout;
-    return function () {
-      const context = this;
-      const args = arguments;
-      clearTimeout(timeout);
-      timeout = setTimeout(() => func.apply(context, args), delay);
-    };
-  };
-  const debouncedHandleDragEnd = useCallback(
-    debounce(onDragEnd, 300),
-    [workspace]
-  );
+  //  const debounce = (func, delay) => {
+  //   let timeout;
+  //   return function () {
+  //     const context = this;
+  //     const args = arguments;
+  //     clearTimeout(timeout);
+  //     timeout = setTimeout(() => func.apply(context, args), delay);
+  //   };
+  // };
+  // const debouncedHandleDragEnd = useCallback(
+  //   debounce(onDragEnd, 300),
+  //   [workspace]
+  // );
+
   const handleDragStart = () => {
     setIsDragging(true);
   };

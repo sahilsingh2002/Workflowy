@@ -17,7 +17,7 @@ export const favouriteSlice = createSlice({
         setFav: (state, action: PayloadAction<FavouriteState>) => {
             state.value = action.payload
             
-        }
+        },
     }
 });
 
