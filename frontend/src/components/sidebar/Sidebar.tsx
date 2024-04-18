@@ -2,7 +2,6 @@ import { ChevronDownIcon, ChevronsLeft, File, MenuIcon,  Search, Settings } from
 import {ElementRef, useRef, useState, useEffect, useCallback} from 'react'
 import {useMediaQuery} from 'usehooks-ts';
 
-// import {DragDropContext, Draggable,Droppable} from 'react-beautiful-dnd'
 import {DragDropContext, Draggable, Droppable} from 'react-beautiful-dnd'
 
 
@@ -15,18 +14,14 @@ import Item from "../item/Item"
 
 import axios from "axios"
 import { useSelector,useDispatch } from "react-redux"
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion"
 import { useNavigate, useParams } from "react-router-dom"
 
 
 import { toast } from 'sonner';
 import { setWork } from "@/redux/slices/workspaceSlice"
 import { Button } from '../ui/button';
+import { Emoji } from 'emoji-picker-react';
+import Favourites from '../favourites/Favourites';
 
 
 function Sidebar() {
@@ -252,6 +247,7 @@ useEffect(()=>{
           
           onClick={()=>{}}/>
          <>
+         <Favourites/>
 
 
          <p className='text-sm font-medium text-muted-foreground/80 flex justify-between items-center gap-2'>
@@ -284,7 +280,11 @@ useEffect(()=>{
                        
                         navigate(`/workspace/${item._id}`);
                       }} ref = {provided.innerRef}{...provided.dragHandleProps}{...provided.draggableProps} className={`${index==activeIndex && 'bg-slate-400 dark:bg-slate-600'} pl-[20px] ${snapshot.isDragging?'cursor-grab':'cursor-pointer!important'} py-2  w-full hover:bg-neutral-400 dark:hover:bg-neutral-500  flex items-center text-sm font-medium text-muted-foreground/80`}>
-                        {item.icon} {item.name}
+                        <Emoji unified={item.icon} size={25}/>
+                        <div className='mx-2'>
+
+                         {item.name}
+                        </div>
                       </div>
                     )}
                   </Draggable>

@@ -60,7 +60,7 @@ module.exports.post_signup = async (req, res) => {
     const result = await user.insertOne({ username,name, email, password: hashPass });
     const id = result.insertedId;
     const token = generateToken({ id });
-    res.cookie("user",token,{maxAge: 3600*24});
+    res.cookie("user",token);
     return res.status(201).json({ status: true, message: "User created successfully", data:{
       username, email, name
     } });
@@ -104,7 +104,7 @@ module.exports.post_login = async (req, res) => {
       return res.status(400).json({ status: false, message: "Incorrect password" });
     }
     const token = generateToken({ id:userData._id });
-    res.cookie("user",token,{maxAge: 3600*24, domain:"localhost", path:'/'});
+    res.cookie("user",token,{ domain:"localhost", path:'/'});
 
     return res.json({ status: true, message: "Login successful",data: {
       name:userData.name,

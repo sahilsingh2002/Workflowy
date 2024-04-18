@@ -8,15 +8,24 @@ import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom';
 // import {Picker} from 'emoji-mart';
 import { TiStarFullOutline } from "react-icons/ti";
+import Picker from '@/components/emoji-picker/Picker';
+import { useDispatch, useSelector } from 'react-redux';
+import { setWork } from '@/redux/slices/workspaceSlice';
 function Workspaces() {
+  let timer;
+  const timeout = 500;
+  const dispatch = useDispatch();
   const {workspaceId} = useParams();
   const [title,setTitle] = useState('');
   const [description,setDescription] = useState('');
   const [sections, setSections] = useState([]);
   const [isFav, setIsFav] = useState(false);
   const [icon, setIcon] = useState('');
+  
+  const workspaces = useSelector(state=>state.workspace.value);
+  
   useEffect(()=>{
-    const handleGetpage = async(id)=>{
+    const handleGetpage = async(id:string)=>{
       
         const sendReqConfig = {
           method:"GET",
@@ -24,7 +33,8 @@ function Workspaces() {
       }
         try {
           const result = await axios(sendReqConfig);
-          console.log(result);
+
+          console.log("res",result);
           setTitle(result?.data?.page?.result?.name);
           setDescription(result?.data?.page?.result?.content);
           setSections(result?.data?.page?.result?.sections);
@@ -36,14 +46,132 @@ function Workspaces() {
      }
      handleGetpage(workspaceId);
     
-   },[]);
+   },[workspaceId]);
+
+   const updateTitle =async(e)=>{
+    clearTimeout(timer);
+    const newTitle = e.target.value;
+    setTitle(newTitle);
+    
+    const temp = [...workspaces];
+        const index = temp.findIndex(e=>e._id === workspaceId);
+        temp[index]={...temp[index], name: newTitle}
+        dispatch(setWork(temp));
+        timer = setTimeout(async()=>{
+          const sendReqConfig = {
+            method:"PUT",
+            url:`/api/workspace/update?id=${workspaceId}`,
+            data:{
+              title:newTitle,
+              description,
+              favourite:isFav,
+              icon,
+              favpos:temp[index].favpos,
+             }
+             
+           }
+           try{
+             const result = await axios(sendReqConfig);
+             console.log(result);
+            
+           }
+         catch(err){
+           console.log(err);
+         }
+        },timeout);
+   }
+   const updateDescription = async(e)=>{
+    clearTimeout(timer);
+    const newDesc = e.target.value;
+    setDescription(newDesc);
+    
+    const temp = [...workspaces];
+        const index = temp.findIndex(e=>e._id === workspaceId);
+        temp[index]={...temp[index], content: newDesc}
+        dispatch(setWork(temp));
+        timer = setTimeout(async()=>{
+          const sendReqConfig = {
+            method:"PUT",
+            url:`/api/workspace/update?id=${workspaceId}`,
+            data:{
+              title,
+              description:newDesc,
+              favourite:isFav,
+              icon,
+              favpos:temp[index].favpos,
+             }
+             
+           }
+           try{
+             const result = await axios(sendReqConfig);
+             console.log(result);
+            
+           }
+         catch(err){
+           console.log(err);
+         }
+        },timeout);
+   }
+   const onIconChange = async(newIcon:string)=>{
+    const temp = [...workspaces];
+    const index = temp.findIndex(e=>e._id === workspaceId);
+    temp[index]={...temp[index], icon: newIcon}
+    dispatch(setWork(temp));
+     const sendReqConfig = {
+       method:"PUT",
+       url:`/api/workspace/update?id=${workspaceId}`,
+       data:{
+         title,
+         description,
+         favourite:isFav,
+         icon:newIcon,
+         favpos:temp[index].favpos,
+        }
+        
+      }
+      try{
+        const result = await axios(sendReqConfig);
+        console.log(result);
+       
+      }
+    catch(err){
+      console.log(err);
+    }
+  }
+   const addFav = async()=>{
+    setIsFav(!isFav);
+    const temp = [...workspaces];
+    const index = temp.findIndex(e=>e._id === workspaceId);
+    temp[index]={...temp[index],favourite: !isFav}
+    dispatch(setWork(temp));
+     const sendReqConfig = {
+       method:"PUT",
+       url:`/api/workspace/update?id=${workspaceId}`,
+       data:{
+         title,
+         description,
+         favourite:!isFav,
+         icon,
+         favpos:temp[index].favpos,
+        }
+        
+      }
+      try{
+        const result = await axios(sendReqConfig);
+        console.log(result);
+       
+      }
+    catch(err){
+      console.log(err);
+    }
+  }
   return (<>
       <Sidebar/>
     <div className='flex flex-col w-full mx-5'>
 
    
       <div className='flex  justify-between w-[100%]'>
-        <Button variant = {"ghost"} size={'icon'} className='rounded-full'>
+        <Button variant = {"ghost"} size={'icon'} className='rounded-full' onClick={addFav}>
           {
             !isFav?(
               <Star color='black' className='h-5 w-5 '/>
@@ -59,11 +187,12 @@ function Workspaces() {
       </div>
       <div className='py-[10px] px-[50px]'>
           {/*emoji picker */}
+          <Picker icon={icon} onChange = {onIconChange}/>
       <div>
-        <Textarea  placeholder='Untitled' value={title} minRows={1} className='w-full h-fit p-0 border-0 text-[2rem]  resize-none   border-neutral-300' />
+        <Textarea onChange={updateTitle} placeholder='Untitled' value={title} minRows={1} className='w-full h-fit p-0 border-0 text-[2rem]  resize-none   border-neutral-300' />
       </div>
       <div>
-        <Textarea isMultiline value={description}   placeholder='Add A Description'  className='w-full p-0 border-0 font-semibold text-[0.8rem] resize-none border-neutral-300' />
+        <Textarea isMultiline value={description} onChange={updateDescription}  placeholder='Add A Description'  className='w-full p-0 border-0 font-semibold text-[0.8rem] resize-none border-neutral-300' />
       </div>
       </div>
       <div>

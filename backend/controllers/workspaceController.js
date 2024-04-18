@@ -16,9 +16,9 @@ module.exports.addWorkspace = async(req,res)=>{
         const userDetails = await user.findOne({username:username});
         
         
-        const result = await workspace.insertOne({name:"untitled",sections:[],content:"add description here, 🟢 you can add multiline desc. here.",position:position,owner:userDetails?._id,icon:"📃",favourite:false,favpos:0,created_at:Date.now()});
+        const result = await workspace.insertOne({name:"untitled",sections:[],content:"add description here, 🟢 you can add multiline desc. here.",position:position,owner:userDetails?._id,icon:"1f4c3",favourite:false,favpos:0,created_at:Date.now(),updated_at:Date.now()});
         const need = result.insertedId;
-        console.log(need);
+       
         const data = await workspace.findOne({_id:need});
 
         
@@ -39,16 +39,7 @@ module.exports.getWorkspaces = async (req, res) => {
         const userDetails = await user.findOne({ username: username });
         const cursor = await workspace.find({ owner: userDetails?._id }).sort('-position');
         const workspaceIds = await cursor.toArray();
-       console.log(workspaceIds);
-
-        var allnames = [];
-        await Promise.all(workspaceIds.map(async (work) => {
-            
-                const data = { name: work.name, id: work._id };
-                allnames.push(data);
-            
-        }));
-        console.log(allnames);
+    
         res.status(200).json(workspaceIds);
     } catch (error) {
         console.error(error);
@@ -64,7 +55,7 @@ module.exports.getOnepage = async(req,res)=>{
     const tasker = Tasks();
     try {
         const result = await workspace.findOne({ _id: new ObjectId(id) });
-        console.log(result);
+      
         if(!result) return res.status(404).json("board not found");
         const sections = await sectioner.findOne({workspace:id});
         if(sections){
@@ -84,21 +75,7 @@ module.exports.getOnepage = async(req,res)=>{
     }
 
 }
-module.exports.archive = async(req,res)=>{
-    const id = req.body.id;
-    console.log("id", id);
-    const workspace = Workspaces();
-    try {
-        
-        const result = await workspace.findOneAndUpdate({"_id":id},
-        {"$set":{"isArchived":true}});
-        console.log("res",result);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ status: false, message: "Internal server error" });
-        
-    }
-}
+
 module.exports.updatePosition = async(req,res)=>{
     const { workspaces} = req.body;
     const workspace = Workspaces();
@@ -121,32 +98,74 @@ module.exports.updatePosition = async(req,res)=>{
         return res.status(500).json({ status: false, message: "An error occurred" });
     }
 }
+
 module.exports.update = async(req,res)=>{
-    const {id} = req.params;
-    const {title,description, favourite} = req.body;
+    const id = req.query.id;
+   
+    const {title,description, favourite,favpos,icon} = req.body;
+    
     const workspace = Workspaces();
     try {
         if(title ==='') req.body.title = 'Untitled';
         if(description ==='') req.body.description = 'Add description here';
-        const currWorkspace = await workspace.findOne({_id:id});
+        const currWorkspace = await workspace.findOne({_id:new ObjectId(id)});
+       
         if(!currWorkspace) return res.status(404).json("board not found");
         if(favourite!==undefined && currWorkspace.favourite!==favourite){
-            const cursor = await workspace.find({owner:currWorkspace.owner,favourite:true,_id:{$ne:id}})
-            const favourites = await cursor.toArray();
-            if(favourite) req.body.favpos = favourites.length>0?favouritecount:0;
+            
+            const favourites = await workspace.find({owner:currWorkspace.owner,favourite:true,_id:{$ne:id}})
+            // const favourites = await cursor.toArray();
+            const count = await favourites.toArray();
+         
+            if(favourite) {
+                console.log("here");
+                
+            }
             else{
-                for(const key in favourites){
-                    const element = favourites[key];
-                    await element.update({
-                        favpos:key
-                    })
+                
+                console.log(count.length);
+                
+                for(let key = 0; key<count.length; key++){
+                    
+                    const element = count[key];
+                    console.log(element._id);
+                    const filt = {_id:element._id};
+                    const updateDoc = {
+                        $set:{
+                            favpos:key
+                        }
+                    }
+                    const ans = await workspace.updateOne(filt, updateDoc);
                 }
             }
         } 
-        const worksp = await workspace.findOneAndUpdate({_id:id},
-        {"$set":req.body})
+       
+        const filter = {_id:currWorkspace._id};
+        const updateDocument = {
+            $set:{
+            name:title,
+            content:description,
+            favourite:favourite,
+            icon:icon,
+            favpos:favpos,
+            
+        }}
+        const worksp = await workspace.updateOne(filter, updateDocument);
+
         res.status(200).json({status:true,board:worksp});
     } catch (error) {
         return res.status(500).json({ status: false, message: "An error occurred" });
+    }
+}
+module.exports.getFavorite=async(req,res)=>{
+    const workspace = Workspaces();
+    try {
+        const cursor = await workspace.find({_id:req.id,favourite:true}).sort("-favpos");
+        const favourites = await cursor.toArray();
+      
+        res.status(200).json({favourites:favourites});
+
+    } catch (err) {
+        res.status(500).json({ status: false, message: err.message});
     }
 }
