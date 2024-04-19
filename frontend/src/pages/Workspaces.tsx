@@ -5,7 +5,7 @@ import {Divider, Textarea} from "@nextui-org/react";
 
 import { Star, Trash } from 'lucide-react';
 import React, { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 // import {Picker} from 'emoji-mart';
 import { TiStarFullOutline } from "react-icons/ti";
 import Picker from '@/components/emoji-picker/Picker';
@@ -14,6 +14,7 @@ import { setWork } from '@/redux/slices/workspaceSlice';
 import { setFav } from '@/redux/slices/favouriteSlice';
 function Workspaces() {
   let timer;
+  const navigate = useNavigate();
   const timeout = 500;
   const dispatch = useDispatch();
   const {workspaceId} = useParams();
@@ -159,16 +160,12 @@ function Workspaces() {
     }
   }
    const addFav = async()=>{
-    if(isFav){
-      const tempfav = [...favlist];
-    const favindex = tempfav.findIndex(e=>e._id === workspaceId);
-    tempfav[favindex]={...tempfav[favindex], favourite: !isFav}
-    dispatch(setFav(tempfav));
-    }
-    setIsFav(!isFav);
+    
+   
     const temp = [...workspaces];
     const index = temp.findIndex(e=>e._id === workspaceId);
     temp[index]={...temp[index],favourite: !isFav}
+    
     dispatch(setWork(temp));
      const sendReqConfig = {
        method:"PUT",
@@ -180,13 +177,49 @@ function Workspaces() {
          icon,
          favpos:temp[index].favpos,
         }
+
         
       }
       try{
+        const faved = temp[index];
         const result = await axios(sendReqConfig);
+        let newFav = [...favlist];
+        if(isFav){
+          newFav = newFav.filter(e=>e._id!==workspaceId);
+        }
+        else{
+          console.log("asdas");
+          newFav.unshift(faved);
+        }
         console.log(result);
-       
+        dispatch(setFav(newFav));
+        setIsFav(!isFav);
       }
+    catch(err){
+      console.log(err);
+    }
+  }
+  const deleteWork = async()=>{
+    const sendReqConfig = {
+      method:"DELETE",
+      url:`/api/workspace?id=${workspaceId}`,
+    }
+    try{
+      const result = await axios(sendReqConfig);
+      if(isFav){
+        const newFavList = favlist.filter(e=>e._id!== workspaceId);
+        dispatch(setFav(newFavList));
+      }
+      const newList = workspaces.filter(e=>e._id!== workspaceId);
+      if(newList.length===0){
+      navigate('/home');
+      }
+      else{
+        navigate(`/workspace/${newList[0]._id}`);
+      }
+      console.log(result);
+      dispatch(setWork(newList));
+    }
     catch(err){
       console.log(err);
     }
@@ -207,7 +240,7 @@ function Workspaces() {
             )
           }
         </Button>
-        <Button color='black' variant={"ghost"} size={"icon"} className='rounded-full'>
+        <Button color='black' variant={"ghost"} size={"icon"} className='rounded-full' onClick={deleteWork}>
           <Trash className='h-5 w-5'/>
         </Button>
       </div>

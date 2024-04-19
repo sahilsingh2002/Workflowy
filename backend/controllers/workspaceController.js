@@ -131,7 +131,7 @@ module.exports.update = async (req, res) => {
         owner: currWorkspace.owner,
         favourite: true,
         _id: { $ne: id },
-      });
+      }).sort('favpos');
       // const favourites = await cursor.toArray();
       const count = await favourites.toArray();
 
@@ -212,8 +212,8 @@ module.exports.updateFavPos = async (req, res) => {
       .json({ status: false, message: "An error occurred" });
   }
 };
-module.exports.delete = async (req, res) => {
-    const {id} = req.params;
+module.exports.removal = async (req, res) => {
+    const id = req.query.id;
     const sect = Sections();
     const workspaces = Workspaces();
     try{
@@ -223,8 +223,47 @@ module.exports.delete = async (req, res) => {
             await sect.deleteMany({_id:section._id});
         }
         await sect.deleteMany({workspace:new ObjectId(id)});
+        console.log("id",id);
         const currWork = await workspaces.findOne({_id:new ObjectId(id)});
-    }catch(err){
+        console.log(currWork);
+        if(currWork.favourite){
+          const favourites = await workspaces.find({
+            owner: currWork.owner,
+            favourite: true,
+            _id: { $ne: id },
+          }).sort('favpos');
+          const count = favourites.toArray();
+          for (let key = 0; key < count.length; key++) {
+            const element = count[key];
+            console.log(element._id);
+            const filt = { _id: element._id };
+            const updateDoc = {
+              $set: {
+                favpos: key,
+              },
+            };
+            const ans = await workspaces.updateOne(filt, updateDoc);
+          }
+        }
+        await workspaces.deleteOne({_id:new ObjectId(id)});
+        const cursor2 = await workspaces.find({owner:new ObjectId(req.id)}).sort('position');
+        const work = await cursor2.toArray();
+
+        for (const key in work) {
+          const worksp = work[key];
+         
+          const filter = { _id: worksp._id };
+          const updateDocument = {
+            $set: {
+              position: key,
+            },
+          };
+    
+          const result = await workspaces.updateOne(filter, updateDocument);
+        }
+        res.status(202).json({status:true,message:"workspace deleted"});
+    }
+    catch(err){
         console.log(err);
     }
 };
