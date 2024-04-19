@@ -1,10 +1,11 @@
 // section schema : board:objectId ref board required, title: string,untitled
 const { ObjectId } = require("mongodb");
-const { Sections, Tasks } = require("../connectDB/allCollections");
+const { Sections, Tasks, Workspaces } = require("../connectDB/allCollections");
 
 module.exports.create = async(req,res)=>{
   const id = req.query.id;
   const sect = Sections();
+  const workspace = Workspaces();
   try{
     const result = await sect.insertOne({
       title:"untitled",
@@ -13,7 +14,19 @@ module.exports.create = async(req,res)=>{
       created_at: Date.now(),
       updated_at: Date.now(),
     });
-    res.status(201).json({status:true,section:result});
+    const mainId = result.insertedId;
+    
+    
+    const sectionmain = await sect.findOne({_id:mainId});
+    const filter = {_id:sectionmain.workspace};
+    const updateDoc = {
+      $push:{
+        sections:mainId,
+      }
+    }
+    const section = await workspace.updateOne(filter,updateDoc);
+
+    res.status(201).json({status:true,section:sectionmain});
   }
   catch(err){
     res.status(500).json({status:false,error:err});
