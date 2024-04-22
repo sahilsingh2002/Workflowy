@@ -17,7 +17,7 @@ module.exports.addWorkspace = async (req, res) => {
     const position = boardcount > 0 ? boardcount : 0;
 
     const user = User();
-    const userDetails = await user.findOne({ username: username });
+    const userDetails = await user.findOne({ _id:new ObjectId(req.id) });
 
     const result = await workspace.insertOne({
       name: "untitled",
@@ -48,9 +48,9 @@ module.exports.getWorkspaces = async (req, res) => {
   try {
     const user = User();
     const workspace = Workspaces();
-    const userDetails = await user.findOne({ username: username });
+    console.log(req.id);
     const cursor = await workspace
-      .find({ owner: userDetails?._id })
+      .find({ owner: new ObjectId(req.id) })
       .sort("-position");
     const workspaceIds = await cursor.toArray();
 
@@ -70,7 +70,7 @@ module.exports.getOnepage = async (req, res) => {
   const sectioner = Sections();
   const tasker = Tasks();
   try {
-    const result = await workspace.findOne({ _id: new ObjectId(id) });
+    const result = await workspace.findOne({owner:new ObjectId(req.id), _id: new ObjectId(id) });
     console.log("result",result);
 
     if (!result) return res.status(404).json({status:false,message:"board not found"});

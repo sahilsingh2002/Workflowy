@@ -5,7 +5,7 @@ import {Divider, Textarea} from "@nextui-org/react";
 
 import { Star, Trash } from 'lucide-react';
 import React, { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 // import {Picker} from 'emoji-mart';
 import { TiStarFullOutline } from "react-icons/ti";
 import Picker from '@/components/emoji-picker/Picker';
@@ -16,7 +16,7 @@ import Kanban from '@/components/sections/Kanban';
 function Workspaces() {
   let timer;
   const navigate = useNavigate();
-  const [access,setAccess] = useState(false)
+  const [access,setAccess] = useState(false);
   const timeout = 500;
   const dispatch = useDispatch();
   const {workspaceId} = useParams();
@@ -40,6 +40,7 @@ function Workspaces() {
           const result = await axios(sendReqConfig);
 
           console.log("res",result);
+
           if(result.data.status===false){
           
             navigate('/home');
@@ -49,6 +50,7 @@ function Workspaces() {
           setSections(result?.data?.page?.result?.sections);
           setIcon(result?.data?.page?.result?.icon);
           setIsFav(result?.data?.page?.result?.favourite);
+          setAccess(true);
         } catch (error) {
           console.log("Error : ",error);
           
@@ -233,6 +235,8 @@ function Workspaces() {
     }
   }
   return (<>
+
+  {access ?<>
       <Sidebar/>
     <div className='flex flex-col w-full mx-5'>
 
@@ -270,6 +274,10 @@ function Workspaces() {
       </div>
       </div>
       
+      </>:<>
+      "no path"
+      <Button onClick={()=>{navigate("/home")}}> return to Home</Button>
+      </>}
       </>
   )
 }
