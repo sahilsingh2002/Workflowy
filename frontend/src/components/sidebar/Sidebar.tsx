@@ -17,7 +17,7 @@ import { useSelector,useDispatch } from "react-redux"
 import { useNavigate, useParams } from "react-router-dom"
 
 
-import { toast } from 'sonner';
+import { Toaster, toast } from 'sonner';
 import { setWork } from "@/redux/slices/workspaceSlice"
 import { Button } from '../ui/button';
 import { Emoji } from 'emoji-picker-react';
@@ -129,9 +129,12 @@ useEffect(()=>{
   useEffect(()=>{
     const updateActive = (listWork:[])=>{
       const activeItem = listWork.findIndex(e=>e._id===workspaceId);
+      
       if(listWork.length>0 && workspaceId===undefined){
         navigate(`/workspace/${listWork[0]._id}`);
       }
+    
+      
       console.log(activeItem,listWork,workspaceId);
       setActiveIndex(activeItem);
     }
@@ -214,8 +217,9 @@ useEffect(()=>{
     setIsDragging(true);
   };
   return (
+    
     <div className={`relative h-screen ${isCollapsed ? "w-0":"w-fit"}  bg-white dark:bg-slate-900  dark:text-white `}>
-
+<Toaster theme='system' richColors position='top-right' offset={'32px'}/>
     <aside ref={sidebarRef} id="sidebar"  className={cn(
           "group/sidebar h-screen bg-secondary overflow-y-auto relative flex w-60 flex-col z-[99999]",
           isResetting && "transition-all ease-in-out duration-300",

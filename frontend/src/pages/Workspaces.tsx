@@ -12,9 +12,11 @@ import Picker from '@/components/emoji-picker/Picker';
 import { useDispatch, useSelector } from 'react-redux';
 import { setWork } from '@/redux/slices/workspaceSlice';
 import { setFav } from '@/redux/slices/favouriteSlice';
+import Kanban from '@/components/sections/Kanban';
 function Workspaces() {
   let timer;
   const navigate = useNavigate();
+  const [access,setAccess] = useState(false)
   const timeout = 500;
   const dispatch = useDispatch();
   const {workspaceId} = useParams();
@@ -38,6 +40,10 @@ function Workspaces() {
           const result = await axios(sendReqConfig);
 
           console.log("res",result);
+          if(result.data.status===false){
+          
+            navigate('/home');
+          }
           setTitle(result?.data?.page?.result?.name);
           setDescription(result?.data?.page?.result?.content);
           setSections(result?.data?.page?.result?.sections);
@@ -45,6 +51,8 @@ function Workspaces() {
           setIsFav(result?.data?.page?.result?.favourite);
         } catch (error) {
           console.log("Error : ",error);
+          
+          // navigate(`/workspace/`)
         }
      }
      handleGetpage(workspaceId);
@@ -255,15 +263,8 @@ function Workspaces() {
       </div>
       </div>
       <div>
-        <div className='flex items-center justify-between py-3'>
-          <Button variant={"ghost"}>
-            Add Section
-          </Button>
-        <div className='text-sm font-[700]'>
-          {sections.length} sections
-        </div>
-        </div>
-        <Divider orientation='horizontal' className='margin-[10px]'/>
+        <Kanban data={sections} boardId={workspaceId}/>
+        
         {/* kanban */}
        
       </div>

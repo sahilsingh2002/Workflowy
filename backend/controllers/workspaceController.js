@@ -9,7 +9,7 @@ const {
 // boards : user : objectId(ref - user), icon:string, default : 📃,  title:string default:untitled, description string, default: add description here, 🟢 you can add multiline desc. here., position : type:number, favourite L { type:boolean, def false} favpos type:number, default:0
 
 module.exports.addWorkspace = async (req, res) => {
-  const { username, parentId } = req.body;
+  const { username } = req.body;
 
   try {
     const workspace = Workspaces();
@@ -63,24 +63,32 @@ module.exports.getWorkspaces = async (req, res) => {
 
 module.exports.getOnepage = async (req, res) => {
   const id = req.query.id;
+  const user = req.id;
+  
 
   const workspace = Workspaces();
   const sectioner = Sections();
   const tasker = Tasks();
   try {
     const result = await workspace.findOne({ _id: new ObjectId(id) });
+    console.log("result",result);
 
-    if (!result) return res.status(404).json("board not found");
-    const sections = await sectioner.findOne({ workspace: id });
+    if (!result) return res.status(404).json({status:false,message:"board not found"});
+    
+    const cursor = await sectioner.find({ workspace: new ObjectId(id) });
+    const sections = await cursor.toArray();
+
+    console.log("sections",sections);
     if (sections) {
-      for (const section of sections) {
-        const tasks = await tasker
-          .find({ section: section._id })
-          .populate("section")
-          .sort("-position");
-        section = tasks;
-      }
+      // for (const section of sections) {
+      //   const tasks = await tasker
+      //     .find({ section: section._id })
+      //     .populate("section")
+      //     .sort("-position");
+      //   section = tasks;
+      // }
       result.sections = sections;
+      
     }
 
     res.status(200).json({ status: true, page: { result } });
@@ -176,7 +184,7 @@ module.exports.update = async (req, res) => {
 module.exports.getFavorite = async (req, res) => {
   const workspace = Workspaces();
   try {
-    console.log(req.id);
+    
     const cursor = await workspace
       .find({ owner: new ObjectId(req.id), favourite: true })
       .sort("-favpos");

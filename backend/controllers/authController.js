@@ -4,11 +4,18 @@ const passport = require('passport');
 const jwt = require('jsonwebtoken');
 const {authenticateUser} = require('../middlewares/auth');
 const cookieParser = require('cookie-parser');
+const validator = require("email-validator");
 
 
 
 const handleUserExists = async ({ username, user }) => {
   const existingUser = await user.findOne({ username });
+  
+  return existingUser ? true : false;
+};
+
+const handlemailExists = async ({ email, user }) => {
+  const existingUser = await user.findOne({ email });
   
   return existingUser ? true : false;
 };
@@ -30,6 +37,7 @@ module.exports.isUser = async(req,res)=>{
     const user = User();
     const userExists = await handleUserExists({ username, user });
     
+    
     if(userExists){
       return res.status(400).json({ status: false, message: "Username already exists" });
     }
@@ -37,6 +45,26 @@ module.exports.isUser = async(req,res)=>{
   }
   catch(err){
     console.error("Error in username:", err);
+    return res.status(500).json({ status: false, message: "An error occurred" });
+  }
+}
+module.exports.isUserEmail = async(req,res)=>{
+  const {email} = req.body;
+  try{
+    const user = User();
+    const valid = validator.validate(email);
+    if(!valid){
+      return res.status(400).json({ status: false, message: "Email is not a valid one" });
+    }
+    const userExists = await handlemailExists({ email, user });
+    
+    if(userExists){
+      return res.status(400).json({ status: false, message: "Email already exists" });
+    }
+    return res.status(200).json({ status: true, message: "Unique Email" });
+  }
+  catch(err){
+    console.error("Error in Email:", err);
     return res.status(500).json({ status: false, message: "An error occurred" });
   }
 }
@@ -51,10 +79,12 @@ module.exports.post_signup = async (req, res) => {
 
     const user = User();
     const userExists = await handleUserExists({ username, user });
+    const emailExists = await handleUserExists({ email, user });
 
-    if (userExists) {
-      return res.status(400).json({ status: false, message: "Username already exists" });
+    if (userExists | emailExists) {
+      return res.status(400).json({ status: false, message: "user already exists" });
     }
+
 
 
     const result = await user.insertOne({ username,name, email, password: hashPass });

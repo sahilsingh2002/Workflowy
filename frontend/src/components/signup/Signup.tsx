@@ -35,12 +35,15 @@ export function Signup() {
   }
   
   const [showPassword, setShowPassword] = useState(false);
+  const [email,setEmail] = useState("");
 
   const [isUnique, setIsUnique] = useState(false);
+  const [isUniqueE, setIsUniqueE] = useState(false);
   const [username, setUsername] = useState("");
   
   const [validUsername, setValidUsername] = useState(false);
   const [isValid, setIsValid] = useState("Not a Valid username");
+  const[emailmessage, setEmailMessage] = useState("");
 
   const handleValid=(username:string)=>{
     if (username.length < 3) {
@@ -68,6 +71,7 @@ export function Signup() {
     
   }
   const [usernameCheckTimeout, setUsernameCheckTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
+  const [emailCheckTimeOut, setEmailCheckTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     console.log("here");
     
@@ -95,12 +99,47 @@ export function Signup() {
         catch(err){
             const error = err;
             setIsUnique(false);
+            setIsValid(err?.response?.data?.message);
           console.log(error);
         }  
       }, 3000)
       );
     }
  }, [username, validUsername,dispatch]);
+  useEffect(() => {
+    console.log("here");
+    
+    if (emailCheckTimeOut) clearTimeout(emailCheckTimeOut);
+    
+    
+    
+    setEmailCheckTimeout(
+      setTimeout(async() => {
+        const sendreqConfig = {
+          method:"POST",
+          data:{
+            email:email,
+          },
+          url:"/api/emails"
+
+        }
+        try{
+          const result = await axios(sendreqConfig); 
+          console.log(result);
+          setIsUniqueE(true);
+          setEmailMessage(result?.data?.message);
+      
+        }
+        catch(err){
+            const error = err;
+            setIsUniqueE(false);
+            setEmailMessage(err?.response?.data?.message);
+          console.log(error.response.data);
+        }  
+      }, 3000)
+      );
+    
+ }, [email,dispatch]);
 
  interface Datas{
   name:string
@@ -192,7 +231,9 @@ export function Signup() {
                 placeholder="m@example.com"
                 required
                 {...register("email")}
+                onChange={(e)=>{setEmail(e.target.value)}}
               />
+              {emailmessage}
             </div>
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
@@ -202,7 +243,7 @@ export function Signup() {
 
               </div>
             </div>
-            <Button type="submit" className="w-full" disabled={!isFormValid || !isUnique}>
+            <Button type="submit" className="w-full" disabled={!isFormValid || !isUnique || !isUniqueE}>
               Create an account
             </Button>
             <Button variant="outline" className="w-full">

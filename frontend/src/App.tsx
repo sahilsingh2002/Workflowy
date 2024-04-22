@@ -78,6 +78,7 @@ function App() {
       <Route path='/' element={<Lander/>}/>
       <Route path='/workspace' element={<Navigate to="/home" />}/>
       <Route path='/workspace/:workspaceId' element={<Workspaces/>}/>
+      <Route path='*' element={<Navigate to="/home" />} />
 
     </Routes>
     </div>
