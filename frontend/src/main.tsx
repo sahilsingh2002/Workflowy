@@ -11,16 +11,13 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <Provider store={store}>
   <NextUIProvider>
 
- 
   <BrowserRouter>
-
 
     <div className='dark:bg-black h-full'> 
    
     <App />
     
     </div>
- 
   </BrowserRouter>
   </NextUIProvider>
   </Provider>

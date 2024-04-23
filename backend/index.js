@@ -5,6 +5,7 @@ const authRoutes = require('./routes/authRoutes')
 const cookieParser = require('cookie-parser')
 const workspaceRoutes = require("./routes/workspaceRoutes")
 const sectionRoutes = require("./routes/sectionRoutes")
+const taskRoutes = require("./routes/taskRoutes")
 
 const cors = require('cors');
 
@@ -22,4 +23,5 @@ app.listen(port,()=>{
 app.use('/api',authRoutes);
 app.use('/api/workspace',workspaceRoutes)
 app.use('/api/workspace/:workspaceId/sections',sectionRoutes);
+app.use('/api/workspace/:workspaceId/tasks',taskRoutes);
 app.use('/',cookieParser);

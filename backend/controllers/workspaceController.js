@@ -80,13 +80,14 @@ module.exports.getOnepage = async (req, res) => {
 
     console.log("sections",sections);
     if (sections) {
-      // for (const section of sections) {
-      //   const tasks = await tasker
-      //     .find({ section: section._id })
-      //     .populate("section")
-      //     .sort("-position");
+      for (const section of sections) {
+        const cursor = await tasker
+          .find({ section: section._id }).sort("-position");
+
+          const tasks = await cursor.toArray();
+          section.tasks = tasks;
       //   section = tasks;
-      // }
+      }
       result.sections = sections;
       
     }

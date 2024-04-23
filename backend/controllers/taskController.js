@@ -2,7 +2,7 @@
 const { ObjectId } = require('mongodb');
 const {Tasks,Sections} = require('../connectDB/allCollections');
 module.exports.createTask = async(req,res)=>{
-  const {sectionId} = req.body
+  const sectionId = req.query.id
   const sect = Sections();
   const tasker = Tasks();
   try{
@@ -74,17 +74,19 @@ module.exports.updatePosition = async(req,res)=>{
   try{
     if(resourceSectionId!==destinationSectionId){
       for(let key=0;key<resourceListRev.length;key++){
-        await tasker.findOneAndUpdate({_id:resourceListRev[key]._id},
+        
+        const result = await tasker.findOneAndUpdate({_id:new ObjectId(resourceListRev[key]._id)},
         {$set:{
-          section:resourceSectionId,
+          section:new ObjectId(resourceSectionId),
           position:key,
         }})
+        console.log(result);
       }
     }
     for (let key = 0; key < destinationListRev.length; key++) {
-      await tasker.findOneAndUpdate({_id:destinationListRev[key]._id},
+      await tasker.findOneAndUpdate({_id:new ObjectId(destinationListRev[key]._id)},
         {$set:{
-          section:destinationSectionId,
+          section:new ObjectId(destinationSectionId),
           position:key,
         }})
       

@@ -9,3 +9,5 @@ router.post('/',createTask);
 router.delete('/:taskId',deleter);
 router.put('/update-position',updatePosition);
 router.put('/:taskId',update);
+
+module.exports = router;

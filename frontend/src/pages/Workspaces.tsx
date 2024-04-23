@@ -238,7 +238,7 @@ function Workspaces() {
 
   {access ?<>
       <Sidebar/>
-    <div className='flex flex-col w-full mx-5'>
+    <div className='flex flex-col w-[92%] mx-5'>
 
    
       <div className='flex  justify-between w-[100%]'>
@@ -256,7 +256,7 @@ function Workspaces() {
           <Trash className='h-5 w-5'/>
         </Button>
       </div>
-      <div className='py-[10px] px-[50px]'>
+      <div className='py-[10px]'>
           {/*emoji picker */}
           <Picker icon={icon} onChange = {onIconChange}/>
       <div>

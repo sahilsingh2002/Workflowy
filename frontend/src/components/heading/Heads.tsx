@@ -11,7 +11,7 @@ function Heads() {
       </h1>
       
       <h3 className='text-base sm:text-xl md:text-2xl pb-5 font-medium'>Workflowy is the connected workspace where <br/> better, faster work happens</h3>
-      <Link to="/home" >
+      <Link to="/signup" >
         
       <Button>Enter Workflowy <ArrowRight className='h-4 w-4 ml-2'/></Button>
       </Link>
