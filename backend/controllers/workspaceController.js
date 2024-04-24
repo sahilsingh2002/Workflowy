@@ -188,7 +188,7 @@ module.exports.getFavorite = async (req, res) => {
     
     const cursor = await workspace
       .find({ owner: new ObjectId(req.id), favourite: true })
-      .sort("-favpos");
+      .sort({favpos:-1});
     const favourites = await cursor.toArray();
     console.log(favourites);
 
@@ -202,16 +202,18 @@ module.exports.updateFavPos = async (req, res) => {
   const { workspaces } = req.body;
   const workspace = Workspaces();
   try {
-    for (const key in workspaces.reverse()) {
-      const worksp = workspaces[key];
-      const filter = { _id: worksp._id };
+    for (let key=workspaces.length-1;key>=0;key--) {
+      const worksp = workspaces[workspace.length-key];
+      console.log(worksp);
+      const filter = { _id: new ObjectId(worksp._id) };
       const updateDocument = {
         $set: {
           favpos: key,
         },
       };
 
-      const result = await workspace.updateOne(filter, updateDocument);
+      const result = await workspace.findOneAndUpdate(filter, updateDocument);
+      
     }
     res.status(200).json("updated");
   } catch (err) {

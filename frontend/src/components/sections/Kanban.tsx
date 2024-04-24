@@ -1,24 +1,46 @@
 
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from '../ui/button'
 import { Divider } from '@nextui-org/divider'
-import {DragDropContext,Draggable,Droppable} from 'react-beautiful-dnd'
+import {DragDropContext,Draggable,Droppable, OnDragEndResponder} from 'react-beautiful-dnd'
 import { Textarea } from '@nextui-org/input'
 import { Trash, SquarePlus } from 'lucide-react'
 import axios from 'axios'
 import { toast } from 'sonner'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
+import { Card, CardHeader, CardTitle } from '../ui/card'
 import TaskModal from '@/modals/TaskModal'
 
+interface kanbans  {
+  datar:Workspace[];
+  boardeId:string | undefined;
 
-let timer;
+}
+
+interface Task {
+  _id: string;
+  section: string; // Assuming section is an identifier
+  position: number;
+  title: string;
+  content: string;
+  // Add more properties if needed
+}
+
+interface Workspace {
+  created_at: number;
+  tasks: Task[];
+  title: string;
+  updated_at: number;
+  workspace: string;
+  _id: string;
+}
+let timer:ReturnType<typeof setTimeout>;
 const timeOut = 500;
-const Kanban = (props) => {
-  const boardId = props.boardId;
-  const [data, setdata] = useState([]);
+const Kanban = ({datar,boardeId}:kanbans) => {
+  const boardId = boardeId;
+  const [data, setdata] = useState<Workspace[]>([]);
   const [loading,setLoading] = useState(false);
-  const [selectedTask,setSelectedTask] = useState(undefined);
-  const onDragEnd = async({source,destination})=>{
+  const [selectedTask,setSelectedTask] = useState<Task | undefined>(undefined);
+  const onDragEnd:OnDragEndResponder = async({source,destination})=>{
     if(!destination) return;
     const sourceColIndex = data.findIndex(e=>e._id===source.droppableId);
     const destinationColIndex = data.findIndex(e=>e._id===destination.droppableId);
@@ -59,8 +81,9 @@ const Kanban = (props) => {
     }
   }
   useEffect(()=>{
-    setdata(props.data);
-  },[props.data]);
+    setdata(datar);
+  },[datar]);
+
   console.log(data);
   const addSection = async()=>{
     const sendReqConfig = {
@@ -81,7 +104,7 @@ const Kanban = (props) => {
     }
   }
   
-  const deleteSection = async(sectionId)=>{
+  const deleteSection = async(sectionId:string)=>{
     const sendReqConfig = {
       method:"DELETE",
       url:`/api/workspace/${boardId}/sections?id=${sectionId}`,
@@ -95,7 +118,7 @@ const Kanban = (props) => {
       console.log(err);
     }
   }
-  const updateSectionTitle=async(e,sectionId)=>{
+  const updateSectionTitle=async(e,sectionId:string)=>{
     clearTimeout(timer);
     const newTitle = e.target.value;
     const newData = [...data];
@@ -118,7 +141,7 @@ const Kanban = (props) => {
       }
     },timeOut);
   }
-  const addTask = async(sectionId)=>{
+  const addTask = async(sectionId:string)=>{
     console.log(sectionId);
     const sendReqConfig = {
       method:"POST",
@@ -135,7 +158,7 @@ const Kanban = (props) => {
     }
   }
   console.log(data);
-  const updateTask =async(task)=>{
+  const updateTask =async(task:Task)=>{
 
     const newData = [...data];
     const sectionIndex = newData.findIndex(e=>e._id===task.section);
@@ -143,7 +166,7 @@ const Kanban = (props) => {
    
     newData[sectionIndex].tasks[taskIndex] = task;
   };
-  const deleteTask = async(task)=>{
+  const deleteTask = async(task:Task)=>{
     const newData = [...data];
     const sectionIndex = newData.findIndex(e=>e._id===task.section);
     const taskIndex = newData[sectionIndex].tasks.findIndex(e=>e._id===task._id);
@@ -183,7 +206,7 @@ const Kanban = (props) => {
                     </div>
                     {/* tasks */}
                     {
-                      section.tasks.map((task,index)=>(
+                      section.tasks.map((task:Task,index:number)=>(
                         <Draggable key = {task._id} draggableId={task._id} index = {index}>
                           {(provided,snapshot)=>(
                             <Card onClick={()=>{setSelectedTask(task)}} ref={provided.innerRef}{...provided.draggableProps}{...provided.dragHandleProps}>
@@ -203,7 +226,6 @@ const Kanban = (props) => {
               </Droppable>
               </div>
             ))}
-
           </div>
         </DragDropContext>
         <TaskModal tasks = {selectedTask} boardId={boardId} onClose = {()=>setSelectedTask(undefined)} onUpdate = {updateTask} onDelete = {deleteTask}/>

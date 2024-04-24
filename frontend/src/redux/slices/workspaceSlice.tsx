@@ -1,8 +1,23 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
+export interface ContentData {
+    content: string;
+    created_at: number;
+    favourite: boolean;
+    favpos: number;
+    icon: string;
+    name: string;
+    owner: string;
+    position: number;
+    sections: string[];
+    updated_at: number;
+    _id: string;
+  }
+
+ export interface ContentDataArray extends Array<ContentData> {}
 interface WorkspaceState {
     
-    value:[],
+    value:ContentDataArray,
 }
 
 const initialState: WorkspaceState = {
@@ -14,7 +29,7 @@ export const workspaceSlice = createSlice({
     name: 'workspace',
     initialState,
     reducers: {
-        setWork: (state, action: PayloadAction<WorkspaceState>) => {
+        setWork: (state, action: PayloadAction<ContentDataArray>) => {
             state.value = action.payload
             
         }

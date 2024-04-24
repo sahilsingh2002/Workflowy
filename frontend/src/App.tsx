@@ -3,7 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { ThemeProvider } from "./components/theme-provider"
 import { Login_page, Signup_page, Home_page } from './pages'
 import './App.css'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import { useState,useEffect } from 'react'
 import axios from 'axios'
 import { useSelector, useDispatch } from 'react-redux'
@@ -13,7 +13,8 @@ import LoadingSpinner from './components/LoadingSpinner'
 import Lander from './pages/Lander'
 import { changeUser } from './redux/slices/userSlice'
 import Workspaces from './pages/Workspaces'
-import Sidebar from './components/sidebar/Sidebar'
+import { Toaster } from 'sonner'
+import { RootState } from './redux/store'
 
 
 
@@ -21,8 +22,6 @@ import Sidebar from './components/sidebar/Sidebar'
 function App() {
   
   const dispatch = useDispatch();
-
-  const navigate = useNavigate();
   const [user, setUser] = useState(false);
   const [isLoading,setIsLoading] = useState(true);
 
@@ -56,7 +55,7 @@ function App() {
 
 
   },[dispatch]);
-  const userdetails = useSelector(state=>state.user);
+  const userdetails = useSelector((state:RootState)=>state.user);
   console.log("user",userdetails);
   const {pathname} = useLocation();
   return (
@@ -67,6 +66,7 @@ function App() {
        </>
      ):(  
       <div className='h-full flex dark:bg-[#1F1F1F]'>
+        <Toaster/>
     
        
           {(!(userdetails.username.length > 0)) && (pathname !== '/login' && pathname !== '/signup') && <Navigate to="/" />}

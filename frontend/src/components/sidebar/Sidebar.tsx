@@ -1,8 +1,8 @@
 import { ChevronDownIcon, ChevronsLeft, File, MenuIcon,  Search, Settings } from 'lucide-react'
-import {ElementRef, useRef, useState, useEffect, useCallback} from 'react'
+import {ElementRef, useRef, useState, useEffect} from 'react'
 import {useMediaQuery} from 'usehooks-ts';
 
-import {DragDropContext, Draggable, Droppable} from 'react-beautiful-dnd'
+import {DragDropContext, Draggable, Droppable, OnDragEndResponder} from 'react-beautiful-dnd'
 
 
 
@@ -17,23 +17,26 @@ import { useSelector,useDispatch } from "react-redux"
 import { useNavigate, useParams } from "react-router-dom"
 
 
-import { Toaster, toast } from 'sonner';
-import { setWork } from "@/redux/slices/workspaceSlice"
+import { toast } from 'sonner';
+import { ContentDataArray, setWork } from "@/redux/slices/workspaceSlice"
 import { Button } from '../ui/button';
 import { Emoji } from 'emoji-picker-react';
 import Favourites from '../favourites/Favourites';
+import { RootState } from '@/redux/store';
+import LoadingSpinner from '../LoadingSpinner';
+
 
 
 function Sidebar() {
   const [isDragging, setIsDragging] = useState(false);
-  let { workspaceId } = useParams();
+  const { workspaceId } = useParams();
   const navigate = useNavigate();
   const [activeIndex,setActiveIndex] = useState(0);
 
   const [loading, setLoading] = useState(false);
   
-  const user = useSelector(state=>state.user);
-  const workspace = useSelector(state=>state.workspace);
+  const user = useSelector((state:RootState)=>state.user);
+  const workspace = useSelector((state:RootState)=>state.workspace);
  
   const dispatch = useDispatch();
   
@@ -52,9 +55,30 @@ function Sidebar() {
 
 
 useEffect(()=>{
+  
   if(isMobile) collapse();
   else resetWidth();
 },[isMobile]);
+const resetWidth = ()=>{
+  if(sidebarRef.current && navbarRef.current){
+    setIsCollapsed(false);
+    setIsResetting(true);
+    sidebarRef.current.style.width = isMobile ? "100%" : "240px";
+    navbarRef.current.style.setProperty("width", isMobile ?"0":"Calc(100%-480px)");
+    navbarRef.current.style.setProperty("left", isMobile ? "100%":"240px");
+    setTimeout(()=>setIsResetting(false),300);
+  }
+}
+const collapse = ()=>{
+  if(sidebarRef.current && navbarRef.current){
+    setIsCollapsed(true);
+    setIsResetting(true);
+    sidebarRef.current.style.width="0";
+    navbarRef.current.style.setProperty("width", "100%");
+    navbarRef.current.style.setProperty("left", "0");
+    setTimeout(()=>setIsResetting(false),300);
+  }
+ }
   const handleMouseDown = (
     event: React.MouseEvent<HTMLDivElement,MouseEvent>)=>{
       event.preventDefault();
@@ -84,26 +108,7 @@ useEffect(()=>{
     document.removeEventListener("mouseup", handleMouseUp);
   }
 
-  const resetWidth = ()=>{
-    if(sidebarRef.current && navbarRef.current){
-      setIsCollapsed(false);
-      setIsResetting(true);
-      sidebarRef.current.style.width = isMobile ? "100%" : "240px";
-      navbarRef.current.style.setProperty("width", isMobile ?"0":"Calc(100%-480px)");
-      navbarRef.current.style.setProperty("left", isMobile ? "100%":"240px");
-      setTimeout(()=>setIsResetting(false),300);
-    }
-  }
-   const collapse = ()=>{
-    if(sidebarRef.current && navbarRef.current){
-      setIsCollapsed(true);
-      setIsResetting(true);
-      sidebarRef.current.style.width="0";
-      navbarRef.current.style.setProperty("width", "100%");
-      navbarRef.current.style.setProperty("left", "0");
-      setTimeout(()=>setIsResetting(false),300);
-    }
-   }
+  
 
   
  
@@ -116,6 +121,7 @@ useEffect(()=>{
       const result = await axios(sendReqConfig);
       console.log(result);
       dispatch(setWork([...result.data]));
+      
     }
     catch(err){
       console.log("Error : ",err);
@@ -127,7 +133,7 @@ useEffect(()=>{
     
   },[]);
   useEffect(()=>{
-    const updateActive = (listWork:[])=>{
+    const updateActive = (listWork:ContentDataArray)=>{
       const activeItem = listWork.findIndex(e=>e._id===workspaceId);
       
       if(listWork.length>0 && workspaceId===undefined){
@@ -172,11 +178,13 @@ useEffect(()=>{
     }
    }
    
-   const onDragEnd = async ({source,destination})=>{
+   const onDragEnd:OnDragEndResponder = async ({source,destination})=>{
     setIsDragging(false);
     const newList = [...workspace.value];
     const [removed] = newList.splice(source.index,1);
-    newList.splice(destination.index,0,removed);
+    if(destination && destination!==null){
+      newList.splice(destination.index,0,removed);
+    }
 
     const activeItem = newList.findIndex(e=>e._id===workspaceId);
     setActiveIndex(activeItem);
@@ -197,29 +205,21 @@ useEffect(()=>{
     }
 
    }
-   console.log(activeIndex);
+
    
-  //  const debounce = (func, delay) => {
-  //   let timeout;
-  //   return function () {
-  //     const context = this;
-  //     const args = arguments;
-  //     clearTimeout(timeout);
-  //     timeout = setTimeout(() => func.apply(context, args), delay);
-  //   };
-  // };
-  // const debouncedHandleDragEnd = useCallback(
-  //   debounce(onDragEnd, 300),
-  //   [workspace]
-  // );
+
 
   const handleDragStart = () => {
     setIsDragging(true);
   };
+  
   return (
     
-    <div className={`relative h-screen ${isCollapsed ? "w-0":"w-fit"}  bg-white dark:bg-slate-900  dark:text-white `}>
-<Toaster theme='system' richColors position='top-right' offset={'32px'}/>
+    <>
+   
+   {loading?
+   <LoadingSpinner/>:
+   <div className={`relative h-screen ${isCollapsed ? "w-0":"w-fit"}  bg-white dark:bg-slate-900  dark:text-white `}>
     <aside ref={sidebarRef} id="sidebar"  className={cn(
           "group/sidebar h-screen bg-secondary overflow-y-auto relative flex w-60 flex-col z-[99999]",
           isResetting && "transition-all ease-in-out duration-300",
@@ -278,13 +278,11 @@ useEffect(()=>{
                 workspace.value.map((item,index)=>(
                   <Draggable key = {item._id} draggableId = {item._id} index = {index}>
                     {(provided,snapshot)=>(
-                      <div  onClick={() => {
-                       
+                      <div onClick={() => {
                         navigate(`/workspace/${item._id}`);
                       }} ref = {provided.innerRef}{...provided.dragHandleProps}{...provided.draggableProps} className={`${index==activeIndex && 'bg-slate-400 dark:bg-slate-600'} pl-[20px] ${snapshot.isDragging?'cursor-grab':'cursor-pointer!important'} py-2  w-full hover:bg-neutral-400 dark:hover:bg-neutral-500  flex items-center text-sm font-medium text-muted-foreground/80`}>
                         <Emoji unified={item.icon} size={25}/>
                         <div className='mx-2'>
-
                          {item.name}
                         </div>
                       </div>
@@ -324,7 +322,8 @@ useEffect(()=>{
             {isCollapsed && <MenuIcon onClick={resetWidth} role="button" className="h-6 w-6 text-muted-foreground" />}
           </nav>
       </div>
-  </div>
+  </div>}
+  </>
   )
 }
 

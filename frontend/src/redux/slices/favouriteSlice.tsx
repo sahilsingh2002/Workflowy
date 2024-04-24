@@ -1,9 +1,24 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-interface FavouriteState {
-    
-    value:[],
+export interface Workspace {
+  content: string;
+  created_at: number;
+  favourite: boolean;
+  favpos: number;
+  icon: string;
+  name: string;
+  owner: string;
+  position: number;
+  sections: string[];
+  updated_at: number;
+  _id: string;
 }
+export interface FavdataArray extends Array<Workspace> {}
+export interface FavouriteState {
+    
+    value:FavdataArray,
+}
+
 
 const initialState: FavouriteState = {
     
@@ -14,9 +29,8 @@ export const favouriteSlice = createSlice({
     name: 'faourite',
     initialState,
     reducers: {
-        setFav: (state, action: PayloadAction<FavouriteState>) => {
-            state.value = action.payload
-            
+        setFav: (state, action: PayloadAction<FavdataArray>) => {
+            state.value = action.payload 
         },
     }
 });

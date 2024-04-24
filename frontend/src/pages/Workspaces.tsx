@@ -1,11 +1,11 @@
 import Sidebar from '@/components/sidebar/Sidebar'
 import { Button } from '@/components/ui/button';
 import axios from 'axios';
-import {Divider, Textarea} from "@nextui-org/react";
+import { Textarea} from "@nextui-org/react";
 
 import { Star, Trash } from 'lucide-react';
-import React, { useEffect, useState } from 'react'
-import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import { ChangeEvent, useEffect, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom';
 // import {Picker} from 'emoji-mart';
 import { TiStarFullOutline } from "react-icons/ti";
 import Picker from '@/components/emoji-picker/Picker';
@@ -13,8 +13,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setWork } from '@/redux/slices/workspaceSlice';
 import { setFav } from '@/redux/slices/favouriteSlice';
 import Kanban from '@/components/sections/Kanban';
+import { RootState } from '@/redux/store';
 function Workspaces() {
-  let timer;
+  let timer:ReturnType<typeof setTimeout>;
   const navigate = useNavigate();
   const [access,setAccess] = useState(false);
   const timeout = 500;
@@ -26,8 +27,8 @@ function Workspaces() {
   const [isFav, setIsFav] = useState(false);
   const [icon, setIcon] = useState('');
   
-  const workspaces = useSelector(state=>state.workspace.value);
-  const favlist = useSelector(state=>state.favourite.value);
+  const workspaces = useSelector((state:RootState)=>state.workspace.value);
+  const favlist = useSelector((state:RootState)=>state.favourite.value);
   
   useEffect(()=>{
     const handleGetpage = async(id:string)=>{
@@ -57,11 +58,11 @@ function Workspaces() {
           // navigate(`/workspace/`)
         }
      }
-     handleGetpage(workspaceId);
+     handleGetpage(workspaceId?workspaceId:'');
     
-   },[workspaceId]);
+   },[workspaceId,navigate]);
 
-   const updateTitle =async(e)=>{
+   const updateTitle = async(e:ChangeEvent<HTMLInputElement>)=>{
     clearTimeout(timer);
     const newTitle = e.target.value;
     setTitle(newTitle);
@@ -99,7 +100,7 @@ function Workspaces() {
          }
         },timeout);
    }
-   const updateDescription = async(e)=>{
+   const updateDescription = async(e:ChangeEvent<HTMLInputElement>)=>{
     clearTimeout(timer);
     const newDesc = e.target.value;
     setDescription(newDesc);
@@ -267,7 +268,7 @@ function Workspaces() {
       </div>
       </div>
       <div>
-        <Kanban data={sections} boardId={workspaceId}/>
+        <Kanban datar={sections} boardeId={workspaceId}/>
         
         {/* kanban */}
        

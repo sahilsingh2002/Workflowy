@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const {authenticateUser} = require('../middlewares/auth');
 const cookieParser = require('cookie-parser');
 const validator = require("email-validator");
+const { ObjectId } = require('mongodb');
 
 
 
@@ -102,9 +103,10 @@ module.exports.post_signup = async (req, res) => {
 module.exports.authing = async(req,res)=>{
   try{
     const userId = req.id;
+
     const user = User();
-    const result = await user.findOne({},{_id:userId});
-    console.log(result);
+    const result = await user.findOne({_id:new ObjectId(userId)});
+    console.log("res",result);
   
     res.json({ name:result.name, email:result.email, username:result.username});
   }
@@ -134,6 +136,7 @@ module.exports.post_login = async (req, res) => {
       return res.status(400).json({ status: false, message: "Incorrect password" });
     }
     const token = generateToken({ id:userData._id });
+   
     res.cookie("user",token,{ domain:"localhost", path:'/'});
 
     return res.json({ status: true, message: "Login successful",data: {

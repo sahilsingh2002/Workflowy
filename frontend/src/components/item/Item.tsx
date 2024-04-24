@@ -1,9 +1,10 @@
 
 import { cn } from '@/lib/utils';
-import { ChevronDown, ChevronRight, LucideIcon, MoreHorizontal, Trash } from 'lucide-react';
+import { LucideIcon, MoreHorizontal, Trash } from 'lucide-react';
 import { DropdownMenu, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu';
 import { DropdownMenuContent, DropdownMenuSeparator } from '@radix-ui/react-dropdown-menu';
 import { useSelector } from 'react-redux';
+import { RootState } from '@/redux/store';
 
 interface ItemProps {
   Id?:string;
@@ -23,10 +24,10 @@ interface ItemProps {
 
 function Item({
   Id,
-  active,documentIcon,isSearch,level = 0,onExpand, expanded,onArchive,
+  active,isSearch,onArchive,
   label,onClick, icon:Icon
 }:ItemProps) {
-  const user = useSelector(state=>state.user);
+  const user = useSelector((state:RootState)=>state.user);
   return (
     <div
     onClick={onClick}

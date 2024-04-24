@@ -1,5 +1,5 @@
 
-import {Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure,Button, Textarea, Divider} from "@nextui-org/react"
+import {Modal, ModalContent, ModalBody, useDisclosure,Button, Textarea, Divider} from "@nextui-org/react"
 import { Trash } from "lucide-react";
 import React, { useEffect, useState } from 'react'
 import Moment from 'moment'

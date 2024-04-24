@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react"
-import { Link,useNavigate } from "react-router-dom"
+import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { useDispatch } from "react-redux";
 import {changeUser} from '../../redux/slices/userSlice'
 import {
@@ -21,12 +21,13 @@ import { Label } from "@/components/ui/label"
 import { AxeIcon } from "lucide-react";
 import './signup.css'
 import { useForm, SubmitHandler } from "react-hook-form"
+import { toast } from "sonner";
 
 
 
 export function Signup() {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
+ 
   type Inputs = {
     username: string
     name: string
@@ -90,7 +91,7 @@ export function Signup() {
 
         }
         try{
-          const result = await axios(sendreqConfig); 
+          const result:AxiosResponse = await axios(sendreqConfig); 
           console.log(result);
           setIsUnique(true);
           setIsValid(result?.data?.message);
@@ -99,7 +100,7 @@ export function Signup() {
         catch(err){
             const error = err;
             setIsUnique(false);
-            setIsValid(err?.response?.data?.message);
+            setIsValid("Username is invalid or already in use!");
           console.log(error);
         }  
       }, 3000)
@@ -107,6 +108,7 @@ export function Signup() {
     }
  }, [username, validUsername,dispatch]);
   useEffect(() => {
+    setEmailMessage('');
     console.log("here");
     
     if (emailCheckTimeOut) clearTimeout(emailCheckTimeOut);
@@ -131,10 +133,10 @@ export function Signup() {
       
         }
         catch(err){
-            const error = err;
+  
             setIsUniqueE(false);
-            setEmailMessage(err?.response?.data?.message);
-          console.log(error.response.data);
+            setEmailMessage("Email is either invalid or already in use!");
+         
         }  
       }, 3000)
       );
@@ -166,20 +168,20 @@ export function Signup() {
     const result = await axios(sendreqConfig);
     console.log(result);
     dispatch(changeUser(user));
-    // navigate("/home");
-    
+  
+    toast.success(`Welcome, ${user.name}`)
 
   }
   catch(err){
-      const error = err.response.data;
-    console.log(error);
+     
+    console.log(err);
   }
   }
   const {
     register,
     handleSubmit,
-    watch,
-    formState: { errors, isValid: isFormValid }
+   
+    formState: { isValid: isFormValid }
   } = useForm<Inputs>()
   const onSubmit: SubmitHandler<Inputs> = (data) => {signup_user(data);}
  

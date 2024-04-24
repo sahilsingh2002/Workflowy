@@ -1,21 +1,27 @@
 
 import {  File } from 'lucide-react'
-import React, {  useEffect, useState } from 'react'
-import { Button } from '../ui/button'
+import  {  useEffect, useState } from 'react'
+
 import { useDispatch,useSelector } from 'react-redux'
 import { useParams, useNavigate } from 'react-router-dom'
-import axios from 'axios'
-import { setFav } from '@/redux/slices/favouriteSlice'
-import {DragDropContext, Draggable, Droppable} from 'react-beautiful-dnd'
+import axios, {AxiosResponse} from 'axios'
+import { FavdataArray, setFav } from '@/redux/slices/favouriteSlice'
+import {DragDropContext, Draggable, Droppable, OnDragEndResponder} from 'react-beautiful-dnd'
 import { Emoji } from 'emoji-picker-react'
+import { RootState } from '@/redux/store';
 import LoadingSpinner from '../LoadingSpinner'
+import { FavouriteState,Workspace } from '@/redux/slices/favouriteSlice';
+
+
+
+
 
 function Favourites() {
   const navigate = useNavigate();
   const [isLoading,setIsLoading]=useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const dispatch = useDispatch()
-  const list = useSelector((state)=>state.favourite);
+  const list:FavouriteState = useSelector((state:RootState)=>state.favourite);
   console.log(list.value);
   const [activeIndex, setActiveIndex] = useState(0);
   const {workspaceId} = useParams();
@@ -27,9 +33,12 @@ function Favourites() {
         url:"/api/workspace/favourites"
       }
       try {
-        const result = await axios(sendReqConfig);
+        const result:AxiosResponse = await axios(sendReqConfig);
+        const main:FavdataArray = result.data.favourites;
         console.log(result);
-        dispatch(setFav([...result.data.favourites]));
+        
+        
+        dispatch(setFav(main));
       } catch (err) {
         console.log(err);
       }
@@ -39,11 +48,14 @@ function Favourites() {
     }
     getfaves();
   },[dispatch]);
-  const onDragEnd = async ({source,destination})=>{
+  const onDragEnd:OnDragEndResponder = async ({source,destination})=>{
+    console.log("src",source);
     setIsDragging(false);
     const newList = [...list.value];
     const [removed] = newList.splice(source.index,1);
-    newList.splice(destination.index,0,removed);
+    if(destination && destination!==null){
+      newList.splice(destination.index,0,removed);
+    }
 
     const activeItem = newList.findIndex(e=>e._id===workspaceId);
     setActiveIndex(activeItem);
@@ -65,7 +77,7 @@ function Favourites() {
 
    }
   useEffect(()=>{
-    const updateActive = (listWork:[])=>{
+    const updateActive = (listWork:FavdataArray)=>{
       const activeItem = listWork.findIndex(e=>e._id===workspaceId);
      
       setActiveIndex(activeItem);
@@ -99,7 +111,7 @@ function Favourites() {
        {(provided)=>(
          <div ref = {provided.innerRef} {...provided.droppableProps}>
            {
-             list.value.map((item,index)=>(
+             list.value.map((item:Workspace,index:number)=>(
                <Draggable key = {item._id} draggableId = {item._id} index = {index}>
                  {(provided,snapshot)=>(
                    <div  onClick={() => {
