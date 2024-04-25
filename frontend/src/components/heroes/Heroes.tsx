@@ -1,4 +1,4 @@
-import React from 'react'
+
 const IMAGES = {
     doc : new URL("../../assets/lander/documents.png" , import.meta.url).href,
     read : new URL("../../assets/lander/reading.png" , import.meta.url).href,

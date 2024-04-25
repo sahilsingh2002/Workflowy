@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react"
-import { Link,useNavigate } from "react-router-dom"
+import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { useDispatch } from "react-redux";
 import {changeUser} from '../../redux/slices/userSlice'
 import {
@@ -21,12 +21,13 @@ import { Label } from "@/components/ui/label"
 import { AxeIcon } from "lucide-react";
 import './signup.css'
 import { useForm, SubmitHandler } from "react-hook-form"
+import { toast } from "sonner";
 
 
 
 export function Signup() {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
+ 
   type Inputs = {
     username: string
     name: string
@@ -35,12 +36,15 @@ export function Signup() {
   }
   
   const [showPassword, setShowPassword] = useState(false);
+  const [email,setEmail] = useState("");
 
   const [isUnique, setIsUnique] = useState(false);
+  const [isUniqueE, setIsUniqueE] = useState(false);
   const [username, setUsername] = useState("");
   
   const [validUsername, setValidUsername] = useState(false);
   const [isValid, setIsValid] = useState("Not a Valid username");
+  const[emailmessage, setEmailMessage] = useState("");
 
   const handleValid=(username:string)=>{
     if (username.length < 3) {
@@ -68,6 +72,7 @@ export function Signup() {
     
   }
   const [usernameCheckTimeout, setUsernameCheckTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
+  const [emailCheckTimeOut, setEmailCheckTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     console.log("here");
     
@@ -86,7 +91,7 @@ export function Signup() {
 
         }
         try{
-          const result = await axios(sendreqConfig); 
+          const result:AxiosResponse = await axios(sendreqConfig); 
           console.log(result);
           setIsUnique(true);
           setIsValid(result?.data?.message);
@@ -95,12 +100,48 @@ export function Signup() {
         catch(err){
             const error = err;
             setIsUnique(false);
+            setIsValid("Username is invalid or already in use!");
           console.log(error);
         }  
       }, 3000)
       );
     }
  }, [username, validUsername,dispatch]);
+  useEffect(() => {
+    setEmailMessage('');
+    console.log("here");
+    
+    if (emailCheckTimeOut) clearTimeout(emailCheckTimeOut);
+    
+    
+    
+    setEmailCheckTimeout(
+      setTimeout(async() => {
+        const sendreqConfig = {
+          method:"POST",
+          data:{
+            email:email,
+          },
+          url:"/api/emails"
+
+        }
+        try{
+          const result = await axios(sendreqConfig); 
+          console.log(result);
+          setIsUniqueE(true);
+          setEmailMessage(result?.data?.message);
+      
+        }
+        catch(err){
+  
+            setIsUniqueE(false);
+            setEmailMessage("Email is either invalid or already in use!");
+         
+        }  
+      }, 3000)
+      );
+    
+ }, [email,dispatch]);
 
  interface Datas{
   name:string
@@ -127,25 +168,25 @@ export function Signup() {
     const result = await axios(sendreqConfig);
     console.log(result);
     dispatch(changeUser(user));
-    // navigate("/home");
-    
+  
+    toast.success(`Welcome, ${user.name}`)
 
   }
   catch(err){
-      const error = err.response.data;
-    console.log(error);
+     
+    console.log(err);
   }
   }
   const {
     register,
     handleSubmit,
-    watch,
-    formState: { errors, isValid: isFormValid }
+   
+    formState: { isValid: isFormValid }
   } = useForm<Inputs>()
   const onSubmit: SubmitHandler<Inputs> = (data) => {signup_user(data);}
  
   return (
-    <div className="flex justify-center items-center min-h-screen">
+    <div className="flex justify-center w-full items-center ">
       <Card className="dark:bg-black w-full sm:max-w-md">
         <CardHeader>
           <AxeIcon/>
@@ -192,7 +233,9 @@ export function Signup() {
                 placeholder="m@example.com"
                 required
                 {...register("email")}
+                onChange={(e)=>{setEmail(e.target.value)}}
               />
+              {emailmessage}
             </div>
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
@@ -202,7 +245,7 @@ export function Signup() {
 
               </div>
             </div>
-            <Button type="submit" className="w-full" disabled={!isFormValid || !isUnique}>
+            <Button type="submit" className="w-full" disabled={!isFormValid || !isUnique || !isUniqueE}>
               Create an account
             </Button>
             <Button variant="outline" className="w-full">

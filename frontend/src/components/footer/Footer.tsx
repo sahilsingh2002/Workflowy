@@ -1,4 +1,4 @@
-import React from 'react'
+
 import Logo from '../logo/Logo'
 import { Button } from '../ui/button'
 

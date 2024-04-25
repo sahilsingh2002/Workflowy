@@ -11,11 +11,11 @@ const Workspaces = ()=>{
   const workspaces = db.collection("workspace");
   return workspaces;
 }
-const Pages = ()=>{
+const Sections = ()=>{
   const db = getDB();
 
-  const pages = db.collection("page");
-  return pages;
+  const sections = db.collection("section");
+  return sections;
 }
 const Tasks = ()=>{
   const db = getDB();
@@ -24,4 +24,4 @@ const Tasks = ()=>{
   return tasks;
 }
 
-module.exports = {User,Workspaces,Pages,Tasks};
+module.exports = {User,Workspaces,Sections,Tasks};

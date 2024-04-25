@@ -1,15 +1,15 @@
-import React from 'react'
+
 import {
   Avatar,
   AvatarImage
 } from '@/components/ui/avatar';
-import { Button } from '../ui/button';
+
 import axios from 'axios';
 
 import {
   DropdownMenu,
   DropdownMenuTrigger,
-  DropdownMenuLabel,
+  
   DropdownMenuItem,
   DropdownMenuContent,
   DropdownMenuSeparator
@@ -17,9 +17,11 @@ import {
 import { useSelector } from 'react-redux';
 import { ChevronsLeftRight } from 'lucide-react';
 import { ModeToggle } from '../mode-toggle';
+import { RootState } from '@/redux/store';
+
 
 function UserItem() {
-  const user = useSelector((state) =>state.user);
+  const user = useSelector((state:RootState) =>state.user);
   const Logout = async()=>{
     const sendReqConfig = {
       method:"GET",
@@ -27,7 +29,7 @@ function UserItem() {
       
     }
   try{
-      const result = await axios(sendReqConfig);
+      await axios(sendReqConfig);
       window.location.reload();
   }
   catch(err){

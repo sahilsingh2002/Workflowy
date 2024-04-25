@@ -3,7 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { ThemeProvider } from "./components/theme-provider"
 import { Login_page, Signup_page, Home_page } from './pages'
 import './App.css'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import { useState,useEffect } from 'react'
 import axios from 'axios'
 import { useSelector, useDispatch } from 'react-redux'
@@ -12,6 +12,9 @@ import LoadingSpinner from './components/LoadingSpinner'
 
 import Lander from './pages/Lander'
 import { changeUser } from './redux/slices/userSlice'
+import Workspaces from './pages/Workspaces'
+import { Toaster } from 'sonner'
+import { RootState } from './redux/store'
 
 
 
@@ -19,8 +22,6 @@ import { changeUser } from './redux/slices/userSlice'
 function App() {
   
   const dispatch = useDispatch();
-
-  const navigate = useNavigate();
   const [user, setUser] = useState(false);
   const [isLoading,setIsLoading] = useState(true);
 
@@ -54,7 +55,7 @@ function App() {
 
 
   },[dispatch]);
-  const userdetails = useSelector(state=>state.user);
+  const userdetails = useSelector((state:RootState)=>state.user);
   console.log("user",userdetails);
   const {pathname} = useLocation();
   return (
@@ -64,18 +65,23 @@ function App() {
        <LoadingSpinner/>
        </>
      ):(  
-      <>
+      <div className='h-full flex dark:bg-[#1F1F1F]'>
+        <Toaster/>
     
-       {userdetails.username.length > 0 && <Navigate to="/home" />}
-          {(!(userdetails.username.length > 0)) && (pathname !== '/login' && pathname !== '/signup') && <Navigate to="/login" />}
+       
+          {(!(userdetails.username.length > 0)) && (pathname !== '/login' && pathname !== '/signup') && <Navigate to="/" />}
     <Routes>
-      <Route path='/login' element={<Login_page/>}/>
-      <Route path='/signup' element={<Signup_page/>}/>
+    
+      <Route path='/login' element={userdetails.username.length > 0 ? <Navigate to="/home" />:<Login_page/>}/>
+      <Route path='/signup' element={userdetails.username.length > 0 ? <Navigate to="/home" />:<Signup_page/>}/>
       <Route path='/home' element={<Home_page/>}/>
       <Route path='/' element={<Lander/>}/>
+      <Route path='/workspace' element={<Navigate to="/home" />}/>
+      <Route path='/workspace/:workspaceId' element={<Workspaces/>}/>
+      <Route path='*' element={<Home_page/>} />
 
     </Routes>
-    </>
+    </div>
     )
     }
     </ThemeProvider>

@@ -1,7 +1,8 @@
-import React from 'react'
+
 import { Button } from '../ui/button'
 import { PlusCircle } from 'lucide-react'
 import { useSelector } from 'react-redux'
+import { RootState } from '@/redux/store';
 
 const IMAGES = {
   empty : new URL("../../assets/home/empty.png" , import.meta.url).href,
@@ -11,7 +12,7 @@ const IMAGES = {
   
 }
 function Home() {
-  const user = useSelector(state => state.user);
+  const user = useSelector((state:RootState) => state.user);
   return (
     <div className='h-full flex flex-col items-center justify-center'>
       <img src={IMAGES.empty} alt="empty" className='h-[300px] w-fit dark:hidden' />

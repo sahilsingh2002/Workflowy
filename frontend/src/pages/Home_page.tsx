@@ -1,8 +1,6 @@
 import Sidebar from '@/components/sidebar/Sidebar'
 import  Home  from '@/components/home/Home'
-import { Toaster } from "@/components/ui/sonner"
-import { useSelector } from 'react-redux';
-import  Navbar  from '@/components/navbar/Navbar';
+
 
 {/* <div className=' h-full flex flex-col items-center text-center -mt-10 justify-center text-white'>
   <h1 className='font-bold text-6xl'>Are you ready for the ultimate showdown????</h1>
@@ -11,20 +9,16 @@ import  Navbar  from '@/components/navbar/Navbar';
 
 function Home_page() {
 
- 
+
   
   return (
-    <div className='h-full flex dark:bg-[#1F1F1F]'>
-     <Navbar/>
+    <div className='flex jusify-center w-full'>
       <Sidebar/>
-
       <main className='flex-1 h-screen overflow-y-auto'>
       <Home/>
-      <Toaster/>
-      </main>
-      
 
-     
+      
+      </main>
    </div>
     
   )

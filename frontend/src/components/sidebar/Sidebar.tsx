@@ -1,35 +1,84 @@
-import { ChevronsLeft, MenuIcon, PlusCircle, Search, Settings } from 'lucide-react'
+import { ChevronDownIcon, ChevronsLeft, File, MenuIcon,  Search, Settings } from 'lucide-react'
 import {ElementRef, useRef, useState, useEffect} from 'react'
 import {useMediaQuery} from 'usehooks-ts';
-import { useLocation } from 'react-router-dom';
 
-import { cn } from '@/lib/utils';
-import { useSelector } from 'react-redux';
+import {DragDropContext, Draggable, Droppable, OnDragEndResponder} from 'react-beautiful-dnd'
+
+
+
 import UserItem from '../useritem/UserItem';
-import Item from '../item/Item';
+
+import { cn } from "@/lib/utils"
+import Item from "../item/Item"
+
+
+import axios from "axios"
+import { useSelector,useDispatch } from "react-redux"
+import { useNavigate, useParams } from "react-router-dom"
+
+
 import { toast } from 'sonner';
+import { ContentDataArray, setWork } from "@/redux/slices/workspaceSlice"
+import { Button } from '../ui/button';
+import { Emoji } from 'emoji-picker-react';
+import Favourites from '../favourites/Favourites';
+import { RootState } from '@/redux/store';
+import LoadingSpinner from '../LoadingSpinner';
 
-import axios from 'axios';
-import { set } from 'react-hook-form';
+
+
 function Sidebar() {
-  const user = useSelector(state=>state.user);
-  const [loading, setLoading] = useState(false);
-  const [createResult, setCreateResult] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const { workspaceId } = useParams();
+  const navigate = useNavigate();
+  const [activeIndex,setActiveIndex] = useState(0);
 
-  const {pathname} = useLocation();
+  const [loading, setLoading] = useState(false);
+  
+  const user = useSelector((state:RootState)=>state.user);
+  const workspace = useSelector((state:RootState)=>state.workspace);
+ 
+  const dispatch = useDispatch();
+  
+
+ 
   const isMobile = useMediaQuery("(max-width: 768px)");
   const isResizingRef = useRef(false);
   const sidebarRef = useRef<ElementRef<"aside">>(null);
   const navbarRef = useRef<ElementRef<"div">>(null);
   const [isResetting, setIsResetting] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(isMobile);
-  const [pages,setPages] = useState([]);
+  
+ 
+
+  
 
 
 useEffect(()=>{
+  
   if(isMobile) collapse();
   else resetWidth();
 },[isMobile]);
+const resetWidth = ()=>{
+  if(sidebarRef.current && navbarRef.current){
+    setIsCollapsed(false);
+    setIsResetting(true);
+    sidebarRef.current.style.width = isMobile ? "100%" : "240px";
+    navbarRef.current.style.setProperty("width", isMobile ?"0":"Calc(100%-480px)");
+    navbarRef.current.style.setProperty("left", isMobile ? "100%":"240px");
+    setTimeout(()=>setIsResetting(false),300);
+  }
+}
+const collapse = ()=>{
+  if(sidebarRef.current && navbarRef.current){
+    setIsCollapsed(true);
+    setIsResetting(true);
+    sidebarRef.current.style.width="0";
+    navbarRef.current.style.setProperty("width", "100%");
+    navbarRef.current.style.setProperty("left", "0");
+    setTimeout(()=>setIsResetting(false),300);
+  }
+ }
   const handleMouseDown = (
     event: React.MouseEvent<HTMLDivElement,MouseEvent>)=>{
       event.preventDefault();
@@ -59,29 +108,50 @@ useEffect(()=>{
     document.removeEventListener("mouseup", handleMouseUp);
   }
 
-  const resetWidth = ()=>{
-    if(sidebarRef.current && navbarRef.current){
-      setIsCollapsed(false);
-      setIsResetting(true);
-      sidebarRef.current.style.width = isMobile ? "100%" : "240px";
-      navbarRef.current.style.setProperty("width", isMobile ?"0":"Calc(100%-480px)");
-      navbarRef.current.style.setProperty("left", isMobile ? "100%":"240px");
-      setTimeout(()=>setIsResetting(false),300);
+  
+
+  
+ 
+   const getWork = async()=>{
+    const sendReqConfig = {
+      method:"GET",
+      url:`/api/workspace/getworkspaces?username=${user.username}`,
+    }
+    try{
+      const result = await axios(sendReqConfig);
+      console.log(result);
+      dispatch(setWork([...result.data]));
+      
+    }
+    catch(err){
+      console.log("Error : ",err);
     }
   }
-   const collapse = ()=>{
-    if(sidebarRef.current && navbarRef.current){
-      setIsCollapsed(true);
-      setIsResetting(true);
-      sidebarRef.current.style.width="0";
-      navbarRef.current.style.setProperty("width", "100%");
-      navbarRef.current.style.setProperty("left", "0");
-      setTimeout(()=>setIsResetting(false),300);
+  useEffect(()=>{
+    
+    getWork();
+    
+  },[]);
+  useEffect(()=>{
+    const updateActive = (listWork:ContentDataArray)=>{
+      const activeItem = listWork.findIndex(e=>e._id===workspaceId);
+      
+      if(listWork.length>0 && workspaceId===undefined){
+        navigate(`/workspace/${listWork[0]._id}`);
+      }
+    
+      
+      console.log(activeItem,listWork,workspaceId);
+      setActiveIndex(activeItem);
     }
-   }
-   
+    updateActive(workspace.value);
+  },[workspace.value,workspaceId,navigate]);
+  
+  
+  
+ 
    const handleCreate = async()=>{
-    setLoading(false);
+    setLoading(true);
     const sendReqConfig = {
       method:"POST",
       url:"/api/workspace/add",
@@ -91,67 +161,67 @@ useEffect(()=>{
     }
     try {
       const result = await axios(sendReqConfig);
+
+   
       
-      setCreateResult(result.data);
       toast.success("Workspace created successfully");
-      getWork();
+      const newList = [result?.data.board,...workspace.value];
+      dispatch(setWork(newList));
+     
+
+      // getWork();
+      navigate(`/workspace/${result.data.board._id}`)
     } catch (error) {
       toast.error("Failed to create workspace");
     } finally {
       setLoading(false);
     }
    }
-
-   const handleGetpage = async(id)=>{
-    console.log(id);
-      const sendReqConfig = {
-        method:"POST",
-        url:"/api/workspace/getPage",
-        data:{
-          id:id,
-        }
-
-      }
-      try {
-        const result = await axios(sendReqConfig);
-        console.log(result);
-      } catch (error) {
-        console.log("Error : ",error);
-      }
-   }
-   const getWork = async()=>{
-     const sendReqConfig = {
-       method:"POST",
-       url:"/api/workspace/getworkspaces",
-       data:{
-         username:user.username,
-       }
-     }
-     try{
-       const result = await axios(sendReqConfig);
-       const newPages = [...result?.data?.workspacer];
-       setPages(newPages);
-       console.log(result);
-     }
-     catch(err){
-       console.log("Error : ",err);
-     }
-     
-     
-   }
-   useEffect(()=>{
-    getWork();
-   },[]);
-   useEffect(() => {
-    if (loading) {
-      toast.info("Creating workspace...");
+   
+   const onDragEnd:OnDragEndResponder = async ({source,destination})=>{
+    setIsDragging(false);
+    const newList = [...workspace.value];
+    const [removed] = newList.splice(source.index,1);
+    if(destination && destination!==null){
+      newList.splice(destination.index,0,removed);
     }
-  }, [loading]);
-  return (
-    <div className={`relative h-screen ${isCollapsed ? "w-0":"w-fit"}  bg-white dark:bg-slate-900  dark:text-white `}>
 
+    const activeItem = newList.findIndex(e=>e._id===workspaceId);
+    setActiveIndex(activeItem);
+    dispatch(setWork(newList));
+    try{
+      const sendReqConfig = {
+        method:"PATCH",
+        url:`/api/workspace/`,
+        data:{
+          workspaces:newList,
+        }
+      }
+      const result = await axios(sendReqConfig);
+      console.log(result);
+    }
+    catch(err){
+      console.log("Error : ",err);
+    }
+
+   }
+
+   
+
+
+  const handleDragStart = () => {
+    setIsDragging(true);
+  };
+  
+  return (
+    
+    <>
+   
+   {loading?
+   <LoadingSpinner/>:
+   <div className={`relative h-screen ${isCollapsed ? "w-0":"w-fit"}  bg-white dark:bg-slate-900  dark:text-white `}>
     <aside ref={sidebarRef} id="sidebar"  className={cn(
-          "group/sidebar h-full bg-secondary overflow-y-auto relative flex w-60 flex-col z-[99999]",
+          "group/sidebar h-screen bg-secondary overflow-y-auto relative flex w-60 flex-col z-[99999]",
           isResetting && "transition-all ease-in-out duration-300",
           isMobile && "w-0"
         )}>
@@ -178,13 +248,61 @@ useEffect(()=>{
           icon={Settings}
           
           onClick={()=>{}}/>
-          <Item onClick = {handleCreate} label = "New page" icon = {PlusCircle}/>
+         <>
+         <Favourites/>
+
+
+         <p className='text-sm font-medium text-muted-foreground/80 flex justify-between items-center gap-2'>
+          <span className='flex gap-2'>
+          <File/>pages
+          </span>
+          <Button variant={"ghost"} onClick={handleCreate}>
+          <ChevronDownIcon/>
+          </Button>
+          </p>
+   <p className={cn(`hidden text-sm font-medium text-muted-foreground/80 last:block`)}>
+        No pages available
+      </p>
+
+
+
+    
+      <DragDropContext onDragEnd = {onDragEnd} onDragStart={handleDragStart}>
+     
+
+     
+        <Droppable key = {'list-workspace-droppable'} droppableId = {'list-workspace-droppable'}>
+          {(provided)=>(
+            <div ref = {provided.innerRef} {...provided.droppableProps}>
+              {
+                workspace.value.map((item,index)=>(
+                  <Draggable key = {item._id} draggableId = {item._id} index = {index}>
+                    {(provided,snapshot)=>(
+                      <div onClick={() => {
+                        navigate(`/workspace/${item._id}`);
+                      }} ref = {provided.innerRef}{...provided.dragHandleProps}{...provided.draggableProps} className={`${index==activeIndex && 'bg-slate-400 dark:bg-slate-600'} pl-[20px] ${snapshot.isDragging?'cursor-grab':'cursor-pointer!important'} py-2  w-full hover:bg-neutral-400 dark:hover:bg-neutral-500  flex items-center text-sm font-medium text-muted-foreground/80`}>
+                        <Emoji unified={item.icon} size={25}/>
+                        <div className='mx-2'>
+                         {item.name}
+                        </div>
+                      </div>
+                    )}
+                  </Draggable>
+                ))
+              }
+              {provided.placeholder}
+            </div>
+          )}
+
+        </Droppable>
+        
+       
+      </DragDropContext>
+   
+     
+    </>
         </div>
-        <div>
-          {pages.map(({name,id})=>(
-            <div role='button' className='hover:bg-gray-200' onClick = {()=>handleGetpage(id)}>{name}</div>
-          ))}
-        </div>
+        
       </div>
       <div
           onMouseDown={handleMouseDown}
@@ -204,7 +322,8 @@ useEffect(()=>{
             {isCollapsed && <MenuIcon onClick={resetWidth} role="button" className="h-6 w-6 text-muted-foreground" />}
           </nav>
       </div>
-  </div>
+  </div>}
+  </>
   )
 }
 

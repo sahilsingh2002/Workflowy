@@ -17,10 +17,15 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useForm, SubmitHandler } from "react-hook-form"
+import { toast } from "sonner";
+import { ErrorMessage } from "@hookform/error-message"
+
+
 
 type Inputs = {
   username: string
   password: string
+  multipleErrorInput: string
 }
 
 export function Login() {
@@ -29,7 +34,7 @@ export function Login() {
   const {
     register,
     handleSubmit,
-    watch,
+    
     formState: { errors },
   } = useForm<Inputs>()
   const onSubmit: SubmitHandler<Inputs> = ({username,password}) =>login_user(username,password);
@@ -49,11 +54,14 @@ export function Login() {
 
       });
       dispatch(changeUser(result.data.data));
+      console.log(result);
+      toast.success(`Welcome! ${result.data.data.username}`);
 
       navigate("/home");
      
     }
     catch(err){
+      toast.error("Invalid Credentials");
       
       console.log("error",err);
     }
@@ -64,7 +72,7 @@ export function Login() {
   
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex w-full items-center h-screen justify-center pt-16 lg:overflow-auto overflow-y-scroll">
+    <form onSubmit={handleSubmit(onSubmit)} className="flex justify-center w-full min-h-screen items-center">
       <Card className="dark:bg-black w-full sm:max-w-md overflow-auto">
         <CardHeader>
           <CardTitle className="text-2xl">Login</CardTitle>
@@ -97,6 +105,16 @@ export function Login() {
                   Forgot your password?
                 </Link>
             </div>
+            <ErrorMessage
+        errors={errors}
+        name="multipleErrorInput"
+        render={({ messages }) =>
+          messages &&
+          Object.entries(messages).map(([type, message]) => (
+            <p key={type}>{message}</p>
+          ))
+        }
+      />
             <Button type="submit" className="w-full">
               Login
             </Button>
