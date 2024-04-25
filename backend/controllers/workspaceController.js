@@ -6,6 +6,8 @@ const {
   Tasks,
 } = require("../connectDB/allCollections");
 
+
+
 // boards : user : objectId(ref - user), icon:string, default : 📃,  title:string default:untitled, description string, default: add description here, 🟢 you can add multiline desc. here., position : type:number, favourite L { type:boolean, def false} favpos type:number, default:0
 
 module.exports.addWorkspace = async (req, res) => {
@@ -24,7 +26,8 @@ module.exports.addWorkspace = async (req, res) => {
       sections: [],
       content: "add description here, 🟢 you can add multiline desc. here.",
       position: position,
-      owner: userDetails?._id,
+      
+      perms:[{id:userDetails?._id,role:'owner'}],
       icon: "1f4c3",
       favourite: false,
       favpos: 0,
@@ -48,11 +51,12 @@ module.exports.getWorkspaces = async (req, res) => {
   try {
     const user = User();
     const workspace = Workspaces();
-    console.log(req.id);
+    console.log("req",req.id);
     const cursor = await workspace
-      .find({ owner: new ObjectId(req.id) })
+      .find({ perms:{$elemMatch:{id: new ObjectId(req.id)}}})
       .sort("-position");
     const workspaceIds = await cursor.toArray();
+    console.log("work",workspaceIds);
 
     res.status(200).json(workspaceIds);
   } catch (error) {
@@ -70,7 +74,7 @@ module.exports.getOnepage = async (req, res) => {
   const sectioner = Sections();
   const tasker = Tasks();
   try {
-    const result = await workspace.findOne({owner:new ObjectId(req.id), _id: new ObjectId(id) });
+    const result = await workspace.findOne({perms:{$elemMatch:{id: new ObjectId(req.id)}}, _id: new ObjectId(id) });
     console.log("result",result);
 
     if (!result) return res.status(404).json({status:false,message:"board not found"});
@@ -90,9 +94,13 @@ module.exports.getOnepage = async (req, res) => {
       }
       result.sections = sections;
       
+      
     }
+    const role = await result.perms.find(perms=>perms.id.equals(new ObjectId(req.id)));
+    
+    
 
-    res.status(200).json({ status: true, page: { result } });
+    res.status(200).json({ status: true, page: { result }, roles:role.role });
   } catch (error) {
     console.error(error);
     res.status(500).json({ status: false, message: "Internal server error" });
@@ -137,7 +145,7 @@ module.exports.update = async (req, res) => {
     if (!currWorkspace) return res.status(404).json("board not found");
     if (favourite !== undefined && currWorkspace.favourite !== favourite) {
       const favourites = await workspace.find({
-        owner: currWorkspace.owner,
+        perms:{$elemMatch:{id: currWorkspace.owner, role:'owner'}},
         favourite: true,
         _id: { $ne: id },
       }).sort('favpos');
@@ -187,7 +195,7 @@ module.exports.getFavorite = async (req, res) => {
   try {
     
     const cursor = await workspace
-      .find({ owner: new ObjectId(req.id), favourite: true })
+      .find({ perms:{$elemMatch:{id: new ObjectId(req.id), role:'owner'}}, favourite: true })
       .sort({favpos:-1});
     const favourites = await cursor.toArray();
     console.log(favourites);
@@ -239,7 +247,7 @@ module.exports.removal = async (req, res) => {
         console.log(currWork);
         if(currWork.favourite){
           const favourites = await workspaces.find({
-            owner: currWork.owner,
+            perms:{$elemMatch:{id: currWork.owner, role:'owner'}},
             favourite: true,
             _id: { $ne: id },
           }).sort('favpos');
@@ -257,7 +265,7 @@ module.exports.removal = async (req, res) => {
           }
         }
         await workspaces.deleteOne({_id:new ObjectId(id)});
-        const cursor2 = await workspaces.find({owner:new ObjectId(req.id)}).sort('position');
+        const cursor2 = await workspaces.find({perms:{$elemMatch:{id: new ObjectId(req.id), role:'owner'}}}).sort('position');
         const work = await cursor2.toArray();
 
         for (const key in work) {

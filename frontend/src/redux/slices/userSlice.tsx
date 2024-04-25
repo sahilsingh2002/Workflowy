@@ -2,16 +2,18 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface UserState {
     
-    username: string;
-    email: string;
-    name: string;
+    username: string | null;
+    email: string | null;
+    name: string | null;
+    role:'owner' | 'editor' | 'reader' | null;
 }
 
 const initialState: UserState = {
     
-    username: "",
-    email: "",
-    name:""
+    username: null,
+    email: null,
+    name:null,
+    role:null,
 };
 
 export const userSlice = createSlice({
@@ -22,10 +24,15 @@ export const userSlice = createSlice({
             state.username = action.payload.username;
             state.email = action.payload.email;
             state.name = action.payload.name;
-        }
+            state.role=action.payload.role;
+        },
+        changeRole: (state, action: PayloadAction<'owner' | 'editor' | 'reader' | null>) => {
+            state.role = action.payload;
+        },
+        
     }
 });
 
-export const { changeUser } = userSlice.actions;
+export const { changeUser, changeRole } = userSlice.actions;
 
 export default userSlice.reducer;

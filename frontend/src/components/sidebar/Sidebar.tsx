@@ -24,6 +24,7 @@ import { Emoji } from 'emoji-picker-react';
 import Favourites from '../favourites/Favourites';
 import { RootState } from '@/redux/store';
 import LoadingSpinner from '../LoadingSpinner';
+import { changeRole } from '@/redux/slices/userSlice';
 
 
 
@@ -143,6 +144,7 @@ const collapse = ()=>{
       
       console.log(activeItem,listWork,workspaceId);
       setActiveIndex(activeItem);
+      
     }
     updateActive(workspace.value);
   },[workspace.value,workspaceId,navigate]);

@@ -9,6 +9,8 @@ import axios from 'axios'
 import { toast } from 'sonner'
 import { Card, CardHeader, CardTitle } from '../ui/card'
 import TaskModal from '@/modals/TaskModal'
+import { useSelector } from 'react-redux'
+import { RootState } from '@/redux/store'
 
 interface kanbans  {
   datar:Workspace[];
@@ -36,6 +38,7 @@ interface Workspace {
 let timer:ReturnType<typeof setTimeout>;
 const timeOut = 500;
 const Kanban = ({datar,boardeId}:kanbans) => {
+  const user = useSelector((state:RootState)=>state.user);
   const boardId = boardeId;
   const [data, setdata] = useState<Workspace[]>([]);
   const [loading,setLoading] = useState(false);
@@ -178,7 +181,7 @@ const Kanban = ({datar,boardeId}:kanbans) => {
   return (
     <div>
       <div className='flex items-center justify-between py-3'>
-          <Button variant={"ghost"} onClick={addSection}>
+          <Button variant={"ghost"} disabled={user.role==='reader'} onClick={addSection}>
             Add Section
           </Button>
         <div className='text-sm font-[700]'>
@@ -190,7 +193,7 @@ const Kanban = ({datar,boardeId}:kanbans) => {
           <div className='flex items-start w-[80%] lg:w-[calc(100vw-400px)] overflow-x-auto'>
             {data.map(section=>(
               <div key={section._id} className='w-[300px]'>
-              <Droppable key={section._id} droppableId={section._id}>
+              <Droppable isDropDisabled={user.role==='reader'} key={section._id} droppableId={section._id}>
                 {(provided)=>(
                   <div ref={provided.innerRef}{...provided.droppableProps} className='w-[300px] p-[10px] mr-[10px]'>
                     <div className='flex items-center justify-between mb-[10px]'>
@@ -228,7 +231,7 @@ const Kanban = ({datar,boardeId}:kanbans) => {
             ))}
           </div>
         </DragDropContext>
-        <TaskModal tasks = {selectedTask} boardId={boardId} onClose = {()=>setSelectedTask(undefined)} onUpdate = {updateTask} onDelete = {deleteTask}/>
+        <TaskModal currRole = {user.role} tasks = {selectedTask} boardId={boardId} onClose = {()=>setSelectedTask(undefined)} onUpdate = {updateTask} onDelete = {deleteTask}/>
       
     </div>
   )

@@ -1,20 +1,22 @@
 
-import {Modal, ModalContent, ModalBody, useDisclosure,Button, Textarea, Divider} from "@nextui-org/react"
+import {Modal, ModalContent, ModalBody, useDisclosure, Textarea, Divider} from "@nextui-org/react"
 import { Trash } from "lucide-react";
-import React, { useEffect, useState } from 'react'
+import  { useEffect, useState } from 'react'
 import Moment from 'moment'
 import {CKEditor} from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic'
 import axios from "axios";
+import { Button } from "@/components/ui/button";
 
 let timer;
 const timeOut = 500;
 let isModalClosed = false;
-function TaskModal({boardId,tasks, onClose,onUpdate,onDelete}) {
+function TaskModal({boardId,tasks, onClose,onUpdate,onDelete, currRole}) {
   const {isOpen, onOpen} = useDisclosure();
   const [task, setTask] = useState(tasks);
   const [title,setTitle] = useState('');
   const [content, setContent] = useState('');
+  
   useEffect(()=>{
     setTask(tasks);
     setTitle(tasks!==undefined?tasks.title:'');
@@ -100,13 +102,13 @@ function TaskModal({boardId,tasks, onClose,onUpdate,onDelete}) {
   return (
     <>
   
-   <Modal size="3xl" backdrop="blur" isOpen={task !== undefined} onClose={onCloser}>
+   <Modal size="3xl" className="flex" backdrop="blur" isOpen={task !== undefined} onClose={onCloser}>
   <ModalContent>
     {(onClose) => (
       <>
         <ModalBody className="border border-black">
           <div className="flex items-center justify-end w-[100%]">
-            <Button size="sm" variant="ghost" onPress={deleteTask}>
+            <Button size="icon" className="-mt-2 mx-3" disabled={currRole==='reader'} variant="ghost" onClick={deleteTask}>
               <Trash />
             </Button>
           </div>
@@ -115,6 +117,7 @@ function TaskModal({boardId,tasks, onClose,onUpdate,onDelete}) {
               placeholder='Untitled'
               value={title}
               onChange={updateTitle}
+              disabled={currRole==='reader'}
               minRows={1}
               className='w-full h-fit p-0 border-0 text-[2rem]  resize-none   border-neutral-300'
             />
@@ -126,8 +129,10 @@ function TaskModal({boardId,tasks, onClose,onUpdate,onDelete}) {
           <div className="relative h-[80%] overflow-x-hidden overflow-y-auto">
             <CKEditor
               editor={ClassicEditor}
+              disabled={currRole==='reader'}
               data={content}
               onChange={updateContent}
+              
               
             />
           </div>

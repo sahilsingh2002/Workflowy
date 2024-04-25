@@ -2,11 +2,9 @@ import Sidebar from '@/components/sidebar/Sidebar'
 import { Button } from '@/components/ui/button';
 import axios from 'axios';
 import { Textarea} from "@nextui-org/react";
-
 import { Star, Trash } from 'lucide-react';
 import { ChangeEvent, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom';
-// import {Picker} from 'emoji-mart';
 import { TiStarFullOutline } from "react-icons/ti";
 import Picker from '@/components/emoji-picker/Picker';
 import { useDispatch, useSelector } from 'react-redux';
@@ -14,6 +12,7 @@ import { setWork } from '@/redux/slices/workspaceSlice';
 import { setFav } from '@/redux/slices/favouriteSlice';
 import Kanban from '@/components/sections/Kanban';
 import { RootState } from '@/redux/store';
+import { changeRole } from '@/redux/slices/userSlice';
 function Workspaces() {
   let timer:ReturnType<typeof setTimeout>;
   const navigate = useNavigate();
@@ -29,6 +28,8 @@ function Workspaces() {
   
   const workspaces = useSelector((state:RootState)=>state.workspace.value);
   const favlist = useSelector((state:RootState)=>state.favourite.value);
+  const user = useSelector((state:RootState)=>state.user);
+  
   
   useEffect(()=>{
     const handleGetpage = async(id:string)=>{
@@ -52,6 +53,8 @@ function Workspaces() {
           setIcon(result?.data?.page?.result?.icon);
           setIsFav(result?.data?.page?.result?.favourite);
           setAccess(true);
+          dispatch(changeRole(result?.data?.roles));
+          console.log(result?.data.roles);
         } catch (error) {
           console.log("Error : ",error);
           
@@ -60,7 +63,7 @@ function Workspaces() {
      }
      handleGetpage(workspaceId?workspaceId:'');
     
-   },[workspaceId,navigate]);
+   },[workspaceId,navigate,dispatch]);
 
    const updateTitle = async(e:ChangeEvent<HTMLInputElement>)=>{
     clearTimeout(timer);
@@ -235,14 +238,17 @@ function Workspaces() {
       console.log(err);
     }
   }
+  console.log(user);
   return (<>
 
   {access ?<>
       <Sidebar/>
     <div className='flex flex-col w-[92%] mx-5'>
 
-   
+   {
+    user.role==='owner' && 
       <div className='flex  justify-between w-[100%]'>
+        
         <Button variant = {"ghost"} size={'icon'} className='rounded-full' onClick={addFav}>
           {
             !isFav?(
@@ -257,24 +263,20 @@ function Workspaces() {
           <Trash className='h-5 w-5'/>
         </Button>
       </div>
+   }
       <div className='py-[10px]'>
-          {/*emoji picker */}
           <Picker icon={icon} onChange = {onIconChange}/>
       <div>
-        <Textarea onChange={updateTitle} placeholder='Untitled' value={title} minRows={1} className='w-full h-fit p-0 border-0 text-[2rem]  resize-none   border-neutral-300' />
+        <Textarea onChange={updateTitle} disabled={user.role==='reader'} placeholder='Untitled' value={title} minRows={1} className='w-full h-fit p-0 border-0 text-[2rem]  resize-none   border-neutral-300' />
       </div>
       <div>
-        <Textarea isMultiline value={description} onChange={updateDescription}  placeholder='Add A Description'  className='w-full p-0 border-0 font-semibold text-[0.8rem] resize-none border-neutral-300' />
+        <Textarea isMultiline value={description} disabled={user.role==='reader'} onChange={updateDescription}  placeholder='Add A Description'  className='w-full p-0 border-0 font-semibold text-[0.8rem] resize-none border-neutral-300' />
       </div>
       </div>
       <div>
         <Kanban datar={sections} boardeId={workspaceId}/>
-        
-        {/* kanban */}
-       
       </div>
       </div>
-      
       </>:<>
       "no path"
       <Button onClick={()=>{navigate("/home")}}> return to Home</Button>

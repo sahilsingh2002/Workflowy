@@ -35,7 +35,7 @@ function App() {
       }
       try{
         const result = await axios(sendreqConfig);
-        if(result.data.username && result.data.username.length>0){
+        if(result.data.username && result.data.username!==null){
           setUser(true);
           console.log(result);
           dispatch(changeUser(result.data));
@@ -69,11 +69,11 @@ function App() {
         <Toaster/>
     
        
-          {(!(userdetails.username.length > 0)) && (pathname !== '/login' && pathname !== '/signup') && <Navigate to="/" />}
+          {(!(userdetails.username!==null && userdetails?.username?.length > 0)) && (pathname !== '/login' && pathname !== '/signup') && <Navigate to="/" />}
     <Routes>
     
-      <Route path='/login' element={userdetails.username.length > 0 ? <Navigate to="/home" />:<Login_page/>}/>
-      <Route path='/signup' element={userdetails.username.length > 0 ? <Navigate to="/home" />:<Signup_page/>}/>
+      <Route path='/login' element={ userdetails.username!==null && userdetails.username.length > 0 ? <Navigate to="/home" />:<Login_page/>}/>
+      <Route path='/signup' element={userdetails.username!==null && userdetails.username.length > 0 ? <Navigate to="/home" />:<Signup_page/>}/>
       <Route path='/home' element={<Home_page/>}/>
       <Route path='/' element={<Lander/>}/>
       <Route path='/workspace' element={<Navigate to="/home" />}/>
