@@ -2,7 +2,7 @@ import Sidebar from '@/components/sidebar/Sidebar'
 import { Button } from '@/components/ui/button';
 import axios from 'axios';
 import { Textarea} from "@nextui-org/react";
-import { Star, Trash } from 'lucide-react';
+import { Share, Star, Trash } from 'lucide-react';
 import { ChangeEvent, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom';
 import { TiStarFullOutline } from "react-icons/ti";
@@ -259,9 +259,16 @@ function Workspaces() {
             )
           }
         </Button>
+        <div>
+
         <Button color='black' variant={"ghost"} size={"icon"} className='rounded-full' onClick={deleteWork}>
           <Trash className='h-5 w-5'/>
         </Button>
+        <Button color='black' variant={"ghost"} size={"icon"} className='rounded-full' onClick={()=>{}}>
+          <Share className='h-5 w-5'/>
+        </Button>
+       
+        </div>
       </div>
    }
       <div className='py-[10px]'>

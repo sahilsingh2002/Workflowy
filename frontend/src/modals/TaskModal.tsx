@@ -8,6 +8,7 @@ import ClassicEditor from '@ckeditor/ckeditor5-build-classic'
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 
+
 let timer;
 const timeOut = 500;
 let isModalClosed = false;
@@ -99,6 +100,7 @@ function TaskModal({boardId,tasks, onClose,onUpdate,onDelete, currRole}) {
     onUpdate(task);
   }
   }
+  
   return (
     <>
   
@@ -127,12 +129,11 @@ function TaskModal({boardId,tasks, onClose,onUpdate,onDelete, currRole}) {
           </div>
           <Divider />
           <div className="relative h-[80%] overflow-x-hidden overflow-y-auto">
-            <CKEditor
+            <CKEditor id="ckeditor"
               editor={ClassicEditor}
               disabled={currRole==='reader'}
               data={content}
               onChange={updateContent}
-              
               
             />
           </div>
