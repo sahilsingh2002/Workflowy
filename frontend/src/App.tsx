@@ -66,7 +66,7 @@ function App() {
        </>
      ):(  
       <div className='h-full flex dark:bg-[#1F1F1F]'>
-        <Toaster/>
+        <Toaster richColors/>
     
        
           {(!(userdetails.username!==null && userdetails?.username?.length > 0)) && (pathname !== '/login' && pathname !== '/signup') && <Navigate to="/" />}

@@ -233,6 +233,7 @@ module.exports.updateFavPos = async (req, res) => {
 };
 module.exports.searchUser = async(req,res)=>{
   const {user} = req.body;
+  if(!user || user.length===0) return res.status(400);
   console.log(user);
   const workspaces = Workspaces();
   const usern = User();
@@ -316,6 +317,25 @@ module.exports.removal = async (req, res) => {
         res.status(202).json({status:true,message:"workspace deleted"});
     }
     catch(err){
-        console.log(err);
+      return res
+      .status(500)
+      .json({ status: false, message: "An error occurred" });
     }
 };
+module.exports.updateUser = async(req,res)=>{
+  const {userid, role, boardId} = req.body;
+ 
+  const workspace = Workspaces();
+  try{
+    const result = await workspace.findOneAndUpdate({_id:new ObjectId(boardId)},{
+      $push:{perms:{id:new ObjectId(userid),role:role===null?'reader':role}},
+    });
+    console.log(result);
+    res.status(200).json({result:result});
+  }
+  catch(err){
+    return res
+      .status(500)
+      .json({ status: false, message: "An error occurred" });
+  }
+}
