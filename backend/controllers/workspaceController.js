@@ -231,6 +231,39 @@ module.exports.updateFavPos = async (req, res) => {
       .json({ status: false, message: "An error occurred" });
   }
 };
+module.exports.searchUser = async(req,res)=>{
+  const {user} = req.body;
+  console.log(user);
+  const workspaces = Workspaces();
+  const usern = User();
+  try{
+    const result = await usern.find({
+      $or:[
+        {
+          name:{
+            $regex:user,
+            $options:"i"
+          },
+        },
+        {
+          username:{
+            $regex:user,
+            $options:'i',
+          }
+        }
+      ]
+    });
+    const arrRes = await result.toArray();
+    console.log(arrRes);
+    return res.status(200).json({hello:arrRes});
+  }
+  catch (err) {
+    console.error("Error in searching:", err);
+    return res
+      .status(500)
+      .json({ status: false, message: "An error occurred" });
+  }
+}
 module.exports.removal = async (req, res) => {
     const id = req.query.id;
     const sect = Sections();

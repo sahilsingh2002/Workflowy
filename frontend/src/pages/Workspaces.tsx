@@ -13,6 +13,7 @@ import { setFav } from '@/redux/slices/favouriteSlice';
 import Kanban from '@/components/sections/Kanban';
 import { RootState } from '@/redux/store';
 import { changeRole } from '@/redux/slices/userSlice';
+import ShareModal from '@/modals/ShareModal';
 function Workspaces() {
   let timer:ReturnType<typeof setTimeout>;
   const navigate = useNavigate();
@@ -25,6 +26,7 @@ function Workspaces() {
   const [sections, setSections] = useState([]);
   const [isFav, setIsFav] = useState(false);
   const [icon, setIcon] = useState('');
+  const [share,setShare]= useState(false);
   
   const workspaces = useSelector((state:RootState)=>state.workspace.value);
   const favlist = useSelector((state:RootState)=>state.favourite.value);
@@ -264,7 +266,7 @@ function Workspaces() {
         <Button color='black' variant={"ghost"} size={"icon"} className='rounded-full' onClick={deleteWork}>
           <Trash className='h-5 w-5'/>
         </Button>
-        <Button color='black' variant={"ghost"} size={"icon"} className='rounded-full' onClick={()=>{}}>
+        <Button color='black' variant={"ghost"} size={"icon"} className='rounded-full' onClick={()=>{setShare(true)}}>
           <Share className='h-5 w-5'/>
         </Button>
        
@@ -282,6 +284,9 @@ function Workspaces() {
       </div>
       <div>
         <Kanban datar={sections} boardeId={workspaceId}/>
+      </div>
+      <div>
+        <ShareModal currRole={user.role} share = {share} onClose = {()=>{setShare(false)}} boardId={workspaceId}/>
       </div>
       </div>
       </>:<>
