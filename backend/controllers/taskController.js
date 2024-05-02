@@ -3,6 +3,7 @@ const { ObjectId } = require('mongodb');
 const {Tasks,Sections} = require('../connectDB/allCollections');
 module.exports.createTask = async(req,res)=>{
   const sectionId = req.query.id
+  const {user} = req.body
   const sect = Sections();
   const tasker = Tasks();
   try{
@@ -15,6 +16,9 @@ module.exports.createTask = async(req,res)=>{
         content:"",
         created_at: Date.now(),
         updated_at: Date.now(),
+        created_by:user,
+        updated_by:user,
+        
     });
     const T = await tasker.findOne({_id:task.insertedId});
     
@@ -31,6 +35,7 @@ module.exports.createTask = async(req,res)=>{
 }
 module.exports.update = async(req,res)=>{
   const {taskId} = req.params;
+  const {user} = req.body;
   const tasker = Tasks();
   try{
     const task = await tasker.findOneAndUpdate({_id:new ObjectId(taskId)},
@@ -79,6 +84,8 @@ module.exports.updatePosition = async(req,res)=>{
         {$set:{
           section:new ObjectId(resourceSectionId),
           position:key,
+          updated_at:Date.now(),
+
         }})
         console.log(result);
       }

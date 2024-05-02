@@ -1,4 +1,3 @@
-
 const express = require('express');
 const {connect} = require('./connectDB/connectToDB');
 const authRoutes = require('./routes/authRoutes')
@@ -8,7 +7,6 @@ const sectionRoutes = require("./routes/sectionRoutes")
 const taskRoutes = require("./routes/taskRoutes")
 
 const cors = require('cors');
-
 
 const port = 7000;
 const app = express();

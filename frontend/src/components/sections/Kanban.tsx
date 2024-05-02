@@ -43,6 +43,7 @@ const Kanban = ({datar,boardeId}:kanbans) => {
   const [data, setdata] = useState<Workspace[]>([]);
   const [loading,setLoading] = useState(false);
   const [selectedTask,setSelectedTask] = useState<Task | undefined>(undefined);
+ 
   const onDragEnd:OnDragEndResponder = async({source,destination})=>{
     if(!destination) return;
     const sourceColIndex = data.findIndex(e=>e._id===source.droppableId);
@@ -99,12 +100,14 @@ const Kanban = ({datar,boardeId}:kanbans) => {
       console.log(result);
       setdata([...data,result.data.section]);
       toast.success('created a new Section');
+     
     } catch (error) {
       toast.error("Failed to add section");
     }
     finally{
       setLoading(false);
     }
+
   }
   
   const deleteSection = async(sectionId:string)=>{
@@ -139,6 +142,7 @@ const Kanban = ({datar,boardeId}:kanbans) => {
       }
       try {
         await axios(sendReqConfig);
+       
       } catch (err) {
         console.log(err);
       }
@@ -149,6 +153,7 @@ const Kanban = ({datar,boardeId}:kanbans) => {
     const sendReqConfig = {
       method:"POST",
       url:`/api/workspace/${boardId}/tasks?id=${sectionId}`,
+      data:{user:user.username},
     }
     try {
       const result = await axios(sendReqConfig);
@@ -156,6 +161,7 @@ const Kanban = ({datar,boardeId}:kanbans) => {
       const index = newData.findIndex(e=>e._id===sectionId);
       newData[index].tasks.unshift(result.data.task);
       setdata(newData);
+      
     } catch (err) {
       console.log(err);
     }
@@ -166,6 +172,8 @@ const Kanban = ({datar,boardeId}:kanbans) => {
     const newData = [...data];
     const sectionIndex = newData.findIndex(e=>e._id===task.section);
     const taskIndex = newData[sectionIndex].tasks.findIndex(e=>e._id===task._id);
+    
+    
    
     newData[sectionIndex].tasks[taskIndex] = task;
   };
@@ -197,12 +205,12 @@ const Kanban = ({datar,boardeId}:kanbans) => {
                 {(provided)=>(
                   <div ref={provided.innerRef}{...provided.droppableProps} className='w-[300px] p-[10px] mr-[10px]'>
                     <div className='flex items-center justify-between mb-[10px]'>
-                      <Textarea value={section?.title} onChange={(e)=>updateSectionTitle(e,section._id)}  placeholder='Untitled' minRows={1} variant='underlined' className='flex-grow'/>
-                      <Button size={"icon"} variant={"ghost"} className='text-gray-600 hover:text-green-500' >
+                      <Textarea value={section?.title} disabled={user.role==='reader'}  onChange={(e)=>updateSectionTitle(e,section._id)}  placeholder='Untitled' minRows={1} variant='underlined' className='flex-grow'/>
+                      <Button size={"icon"} variant={"ghost"} disabled={user.role==='reader'}  className='text-gray-600 hover:text-green-500' >
                         <SquarePlus className='h-4 w-4' onClick={()=>addTask(section._id)}/>
 
                       </Button>
-                      <Button size={"icon"} variant={"ghost"} className='text-gray-500 hover:text-red-500'>
+                      <Button size={"icon"} variant={"ghost"} disabled={user.role==='reader'}  className='text-gray-500 hover:text-red-500'>
                         <Trash className='h-4 w-4' onClick={()=>deleteSection(section._id)}/>
 
                       </Button>                      
@@ -231,7 +239,7 @@ const Kanban = ({datar,boardeId}:kanbans) => {
             ))}
           </div>
         </DragDropContext>
-        <TaskModal currRole = {user.role} tasks = {selectedTask} boardId={boardId} onClose = {()=>setSelectedTask(undefined)} onUpdate = {updateTask} onDelete = {deleteTask}/>
+        <TaskModal  currRole = {user.role} tasks = {selectedTask} boardId={boardId} onClose = {()=>setSelectedTask(undefined)} onUpdate = {updateTask} onDelete = {deleteTask}/>
       
     </div>
   )

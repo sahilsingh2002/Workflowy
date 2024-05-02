@@ -54,7 +54,7 @@ module.exports.getWorkspaces = async (req, res) => {
     console.log("req",req.id);
     const cursor = await workspace
       .find({ perms:{$elemMatch:{id: new ObjectId(req.id)}}})
-      .sort("-position");
+      .sort({position:1});
     const workspaceIds = await cursor.toArray();
     console.log("work",workspaceIds);
 
@@ -111,16 +111,23 @@ module.exports.updatePosition = async (req, res) => {
   const { workspaces } = req.body;
   const workspace = Workspaces();
   try {
-    for (const key in workspaces.reverse()) {
+    for (let key =0; key < workspaces.length;key++) {
       const worksp = workspaces[key];
-      const filter = { _id: worksp._id };
-      const updateDocument = {
-        $set: {
-          position: key,
-        },
-      };
+      
+     
 
-      const result = await workspace.updateOne(filter, updateDocument);
+      
+      
+
+      const result = await workspace.findOneAndUpdate({ _id: new ObjectId(worksp._id) },  
+      {$set: {
+        'position': key,
+      },
+    }
+    );
+      console.log(result);
+      
+      
     }
     res.status(200).json("updated");
   } catch (err) {
@@ -196,7 +203,7 @@ module.exports.getFavorite = async (req, res) => {
     
     const cursor = await workspace
       .find({ perms:{$elemMatch:{id: new ObjectId(req.id), role:'owner'}}, favourite: true })
-      .sort({favpos:-1});
+      .sort({favpos:1});
     const favourites = await cursor.toArray();
     console.log(favourites);
 
@@ -210,8 +217,8 @@ module.exports.updateFavPos = async (req, res) => {
   const { workspaces } = req.body;
   const workspace = Workspaces();
   try {
-    for (let key=workspaces.length-1;key>=0;key--) {
-      const worksp = workspaces[workspace.length-key];
+    for (let key=0;key<workspaces.length;key++) {
+      const worksp = workspaces[key];
       console.log(worksp);
       const filter = { _id: new ObjectId(worksp._id) };
       const updateDocument = {
@@ -232,7 +239,7 @@ module.exports.updateFavPos = async (req, res) => {
   }
 };
 module.exports.searchUser = async(req,res)=>{
-  const {user} = req.body;
+  const {user,username} = req.body;
   if(!user || user.length===0) return res.status(400);
   console.log(user);
   const workspaces = Workspaces();
@@ -254,9 +261,10 @@ module.exports.searchUser = async(req,res)=>{
         }
       ]
     });
-    const arrRes = await result.toArray();
-    console.log(arrRes);
-    return res.status(200).json({hello:arrRes});
+    let arrRes = await result.toArray();
+    const a = arrRes.filter(u=>u.username!==username);
+
+    return res.status(200).json({hello:a});
   }
   catch (err) {
     console.error("Error in searching:", err);
@@ -323,19 +331,42 @@ module.exports.removal = async (req, res) => {
     }
 };
 module.exports.updateUser = async(req,res)=>{
-  const {userid, role, boardId} = req.body;
- 
+  const { userid, role, boardId } = req.body;
+
   const workspace = Workspaces();
-  try{
-    const result = await workspace.findOneAndUpdate({_id:new ObjectId(boardId)},{
-      $push:{perms:{id:new ObjectId(userid),role:role===null?'reader':role}},
-    });
-    console.log(result);
-    res.status(200).json({result:result});
-  }
-  catch(err){
+  try {
+    const existingWorkspace = await workspace.findOne({_id: new ObjectId(boardId), 'perms.id': new ObjectId(userid)});
+    
+    if (existingWorkspace) {
+      // ObjectId exists in the perms array, update the role
+      const result = await workspace.findOneAndUpdate(
+        {
+          _id: new ObjectId(boardId),
+          'perms.id': new ObjectId(userid)
+        },
+        {
+          $set: { 'perms.$.role': role === null ? 'reader' : role }
+        },
+        { returnOriginal: false } // To return the updated document
+      );
+      console.log(result);
+      res.status(200).json({ result: result });
+    } else {
+      // ObjectId doesn't exist in the perms array, push a new object
+      const result = await workspace.findOneAndUpdate(
+        { _id: new ObjectId(boardId) },
+        {
+          $push: { perms: { id: new ObjectId(userid), role: role === null ? 'reader' : role } }
+        },
+        { returnOriginal: false } // To return the updated document
+      );
+      console.log(result);
+      res.status(200).json({ result: result });
+    }
+  } catch (err) {
     return res
       .status(500)
       .json({ status: false, message: "An error occurred" });
   }
+  
 }

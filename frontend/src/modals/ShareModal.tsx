@@ -7,10 +7,13 @@ import {Select, SelectItem} from "@nextui-org/react";
 import { FaShare } from "react-icons/fa";
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/redux/store';
 
 
 function ShareModal({ onClose, boardId, share, currRole }) {
   const { isOpen } = useDisclosure();
+  const user = useSelector((state:RootState)=>state.user);
   const timeout = 500;
   const [users, setUsers] = useState([]);
   const [timer, setTimer] = useState(null);
@@ -35,7 +38,7 @@ function ShareModal({ onClose, boardId, share, currRole }) {
   
 
   useEffect(()=>{
-    const searchUsers =  (search:string) => {
+    const searchUsers =  (search:string,username:string | null=user.username ) => {
       console.log(search);
   
       clearTimeout(timer);
@@ -44,7 +47,9 @@ function ShareModal({ onClose, boardId, share, currRole }) {
         const sendReqConfig = {
           method: "POST",
           url: '/api/workspace/finduser',
-          data: { user: search }
+          data: { user: search,
+            username:username,
+           }
         };
         try {
           const result = await axios(sendReqConfig);
@@ -55,7 +60,11 @@ function ShareModal({ onClose, boardId, share, currRole }) {
           }
           else{
 
-            setUsers(result.data.hello);
+           const newArr = result.data.hello;
+          
+
+
+            setUsers(newArr);
           }
         } catch (err) {
           console.log(err, "err occurred");

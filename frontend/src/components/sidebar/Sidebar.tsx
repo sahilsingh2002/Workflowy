@@ -189,6 +189,7 @@ const collapse = ()=>{
     }
 
     const activeItem = newList.findIndex(e=>e._id===workspaceId);
+    
     setActiveIndex(activeItem);
     dispatch(setWork(newList));
     try{

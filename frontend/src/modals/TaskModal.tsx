@@ -7,16 +7,20 @@ import {CKEditor} from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic'
 import axios from "axios";
 import { Button } from "@/components/ui/button";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
 
 
 let timer;
 const timeOut = 500;
 let isModalClosed = false;
 function TaskModal({boardId,tasks, onClose,onUpdate,onDelete, currRole}) {
+  const user = useSelector((state:RootState)=>state.user);
   const {isOpen, onOpen} = useDisclosure();
   const [task, setTask] = useState(tasks);
   const [title,setTitle] = useState('');
   const [content, setContent] = useState('');
+  
   
   useEffect(()=>{
     setTask(tasks);
@@ -53,13 +57,18 @@ function TaskModal({boardId,tasks, onClose,onUpdate,onDelete, currRole}) {
         method:"PUT",
         url:`/api/workspace/${boardId}/tasks/${task._id}`,
         data:{
-          title:newTitle
+          title:newTitle,
+          updated_by:user.username
         }
       }
       try{
         const result = await axios(sendReqConfig);
         console.log("res",result);
        
+       const newTask = task;
+       newTask.updated_by = user.username;
+      
+       onUpdate(newTask);
       }
       catch(err){
         console.log(err);
@@ -82,7 +91,8 @@ function TaskModal({boardId,tasks, onClose,onUpdate,onDelete, currRole}) {
         method:"PUT",
         url:`/api/workspace/${boardId}/tasks/${task._id}`,
         data:{
-          content:ndata
+          content:ndata,
+          updated_by:user.username
         }
       }
       try{
@@ -124,8 +134,9 @@ function TaskModal({boardId,tasks, onClose,onUpdate,onDelete, currRole}) {
               className='w-full h-fit p-0 border-0 text-[2rem]  resize-none   border-neutral-300'
             />
           </div>
-          <div className="font-semibold">
+          <div className="font-semibold flex justify-between">
             {task !== undefined ? Moment(task.createdAt).format('YYYY-MM-DD') : ''}
+            {task!== undefined ? <div>Last seen by : {task.updated_by}</div>:''}
           </div>
           <Divider />
           <div className="relative h-[80%] overflow-x-hidden overflow-y-auto">
