@@ -56,7 +56,7 @@ function Workspaces() {
           setIsFav(result?.data?.page?.result?.favourite);
           setAccess(true);
           dispatch(changeRole(result?.data?.roles));
-          console.log(result?.data.roles);
+          
         } catch (error) {
           console.log("Error : ",error);
           

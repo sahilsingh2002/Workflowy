@@ -17,7 +17,7 @@ function Home() {
     <div className='h-full flex flex-col items-center justify-center'>
       <img src={IMAGES.empty} alt="empty" className='h-[300px] w-fit dark:hidden' />
       <img src={IMAGES.empty_dark} alt="empty_dark" className='h-[300px] w-fit hidden dark:block' />
-      <h2 className='text-lg font-medium'>Welcome to {user.name}&apos;s Workflowy</h2>
+      <h2 className='text-lg font-medium'>Welcome to {user.name}&apos;s MindGrid</h2>
       <Button>
         <PlusCircle className='h-4 w-4 mr-2'/>
         Create a note

@@ -29,7 +29,7 @@ const comparePasswords = async (password, hashedPassword) => {
   return await bcrypt.compare(password, hashedPassword);
 };
 const generateToken = (user) => {
-  return jwt.sign({ id: user.id }, 'workflowy_adm', { expiresIn: '1h' });
+  return jwt.sign({ id: user.id }, 'MindGrid_adm', { expiresIn: '1h' });
 };
 
 module.exports.isUser = async(req,res)=>{

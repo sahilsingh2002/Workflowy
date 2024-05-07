@@ -6,7 +6,7 @@ module.exports.authenticateUser = async(req,res,next)=>{
     console.log(token);
     
     if(token){
-      const secret = "workflowy_adm";
+      const secret = "MindGrid_adm";
       jwt.verify(token,secret,(err,decoded)=>{
         if (err) {
           console.error('Error:', err.message);

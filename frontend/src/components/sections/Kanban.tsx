@@ -15,7 +15,6 @@ import { RootState } from '@/redux/store'
 interface kanbans  {
   datar:Workspace[];
   boardeId:string | undefined;
-
 }
 
 interface Task {
@@ -23,7 +22,7 @@ interface Task {
   section: string; // Assuming section is an identifier
   position: number;
   title: string;
-  content: string;
+  content: [];
   // Add more properties if needed
 }
 
@@ -86,6 +85,7 @@ const Kanban = ({datar,boardeId}:kanbans) => {
   }
   useEffect(()=>{
     setdata(datar);
+    
   },[datar]);
 
   console.log(data);
@@ -170,6 +170,7 @@ const Kanban = ({datar,boardeId}:kanbans) => {
   const updateTask =async(task:Task)=>{
 
     const newData = [...data];
+    console.log(data);
     const sectionIndex = newData.findIndex(e=>e._id===task.section);
     const taskIndex = newData[sectionIndex].tasks.findIndex(e=>e._id===task._id);
     
@@ -185,7 +186,7 @@ const Kanban = ({datar,boardeId}:kanbans) => {
     setdata(newData);
 
   };
-  console.log(data);
+  console.log(selectedTask);
   return (
     <div>
       <div className='flex items-center justify-between py-3'>

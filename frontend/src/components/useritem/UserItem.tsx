@@ -46,7 +46,7 @@ function UserItem() {
     <AvatarImage src="https://github.com/shadcn.png" alt='avatar'/>
   </Avatar>
   <span className='text-start font-semibold text-[15px] line-clamp-1'>
-    {user?.name}&apos;s Workflowy 
+    {user?.name}&apos;s MindGrid 
   </span>
 </div>
 <ChevronsLeftRight className='rotate-90 ml-2 text-muted-foreground h-4 w-4'/>
@@ -64,7 +64,7 @@ function UserItem() {
               </Avatar>
             <div className='space-y-1'>
               <p className='tex-sm line-clamp-1'>
-                {user?.name}&apos;s Workflowy
+                {user?.name}&apos;s MindGrid
               </p>
             </div>
             </div>
