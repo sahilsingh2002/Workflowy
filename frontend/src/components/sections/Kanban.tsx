@@ -11,6 +11,7 @@ import { Card, CardHeader, CardTitle } from '../ui/card'
 import TaskModal from '@/modals/TaskModal'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/redux/store'
+import {DndContext} from '@dnd-kit/core'
 
 interface kanbans  {
   datar:Workspace[];

@@ -1,5 +1,5 @@
+import { Modal, ModalContent, ModalBody, useDisclosure, Textarea, Divider } from "@nextui-org/react";
 
-import {Modal, ModalContent, ModalBody, useDisclosure, Textarea, Divider} from "@nextui-org/react"
 import { Trash } from "lucide-react";
 import  { useEffect, useRef, useState } from 'react'
 import Moment from 'moment'
@@ -8,39 +8,16 @@ import ClassicEditor from '@ckeditor/ckeditor5-build-classic'
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { useSelector } from "react-redux";
-import JoditEditor from 'jodit-react';
+
 import { RootState } from "@/redux/store";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { isNull } from "util";
-import Tiptap from "@/components/Tiptap";
+import FroalaEditor from 'react-froala-wysiwyg'
 
-ClassicEditor
-    .create( document.querySelector( '#editor' ), {
-        simpleUpload: {
-            // The URL that the images are uploaded to.
-            uploadUrl: 'YOUR_UPLOAD_URL',
-
-            // Enable the XMLHttpRequest.withCredentials property.
-            withCredentials: false,
-
-            // Headers sent along with the XMLHttpRequest to the upload server.
-            headers: {
-                // Example header
-                'X-CSRF-TOKEN': 'CSRF-Token',
-            }
-        }
-    } )
-    .catch( error => {
-        console.error( error );
-    } );
+import 'froala-editor/css/froala_style.min.css';
+import 'froala-editor/css/froala_editor.pkgd.min.css';
+import 'froala-editor/js/plugins/image.min.js';
+import 'froala-editor/js/plugins/char_counter.min.js';
+import 'froala-editor/js/plugins/save.min.js';
+import FroalaEditorView from "react-froala-wysiwyg/FroalaEditorView";
 
 let timer;
 const timeOut = 500;
@@ -74,7 +51,7 @@ function TaskModal({boardId,tasks, onClose,onUpdate,onDelete, currRole}) {
     try{
       const result = await axios(sendReqConfig);
       onDelete(task);
-      setTask(undefined);
+      setTask(null);
     }
     catch(err){
       console.log(err);
@@ -111,13 +88,12 @@ function TaskModal({boardId,tasks, onClose,onUpdate,onDelete, currRole}) {
     onUpdate(task);
   }
   const updateContent = async(e)=>{
+    isModalClosed = false;
     clearTimeout(timer);
-    const ndata = e;
-    console.log(e);
-    if(!isModalClosed){
 
-   
-    
+    const ndata = e;
+    if(!isModalClosed){
+      console.log("here",e);
     timer = setTimeout(async()=>{
       const sendReqConfig = {
         method:"PUT",
@@ -142,7 +118,8 @@ function TaskModal({boardId,tasks, onClose,onUpdate,onDelete, currRole}) {
     onUpdate(task);
   }
   }
-  const editor = useRef(null);
+  
+
   
   return (
     <>
@@ -172,7 +149,7 @@ function TaskModal({boardId,tasks, onClose,onUpdate,onDelete, currRole}) {
             {task!== undefined ? <div>Last seen by : {task.updated_by}</div>:''}
           </div>
           <Divider />
-          <div className="relative h-[80%] overflow-x-hidden overflow-y-auto" onClick={(e)=>e.stopPropagation()}>
+          <div className="relative h-52 overflow-x-hidden overflow-y-auto" >
             {/* <CKEditor id="ckeditor"
               editor={ClassicEditor}
               disabled={currRole==='reader'}
@@ -195,13 +172,49 @@ function TaskModal({boardId,tasks, onClose,onUpdate,onDelete, currRole}) {
              }}
               
             /> */}
-            {/* <JoditEditor
-			ref={editor}
-			value={content}
-			onChange={(e)=>updateContent(e)}
-		/> */}
-    <Tiptap description={content} onChange = {updateContent}/>
+          {currRole==='reader'?
+           <FroalaEditorView
            
+            config={{
+            
+
+            placeholderText:"Start Writing",
+           
+            saveInterval:100,
+            
+            events:{
+              "save.before":function(html:string){
+                updateContent(html);
+              },
+             
+              
+             
+            }
+           }}
+           
+          
+           model={content}
+           onModelChange={(e:string)=>{
+             updateContent(e);
+          }}
+
+           />
+           :
+           <FroalaEditor
+           
+            config={{
+            
+
+            placeholderText:"Start Writing",
+           
+           }}
+           
+          
+           model={content}
+
+           />
+}
+
           </div>
         </ModalBody>
       </>
