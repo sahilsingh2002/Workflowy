@@ -3,6 +3,7 @@ import {ElementRef, useRef, useState, useEffect} from 'react'
 import {useMediaQuery} from 'usehooks-ts';
 
 import {DragDropContext, Draggable, Droppable, OnDragEndResponder} from 'react-beautiful-dnd'
+import {Skeleton} from "@nextui-org/react";
 
 
 
@@ -29,6 +30,7 @@ import { changeRole } from '@/redux/slices/userSlice';
 
 
 function Sidebar() {
+  const [workLoad, setWorkLoad] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const { workspaceId } = useParams();
   const navigate = useNavigate();
@@ -182,11 +184,13 @@ const collapse = ()=>{
    
    const onDragEnd:OnDragEndResponder = async ({source,destination})=>{
     setIsDragging(false);
+    setWorkLoad(true);
     const newList = [...workspace.value];
-    const [removed] = newList.splice(source.index,1);
     if(destination && destination!==null){
+      const [removed] = newList.splice(source.index,1);
       newList.splice(destination.index,0,removed);
     }
+    
 
     const activeItem = newList.findIndex(e=>e._id===workspaceId);
     
@@ -205,6 +209,9 @@ const collapse = ()=>{
     }
     catch(err){
       console.log("Error : ",err);
+    }
+    finally{
+      setWorkLoad(false);
     }
 
    }
@@ -273,14 +280,16 @@ const collapse = ()=>{
       <DragDropContext onDragEnd = {onDragEnd} onDragStart={handleDragStart}>
      
 
-     
+          {!workLoad?
         <Droppable key = {'list-workspace-droppable'} droppableId = {'list-workspace-droppable'}>
           {(provided)=>(
             <div ref = {provided.innerRef} {...provided.droppableProps}>
               {
                 workspace.value.map((item,index)=>(
+                  
                   <Draggable key = {item._id} draggableId = {item._id} index = {index}>
                     {(provided,snapshot)=>(
+                   
                       <div onClick={() => {
                         navigate(`/workspace/${item._id}`);
                       }} ref = {provided.innerRef}{...provided.dragHandleProps}{...provided.draggableProps} className={`${index==activeIndex && 'bg-slate-400 dark:bg-slate-600'} pl-[20px] ${snapshot.isDragging?'cursor-grab':'cursor-pointer!important'} py-2  w-full hover:bg-neutral-400 dark:hover:bg-neutral-500  flex items-center text-sm font-medium text-muted-foreground/80`}>
@@ -289,8 +298,10 @@ const collapse = ()=>{
                          {item.name}
                         </div>
                       </div>
+                    
                     )}
                   </Draggable>
+
                 ))
               }
               {provided.placeholder}
@@ -298,6 +309,9 @@ const collapse = ()=>{
           )}
 
         </Droppable>
+        :
+        <LoadingSpinner/>
+        }
         
        
       </DragDropContext>

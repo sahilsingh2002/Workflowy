@@ -180,8 +180,28 @@ function TaskModal({boardId,tasks, onClose,onUpdate,onDelete, currRole}) {
 
             placeholderText:"Start Writing",
            
+          
+            
+            
+           }}
+           
+          
+           model={content}
+           
+
+           />
+           :
+           <FroalaEditor
+           
+           config={{
+            
+
+            placeholderText:"Start Writing",
+           
             saveInterval:100,
             
+            imageUploadParam: 'image_param',
+            imageUploadURL: '/upload_image',
             events:{
               "save.before":function(html:string){
                 updateContent(html);
@@ -197,20 +217,6 @@ function TaskModal({boardId,tasks, onClose,onUpdate,onDelete, currRole}) {
            onModelChange={(e:string)=>{
              updateContent(e);
           }}
-
-           />
-           :
-           <FroalaEditor
-           
-            config={{
-            
-
-            placeholderText:"Start Writing",
-           
-           }}
-           
-          
-           model={content}
 
            />
 }
