@@ -10,6 +10,17 @@ import { Button } from "@/components/ui/button";
 import { useSelector } from "react-redux";
 import JoditEditor from 'jodit-react';
 import { RootState } from "@/redux/store";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { isNull } from "util";
+import Tiptap from "@/components/Tiptap";
 
 ClassicEditor
     .create( document.querySelector( '#editor' ), {
@@ -136,7 +147,7 @@ function TaskModal({boardId,tasks, onClose,onUpdate,onDelete, currRole}) {
   return (
     <>
   
-   <Modal size="3xl" className="flex" backdrop="blur" isOpen={task !== undefined} onClose={onCloser}>
+   <Modal size="3xl" className="flex" backdrop="blur" isOpen={task !== undefined } onClose={onCloser}>
   <ModalContent>
     {(onClose) => (
       <>
@@ -162,7 +173,7 @@ function TaskModal({boardId,tasks, onClose,onUpdate,onDelete, currRole}) {
           </div>
           <Divider />
           <div className="relative h-[80%] overflow-x-hidden overflow-y-auto" onClick={(e)=>e.stopPropagation()}>
-            <CKEditor id="ckeditor"
+            {/* <CKEditor id="ckeditor"
               editor={ClassicEditor}
               disabled={currRole==='reader'}
               data={content}
@@ -183,12 +194,13 @@ function TaskModal({boardId,tasks, onClose,onUpdate,onDelete, currRole}) {
                 },
              }}
               
-            />
+            /> */}
             {/* <JoditEditor
 			ref={editor}
 			value={content}
 			onChange={(e)=>updateContent(e)}
 		/> */}
+    <Tiptap description={content} onChange = {updateContent}/>
            
           </div>
         </ModalBody>
