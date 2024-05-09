@@ -1,10 +1,9 @@
 import { Modal, ModalContent, ModalBody, useDisclosure, Textarea, Divider } from "@nextui-org/react";
 
 import { Trash } from "lucide-react";
-import  { useEffect, useRef, useState } from 'react'
+import  { useEffect, useState } from 'react'
 import Moment from 'moment'
-import {CKEditor} from '@ckeditor/ckeditor5-react';
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic'
+
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { useSelector } from "react-redux";
@@ -93,7 +92,6 @@ function TaskModal({boardId,tasks, onClose,onUpdate,onDelete, currRole}) {
 
     const ndata = e;
     if(!isModalClosed){
-      console.log("here",e);
     timer = setTimeout(async()=>{
       const sendReqConfig = {
         method:"PUT",
@@ -118,6 +116,9 @@ function TaskModal({boardId,tasks, onClose,onUpdate,onDelete, currRole}) {
     onUpdate(task);
   }
   }
+  useEffect(()=>{
+    updateContent(content);
+  },[content]);
   
 
   
@@ -145,8 +146,8 @@ function TaskModal({boardId,tasks, onClose,onUpdate,onDelete, currRole}) {
             />
           </div>
           <div className="font-semibold flex justify-between">
-            {task !== undefined ? Moment(task.createdAt).format('YYYY-MM-DD') : ''}
-            {task!== undefined ? <div>Last seen by : {task.updated_by}</div>:''}
+            {task !== undefined ? Moment(task.updatedAt).format('YYYY-MM-DD HH:mm:ss') : ''}
+            {task!== undefined ? <div>Last updated by : {task.updated_by}</div>:''}
           </div>
           <Divider />
           <div className="relative h-52 overflow-x-hidden overflow-y-auto" >
@@ -200,12 +201,53 @@ function TaskModal({boardId,tasks, onClose,onUpdate,onDelete, currRole}) {
            
             saveInterval:100,
             
-            imageUploadParam: 'image_param',
-            imageUploadURL: '/upload_image',
+            imageUploadParam: 'filename',
+            imageUploadURL: '/api/workspace/:workspaceId/tasks/upload_image',
+            imageUploadMethod: 'POST',
+            imageUploadParams: {id: 'filename'},
+            imageAllowedTypes: ['jpeg', 'jpg', 'png'],
             events:{
+              'image.removed': function ($img) {
+                console.log($img);
+              },
               "save.before":function(html:string){
                 updateContent(html);
               },
+              'image.beforeUpload': function (images) {
+                console.log("uploading");
+              },
+              'image.uploaded': function (response) {
+                console.log(response);
+                
+              },
+              'image.inserted': function ($img, response) {
+                console.log($img,response);
+              },
+              'image.error': function (error, response) {
+                // Bad link.
+                if (error.code == 1) { console.log("1",error) }
+        
+                // No link in upload response.
+                else if (error.code == 2) { console.log("2",error) }
+        
+                // Error during image upload.
+                else if (error.code == 3) { console.log("3",error) }
+        
+                // Parsing response failed.
+                else if (error.code == 4) { console.log("4",error) }
+        
+                // Image too text-large.
+                else if (error.code == 5) { console.log("5",error) }
+        
+                // Invalid image type.
+                else if (error.code == 6) { console.log("6",error) }
+        
+                // Image can be uploaded only to same domain in IE 8 and IE 9.
+                else if (error.code == 7) { console.log("7",error) }
+             
+              
+             
+            }
              
               
              
@@ -215,7 +257,7 @@ function TaskModal({boardId,tasks, onClose,onUpdate,onDelete, currRole}) {
           
            model={content}
            onModelChange={(e:string)=>{
-             updateContent(e);
+             setContent(e);
           }}
 
            />

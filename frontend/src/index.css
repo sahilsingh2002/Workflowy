@@ -6,14 +6,18 @@ html,body,:root{
   height: 100%;
 }
 ::-webkit-scrollbar{
-  width: 5px;
+  width: 10px;
   height: 5px;
+  
 }
 ::-webkit-scrollbar-track{
-  background:gray;
+  background:white;
+  
+
 }
 ::-webkit-scrollbar-thumb{
-  background-color: darkslategray;
+  background-color: lightskyblue;
+    border-radius: 5px;
 }
 ::-webkit-scrollbar-thumb:hover{
   background-color: #555;

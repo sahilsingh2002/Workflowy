@@ -7,7 +7,7 @@ import { Textarea } from '@nextui-org/input'
 import { Trash, SquarePlus } from 'lucide-react'
 import axios from 'axios'
 import { toast } from 'sonner'
-import { Card, CardHeader, CardTitle } from '../ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import TaskModal from '@/modals/TaskModal'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/redux/store'
@@ -22,7 +22,7 @@ interface Task {
   section: string; // Assuming section is an identifier
   position: number;
   title: string;
-  content: [];
+  content: string;
   // Add more properties if needed
 }
 
@@ -39,6 +39,7 @@ const timeOut = 500;
 const Kanban = ({datar,boardeId}:kanbans) => {
   const user = useSelector((state:RootState)=>state.user);
   const boardId = boardeId;
+  const [titleshow,setTitleShow] = useState(false);
   const [data, setdata] = useState<Workspace[]>([]);
   const [loading,setLoading] = useState(false);
   const [selectedTask,setSelectedTask] = useState<Task | undefined>(undefined);
@@ -206,7 +207,9 @@ const Kanban = ({datar,boardeId}:kanbans) => {
                 {(provided)=>(
                   <div ref={provided.innerRef}{...provided.droppableProps} className='w-[300px] p-[10px] mr-[10px]'>
                     <div className='flex items-center justify-between mb-[10px]'>
-                      <Textarea value={section?.title} disabled={user.role==='reader'}  onChange={(e)=>updateSectionTitle(e,section._id)}  placeholder='Untitled' minRows={1} variant='underlined' className='flex-grow'/>
+                      
+                      <Textarea value={section?.title} disabled={user.role==='reader'}  onChange={(e)=>updateSectionTitle(e,section._id)}  placeholder='Untitled' minRows={1} size='lg' inputMode='text' color='secondary' className=' font-semibold text-xl  flex-grow'/>
+                      
                       <Button size={"icon"} variant={"ghost"} disabled={user.role==='reader'}  className='text-gray-600 hover:text-green-500' >
                         <SquarePlus className='h-4 w-4' onClick={()=>addTask(section._id)}/>
 
@@ -223,8 +226,9 @@ const Kanban = ({datar,boardeId}:kanbans) => {
                           {(provided,snapshot)=>(
                             <Card onClick={()=>{setSelectedTask(task)}} ref={provided.innerRef}{...provided.draggableProps}{...provided.dragHandleProps}>
                             <CardHeader>
-          <CardTitle className='text-md'>{task.title===''?'Untitled':task.title}</CardTitle>
+          <CardTitle className='text-xl'>{task.title===''?'Untitled':task.title}</CardTitle>
         </CardHeader>
+        <CardContent className='text-neutral-500  text-md'>{task.content===''?'(no Content yet)':task.content.slice(3,30)+'...'}</CardContent>
                             </Card>
                           )
                           }
