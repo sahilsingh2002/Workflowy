@@ -1,20 +1,34 @@
+import { Modal, ModalContent, ModalBody, useDisclosure, Textarea, Divider } from "@nextui-org/react";
 
-import {Modal, ModalContent, ModalBody, useDisclosure,Button, Textarea, Divider} from "@nextui-org/react"
 import { Trash } from "lucide-react";
-import React, { useEffect, useState } from 'react'
+import  { useEffect, useState } from 'react'
 import Moment from 'moment'
-import {CKEditor} from '@ckeditor/ckeditor5-react';
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic'
+
 import axios from "axios";
+import { Button } from "@/components/ui/button";
+import { useSelector } from "react-redux";
+
+import { RootState } from "@/redux/store";
+import FroalaEditor from 'react-froala-wysiwyg'
+
+import 'froala-editor/css/froala_style.min.css';
+import 'froala-editor/css/froala_editor.pkgd.min.css';
+import 'froala-editor/js/plugins/image.min.js';
+import 'froala-editor/js/plugins/char_counter.min.js';
+import 'froala-editor/js/plugins/save.min.js';
+import FroalaEditorView from "react-froala-wysiwyg/FroalaEditorView";
 
 let timer;
 const timeOut = 500;
 let isModalClosed = false;
-function TaskModal({boardId,tasks, onClose,onUpdate,onDelete}) {
+function TaskModal({boardId,tasks, onClose,onUpdate,onDelete, currRole}) {
+  const user = useSelector((state:RootState)=>state.user);
   const {isOpen, onOpen} = useDisclosure();
   const [task, setTask] = useState(tasks);
   const [title,setTitle] = useState('');
-  const [content, setContent] = useState('');
+  const [content, setContent] = useState("");
+  
+  
   useEffect(()=>{
     setTask(tasks);
     setTitle(tasks!==undefined?tasks.title:'');
@@ -36,7 +50,7 @@ function TaskModal({boardId,tasks, onClose,onUpdate,onDelete}) {
     try{
       const result = await axios(sendReqConfig);
       onDelete(task);
-      setTask(undefined);
+      setTask(null);
     }
     catch(err){
       console.log(err);
@@ -50,13 +64,18 @@ function TaskModal({boardId,tasks, onClose,onUpdate,onDelete}) {
         method:"PUT",
         url:`/api/workspace/${boardId}/tasks/${task._id}`,
         data:{
-          title:newTitle
+          title:newTitle,
+          updated_by:user.username
         }
       }
       try{
         const result = await axios(sendReqConfig);
         console.log("res",result);
        
+       const newTask = task;
+       newTask.updated_by = user.username;
+      
+       onUpdate(newTask);
       }
       catch(err){
         console.log(err);
@@ -67,19 +86,19 @@ function TaskModal({boardId,tasks, onClose,onUpdate,onDelete}) {
     setTitle(newTitle);
     onUpdate(task);
   }
-  const updateContent = async(event,editor)=>{
+  const updateContent = async(e)=>{
+    isModalClosed = false;
     clearTimeout(timer);
-    const ndata = editor.getData();
-    if(!isModalClosed){
 
-   
-    
+    const ndata = e;
+    if(!isModalClosed){
     timer = setTimeout(async()=>{
       const sendReqConfig = {
         method:"PUT",
         url:`/api/workspace/${boardId}/tasks/${task._id}`,
         data:{
-          content:ndata
+          content:ndata,
+          updated_by:user.username
         }
       }
       try{
@@ -97,16 +116,22 @@ function TaskModal({boardId,tasks, onClose,onUpdate,onDelete}) {
     onUpdate(task);
   }
   }
+  useEffect(()=>{
+    updateContent(content);
+  },[content]);
+  
+
+  
   return (
     <>
   
-   <Modal size="3xl" backdrop="blur" isOpen={task !== undefined} onClose={onCloser}>
+   <Modal size="3xl" className="flex" backdrop="blur" isOpen={task !== undefined } onClose={onCloser}>
   <ModalContent>
     {(onClose) => (
       <>
-        <ModalBody className="border border-black">
+        <ModalBody className="border border-black" onClick={e=>e.stopPropagation()}>
           <div className="flex items-center justify-end w-[100%]">
-            <Button size="sm" variant="ghost" onPress={deleteTask}>
+            <Button size="icon" className="-mt-2 mx-3" disabled={currRole==='reader'} variant="ghost" onClick={deleteTask}>
               <Trash />
             </Button>
           </div>
@@ -115,21 +140,129 @@ function TaskModal({boardId,tasks, onClose,onUpdate,onDelete}) {
               placeholder='Untitled'
               value={title}
               onChange={updateTitle}
+              disabled={currRole==='reader'}
               minRows={1}
               className='w-full h-fit p-0 border-0 text-[2rem]  resize-none   border-neutral-300'
             />
           </div>
-          <div className="font-semibold">
-            {task !== undefined ? Moment(task.createdAt).format('YYYY-MM-DD') : ''}
+          <div className="font-semibold flex justify-between">
+            {task !== undefined ? Moment(task.updatedAt).format('YYYY-MM-DD HH:mm:ss') : ''}
+            {task!== undefined ? <div>Last updated by : {task.updated_by}</div>:''}
           </div>
           <Divider />
-          <div className="relative h-[80%] overflow-x-hidden overflow-y-auto">
-            <CKEditor
+          <div className="relative h-52 overflow-x-hidden overflow-y-auto" >
+            {/* <CKEditor id="ckeditor"
               editor={ClassicEditor}
+              disabled={currRole==='reader'}
               data={content}
               onChange={updateContent}
+              config={{
+                toolbar: {
+                  items: [
+                    // Add other toolbar items here
+                    'imageInsert', // This adds the image insert button to the toolbar
+                  ],
+                },
+                image: {
+                  toolbar: [
+                    'imageTextAlternative',
+                    'imageStyle:full',
+                    'imageStyle:side',
+                  ],
+                },
+             }}
               
-            />
+            /> */}
+          {currRole==='reader'?
+           <FroalaEditorView
+           
+            config={{
+            
+
+            placeholderText:"Start Writing",
+           
+          
+            
+            
+           }}
+           
+          
+           model={content}
+           
+
+           />
+           :
+           <FroalaEditor
+           
+           config={{
+            
+
+            placeholderText:"Start Writing",
+           
+            saveInterval:100,
+            
+            imageUploadParam: 'filename',
+            imageUploadURL: '/api/workspace/:workspaceId/tasks/upload_image',
+            imageUploadMethod: 'POST',
+            imageUploadParams: {id: 'filename'},
+            imageAllowedTypes: ['jpeg', 'jpg', 'png'],
+            events:{
+              'image.removed': function ($img) {
+                console.log($img);
+              },
+              "save.before":function(html:string){
+                updateContent(html);
+              },
+              'image.beforeUpload': function (images) {
+                console.log("uploading");
+              },
+              'image.uploaded': function (response) {
+                console.log(response);
+                
+              },
+              'image.inserted': function ($img, response) {
+                console.log($img,response);
+              },
+              'image.error': function (error, response) {
+                // Bad link.
+                if (error.code == 1) { console.log("1",error) }
+        
+                // No link in upload response.
+                else if (error.code == 2) { console.log("2",error) }
+        
+                // Error during image upload.
+                else if (error.code == 3) { console.log("3",error) }
+        
+                // Parsing response failed.
+                else if (error.code == 4) { console.log("4",error) }
+        
+                // Image too text-large.
+                else if (error.code == 5) { console.log("5",error) }
+        
+                // Invalid image type.
+                else if (error.code == 6) { console.log("6",error) }
+        
+                // Image can be uploaded only to same domain in IE 8 and IE 9.
+                else if (error.code == 7) { console.log("7",error) }
+             
+              
+             
+            }
+             
+              
+             
+            }
+           }}
+           
+          
+           model={content}
+           onModelChange={(e:string)=>{
+             setContent(e);
+          }}
+
+           />
+}
+
           </div>
         </ModalBody>
       </>

@@ -29,7 +29,7 @@ const comparePasswords = async (password, hashedPassword) => {
   return await bcrypt.compare(password, hashedPassword);
 };
 const generateToken = (user) => {
-  return jwt.sign({ id: user.id }, 'workflowy_adm', { expiresIn: '1h' });
+  return jwt.sign({ id: user.id }, 'MindGrid_adm', { expiresIn: '1h' });
 };
 
 module.exports.isUser = async(req,res)=>{
@@ -108,7 +108,7 @@ module.exports.authing = async(req,res)=>{
     const result = await user.findOne({_id:new ObjectId(userId)});
     console.log("res",result);
   
-    res.json({ name:result.name, email:result.email, username:result.username});
+    res.json({ name:result.name, email:result.email, username:result.username,role:'owner'});
   }
   catch(err){
     console.error("Error in authing:", err);

@@ -9,7 +9,7 @@ const connect = async()=>{
   try{
     const client = new MongoClient(URI);
     await client.connect()
-    db = client.db("workflowy");
+    db = client.db("MindGrid");
     console.log("mongoDB connected");
 
   }
