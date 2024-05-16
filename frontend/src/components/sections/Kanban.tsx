@@ -191,7 +191,7 @@ const Kanban = ({datar,boardeId}:kanbans) => {
   return (
     <div>
       <div className='flex items-center justify-between py-3'>
-          <Button variant={"ghost"} disabled={user.role==='reader'} onClick={addSection}>
+          <Button className='dark:hover:bg-[#22272b]' variant={"ghost"} disabled={user.role==='reader'} onClick={addSection}>
             Add Section
           </Button>
         <div className='text-sm font-[700]'>
@@ -200,7 +200,7 @@ const Kanban = ({datar,boardeId}:kanbans) => {
         </div>
         <Divider orientation='horizontal' className='margin-[10px]'/>
         <DragDropContext onDragEnd={onDragEnd}>
-          <div className='flex items-start w-[80%] lg:w-[calc(100vw-400px)] overflow-x-auto'>
+          <div className='flex items-start w-[80%] lg:w-[Calc(80vw)] overflow-x-auto'>
             {data.map(section=>(
               <div key={section._id} className='w-[300px]'>
               <Droppable isDropDisabled={user.role==='reader'} key={section._id} droppableId={section._id}>
@@ -210,21 +210,21 @@ const Kanban = ({datar,boardeId}:kanbans) => {
                       
                       <Textarea value={section?.title} disabled={user.role==='reader'}  onChange={(e)=>updateSectionTitle(e,section._id)}  placeholder='Untitled' minRows={1} size='lg' inputMode='text' color='secondary' className=' font-semibold text-xl  flex-grow'/>
                       
-                      <Button size={"icon"} variant={"ghost"} disabled={user.role==='reader'}  className='text-gray-600 hover:text-green-500' >
+                      <Button size={"icon"} variant={"ghost"} disabled={user.role==='reader'}  className=' dark:hover:bg-[#22272b] ' >
                         <SquarePlus className='h-4 w-4' onClick={()=>addTask(section._id)}/>
 
                       </Button>
-                      <Button size={"icon"} variant={"ghost"} disabled={user.role==='reader'}  className='text-gray-500 hover:text-red-500'>
+                      <Button size={"icon"} variant={"ghost"} disabled={user.role==='reader'}  className='dark:hover:bg-[#22272b]'>
                         <Trash className='h-4 w-4' onClick={()=>deleteSection(section._id)}/>
 
                       </Button>                      
                     </div>
-                    {/* tasks */}
+                    
                     {
                       section.tasks.map((task:Task,index:number)=>(
                         <Draggable key = {task._id} draggableId={task._id} index = {index}>
                           {(provided,snapshot)=>(
-                            <Card onClick={()=>{setSelectedTask(task)}} ref={provided.innerRef}{...provided.draggableProps}{...provided.dragHandleProps}>
+                            <Card  onClick={()=>{setSelectedTask(task)}} ref={provided.innerRef}{...provided.draggableProps}{...provided.dragHandleProps}>
                             <CardHeader>
           <CardTitle className='text-xl'>{task.title===''?'Untitled':task.title}</CardTitle>
         </CardHeader>

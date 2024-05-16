@@ -229,18 +229,18 @@ const collapse = ()=>{
    
    {loading?
    <LoadingSpinner/>:
-   <div className={`relative h-screen ${isCollapsed ? "w-0":"w-fit"}  bg-white dark:bg-slate-900  dark:text-white `}>
+   <div className={`relative h-screen ${isCollapsed ? "w-0":"w-fit"}  bg-white dark:bg-[#1C2025]  dark:text-[#9EADAC] `}>
     <aside ref={sidebarRef} id="sidebar"  className={cn(
           "group/sidebar h-screen bg-secondary overflow-y-auto relative flex w-60 flex-col z-[99999]",
           isResetting && "transition-all ease-in-out duration-300",
           isMobile && "w-0"
         )}>
-      <div className="flex h-full flex-col overflow-y-auto border-r border-slate-200 bg-white px-3 py-4 dark:border-slate-700 dark:bg-slate-900">
+      <div className="flex h-full flex-col overflow-y-auto border-r border-slate-200 bg-white px-3 py-4 dark:border-slate-700 dark:bg-[#1C2025]">
       <div
           onClick={collapse}
           role="button"
           className={cn(
-            "h-6 w-6 text-muted-foreground rounded-sm hover:bg-neutral-300 dark:hover:bg-neutral-600 absolute top-3 right-2 opacity-0 group-hover/sidebar:opacity-100 transition",
+            "h-6 w-6 text-muted-foreground rounded-sm hover:bg-neutral-300 dark:hover:bg-[#4E77BA] absolute top-3 right-2 opacity-0 group-hover/sidebar:opacity-100 transition",
             isMobile && "opacity-100"
           )}
         >
@@ -292,7 +292,7 @@ const collapse = ()=>{
                    
                       <div onClick={() => {
                         navigate(`/workspace/${item._id}`);
-                      }} ref = {provided.innerRef}{...provided.dragHandleProps}{...provided.draggableProps} className={`${index==activeIndex && 'bg-slate-400 dark:bg-slate-600'} pl-[20px] ${snapshot.isDragging?'cursor-grab':'cursor-pointer!important'} py-2  w-full hover:bg-neutral-400 dark:hover:bg-neutral-500  flex items-center text-sm font-medium text-muted-foreground/80`}>
+                      }} ref = {provided.innerRef}{...provided.dragHandleProps}{...provided.draggableProps} className={`${index==activeIndex && 'bg-slate-400 dark:bg-slate-600'} pl-[20px] ${snapshot.isDragging?'cursor-grab':'cursor-pointer!important'} py-2  w-full hover:bg-neutral-400 dark:hover:bg-[#4E77BA]  flex items-center text-sm font-medium text-muted-foreground/80`}>
                         <Emoji unified={item.icon} size={25}/>
                         <div className='mx-2'>
                          {item.name}
@@ -324,7 +324,7 @@ const collapse = ()=>{
       <div
           onMouseDown={handleMouseDown}
           onClick={resetWidth}
-          className="opacity-0 hover:opacity-100 transition cursor-ew-resize absolute h-[100vh] w-1git  bg-primary/10 right-0 top-0 bottom-0"
+          className="opacity-0 hover:opacity-100 transition cursor-ew-resize absolute h-[100vh] w-2  bg-[#282e34] right-0 top-0 bottom-0"
         />
     </aside>
     <div
