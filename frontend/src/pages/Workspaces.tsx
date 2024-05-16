@@ -2,10 +2,10 @@ import Sidebar from '@/components/sidebar/Sidebar'
 import { Button } from '@/components/ui/button';
 import axios from 'axios';
 import { Textarea} from "@nextui-org/react";
-import { Share, Star, Trash, UserPlus } from 'lucide-react';
+import { Share, Trash, UserPlus } from 'lucide-react';
 import { ChangeEvent, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom';
-import { TiStarFullOutline } from "react-icons/ti";
+import { FaRegStar,FaStar  } from "react-icons/fa6";
 import Picker from '@/components/emoji-picker/Picker';
 import { useDispatch, useSelector } from 'react-redux';
 import { setWork } from '@/redux/slices/workspaceSlice';
@@ -249,15 +249,15 @@ function Workspaces() {
 
    {
     user.role==='owner' && 
-      <div className='flex  justify-between w-[100%]'>
+      <div className='flex  justify-end w-[100%]'>
         
         <Button variant = {"ghost"} size={'icon'} className='rounded-full dark:hover:bg-[#22272b] ' onClick={addFav}>
           {
             !isFav?(
-              <Star className='h-5 w-5 '/>
+              <FaRegStar className='h-5 w-5 '/>
             ):(
 
-              <TiStarFullOutline className='h-5 w-5'/>
+              <FaStar className='h-5 w-5'/>
             )
           }
         </Button>

@@ -52,8 +52,8 @@ function Favourites() {
     console.log("src",source);
     setIsDragging(false);
     const newList = [...list.value];
-    const [removed] = newList.splice(source.index,1);
     if(destination && destination!==null){
+      const [removed] = newList.splice(source.index,1);
       newList.splice(destination.index,0,removed);
     }
 

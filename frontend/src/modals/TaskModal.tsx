@@ -51,6 +51,7 @@ function TaskModal({boardId,tasks, onClose,onUpdate,onDelete, currRole}) {
       const result = await axios(sendReqConfig);
       onDelete(task);
       setTask(null);
+      onCloser();
     }
     catch(err){
       console.log(err);
@@ -146,8 +147,8 @@ function TaskModal({boardId,tasks, onClose,onUpdate,onDelete, currRole}) {
             />
           </div>
           <div className="font-semibold flex justify-between">
-            {task !== undefined ? Moment(task.updatedAt).format('YYYY-MM-DD HH:mm:ss') : ''}
-            {task!== undefined ? <div>Last updated by : {task.updated_by}</div>:''}
+            {task !== undefined ? Moment(task?.updatedAt).format('YYYY-MM-DD HH:mm:ss') : ''}
+            {task!== undefined ? <div>Last updated by : {task?.updated_by}</div>:''}
           </div>
           <Divider />
           <div className="relative h-52 overflow-x-hidden overflow-y-auto" >

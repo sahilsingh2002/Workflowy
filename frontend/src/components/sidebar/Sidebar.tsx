@@ -336,7 +336,7 @@ const collapse = ()=>{
         )}
       >
           <nav className="bg-transparent px-3 py-2 w-full">
-            {isCollapsed && <MenuIcon onClick={resetWidth} role="button" className="h-6 w-6 text-muted-foreground" />}
+            {isCollapsed && <MenuIcon onClick={resetWidth} role="button" className="h-6 w-6" />}
           </nav>
       </div>
   </div>}
