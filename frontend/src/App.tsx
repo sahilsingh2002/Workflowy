@@ -65,7 +65,7 @@ function App() {
        <LoadingSpinner/>
        </>
      ):(  
-      <div className='h-full flex dark:bg-[#1F1F1F]'>
+      <div className='h-full flex dark:bg-[#1C2025] dark:text-[#9EADAC]'>
         <Toaster richColors/>
     
        

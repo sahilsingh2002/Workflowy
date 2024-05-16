@@ -245,28 +245,28 @@ function Workspaces() {
 
   {access ?<>
       <Sidebar/>
-    <div className='flex flex-col w-[92%] mx-5'>
+    <div className='flex flex-col w-full mx-5 overflow-x-hidden '>
 
    {
     user.role==='owner' && 
       <div className='flex  justify-between w-[100%]'>
         
-        <Button variant = {"ghost"} size={'icon'} className='rounded-full' onClick={addFav}>
+        <Button variant = {"ghost"} size={'icon'} className='rounded-full dark:hover:bg-[#22272b] ' onClick={addFav}>
           {
             !isFav?(
-              <Star color='black' className='h-5 w-5 '/>
+              <Star className='h-5 w-5 '/>
             ):(
 
-              <TiStarFullOutline color='black' className='h-5 w-5'/>
+              <TiStarFullOutline className='h-5 w-5'/>
             )
           }
         </Button>
         <div>
 
-        <Button color='black' variant={"ghost"} size={"icon"} className='rounded-full' onClick={deleteWork}>
+        <Button color='black' variant={"ghost"} size={"icon"} className='rounded-full dark:hover:bg-[#22272b]' onClick={deleteWork}>
           <Trash className='h-5 w-5'/>
         </Button>
-        <Button color='black' variant={"ghost"} size={"icon"} className='rounded-full' onClick={()=>{setShare(true)}}>
+        <Button color='black' variant={"ghost"} size={"icon"} className='rounded-full dark:hover:bg-[#22272b]' onClick={()=>{setShare(true)}}>
         <UserPlus className='h-5 w-5'/>
         </Button>
        
