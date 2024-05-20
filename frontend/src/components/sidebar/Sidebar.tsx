@@ -229,24 +229,23 @@ const collapse = ()=>{
    
    {loading?
    <LoadingSpinner/>:
-   <div className={`relative h-screen ${isCollapsed ? "w-0":"w-fit"}  bg-white dark:bg-[#1C2025]  dark:text-[#9EADAC] `}>
+   <div className={`relative h-screen ${isCollapsed ? "w-0":"w-fit"}  bg-white dark:bg-[#1C2025] `}>
     <aside ref={sidebarRef} id="sidebar"  className={cn(
-          "group/sidebar h-screen bg-secondary overflow-y-auto relative flex w-60 flex-col z-[99999]",
+          "group/sidebar h-screen bg-secondary overflow-auto relative flex w-60 flex-col z-[99999]",
           isResetting && "transition-all ease-in-out duration-300",
           isMobile && "w-0"
         )}>
-      <div className="flex h-full flex-col overflow-y-auto border-r border-slate-200 bg-white px-3 py-4 dark:border-slate-700 dark:bg-[#1C2025]">
+      <div className="flex h-full flex-col overflow-hidden border-r border-slate-200 bg-white px-3 py-4 dark:border-slate-700 dark:bg-[#1C2025]">
       <div
           onClick={collapse}
           role="button"
           className={cn(
-            "h-6 w-6 text-muted-foreground rounded-sm hover:bg-neutral-300 dark:hover:bg-[#4E77BA] absolute top-3 right-2 opacity-0 group-hover/sidebar:opacity-100 transition",
+            "h-6 w-6 text-muted-foreground rounded-sm hover:bg-[#E8F2FE] dark:hover:bg-[#4E77BA] absolute top-3 right-2 opacity-0 group-hover/sidebar:opacity-100 transition",
             isMobile && "opacity-100"
           )}
         >
           <ChevronsLeft className="h-6 w-6 " />
         </div>
-        <div>
         <UserItem/>
           <Item
           label='search'
@@ -258,10 +257,7 @@ const collapse = ()=>{
           icon={Settings}
           
           onClick={()=>{}}/>
-         <>
          <Favourites/>
-
-
          <p className='text-sm font-medium text-muted-foreground/80 flex justify-between items-center gap-2'>
           <span className='flex gap-2'>
           <File/>pages
@@ -270,13 +266,17 @@ const collapse = ()=>{
           <ChevronDownIcon/>
           </Button>
           </p>
+        <div className='overflow-auto'>
+         <>
    <p className={cn(`hidden text-sm font-medium text-muted-foreground/80 last:block`)}>
         No pages available
       </p>
 
 
 
-    
+         
+
+          
       <DragDropContext onDragEnd = {onDragEnd} onDragStart={handleDragStart}>
      
 
@@ -292,7 +292,7 @@ const collapse = ()=>{
                    
                       <div onClick={() => {
                         navigate(`/workspace/${item._id}`);
-                      }} ref = {provided.innerRef}{...provided.dragHandleProps}{...provided.draggableProps} className={`${index==activeIndex && 'bg-slate-400 dark:bg-slate-600'} pl-[20px] ${snapshot.isDragging?'cursor-grab':'cursor-pointer!important'} py-2  w-full hover:bg-neutral-400 dark:hover:bg-[#4E77BA]  flex items-center text-sm font-medium text-muted-foreground/80`}>
+                      }} ref = {provided.innerRef}{...provided.dragHandleProps}{...provided.draggableProps} className={`${index==activeIndex && 'bg-[#E8F2FE] text-[#0D66E5] dark:text-[#579dff] dark:bg-[#1c2b41]'} pl-[20px] ${snapshot.isDragging?'cursor-grab':'cursor-pointer!important'} py-2  w-full hover:bg-[#E8F2FE] dark:hover:bg-[#1c2b41] rounded-md  flex items-center text-sm font-medium text-muted-foreground/80`}>
                         <Emoji unified={item.icon} size={25}/>
                         <div className='mx-2'>
                          {item.name}
@@ -315,6 +315,7 @@ const collapse = ()=>{
         
        
       </DragDropContext>
+      
    
      
     </>

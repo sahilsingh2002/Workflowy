@@ -245,7 +245,7 @@ function Workspaces() {
 
   {access ?<>
       <Sidebar/>
-    <div className='flex flex-col w-full mx-5 overflow-x-hidden '>
+    <div className='flex flex-col w-full mx-5 overflow-hidden '>
 
    {
     user.role==='owner' && 
@@ -282,7 +282,7 @@ function Workspaces() {
         <Textarea isMultiline value={description} disabled={user.role==='reader'} onChange={updateDescription}  placeholder='Add A Description'  className='w-full p-0 border-0 font-semibold text-[0.8rem] resize-none border-neutral-300' />
       </div>
       </div>
-      <div>
+      <div >
         <Kanban datar={sections} boardeId={workspaceId}/>
       </div>
       <div>

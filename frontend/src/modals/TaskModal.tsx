@@ -12,6 +12,9 @@ import { RootState } from "@/redux/store";
 import FroalaEditor from 'react-froala-wysiwyg'
 
 import 'froala-editor/css/froala_style.min.css';
+import 'froala-editor/css/themes/dark.min.css';
+import 'froala-editor/css/themes/royal.min.css';
+
 import 'froala-editor/css/froala_editor.pkgd.min.css';
 import 'froala-editor/js/plugins/image.min.js';
 import 'froala-editor/js/plugins/char_counter.min.js';
@@ -117,20 +120,18 @@ function TaskModal({boardId,tasks, onClose,onUpdate,onDelete, currRole}) {
     onUpdate(task);
   }
   }
-  useEffect(()=>{
-    updateContent(content);
-  },[content]);
+
   
 
   
   return (
     <>
   
-   <Modal size="3xl" className="flex" backdrop="blur" isOpen={task !== undefined } onClose={onCloser}>
+   <Modal size="3xl" className="flex" backdrop="blur" radius="lg" isOpen={task !== undefined } onClose={onCloser}>
   <ModalContent>
     {(onClose) => (
       <>
-        <ModalBody className="border border-black" onClick={e=>e.stopPropagation()}>
+        <ModalBody className="border border-black rounded-lg dark:bg-[#1C2025] dark:text-[#9EADAC]"   onClick={e=>e.stopPropagation()}>
           <div className="flex items-center justify-end w-[100%]">
             <Button size="icon" className="-mt-2 mx-3" disabled={currRole==='reader'} variant="ghost" onClick={deleteTask}>
               <Trash />
@@ -177,10 +178,12 @@ function TaskModal({boardId,tasks, onClose,onUpdate,onDelete, currRole}) {
           {currRole==='reader'?
            <FroalaEditorView
            
+           
             config={{
             
 
             placeholderText:"Start Writing",
+            
            
           
             
@@ -195,7 +198,13 @@ function TaskModal({boardId,tasks, onClose,onUpdate,onDelete, currRole}) {
            :
            <FroalaEditor
            
+           
+           
+           
            config={{
+            // theme: "dark",
+            
+            
             
 
             placeholderText:"Start Writing",
@@ -257,9 +266,7 @@ function TaskModal({boardId,tasks, onClose,onUpdate,onDelete, currRole}) {
            
           
            model={content}
-           onModelChange={(e:string)=>{
-             setContent(e);
-          }}
+           onModelChange={updateContent}
 
            />
 }
