@@ -29,7 +29,7 @@ import { changeRole } from '@/redux/slices/userSlice';
 
 
 
-function Sidebar() {
+function Sidebar({modal}) {
   const [workLoad, setWorkLoad] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const { workspaceId } = useParams();
@@ -57,6 +57,7 @@ function Sidebar() {
   
 
 
+
 useEffect(()=>{
   
   if(isMobile) collapse();
@@ -82,6 +83,15 @@ const collapse = ()=>{
     setTimeout(()=>setIsResetting(false),300);
   }
  }
+ useEffect(()=>{
+
+   if(modal){
+    collapse();
+   }
+   else if(!isMobile){
+    resetWidth();
+   }
+ },[modal]);
   const handleMouseDown = (
     event: React.MouseEvent<HTMLDivElement,MouseEvent>)=>{
       event.preventDefault();

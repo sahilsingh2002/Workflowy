@@ -5,20 +5,17 @@ const cookieParser = require('cookie-parser')
 const workspaceRoutes = require("./routes/workspaceRoutes")
 const sectionRoutes = require("./routes/sectionRoutes")
 const taskRoutes = require("./routes/taskRoutes")
-const {Server} = require("socket.io")
 const {createServer} = require('http');
 
 const cors = require('cors');
 
 const port = 7000;
 const app = express();
-const server = createServer(app);
-const io = new Server(server);
-
 app.use(express.json());
 app.use(cors({ origin: true, credentials: true }));
 app.use(cookieParser());
 connect();
+
 app.listen(port,()=>{
   console.log("app started on port " + port);
 });

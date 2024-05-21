@@ -145,8 +145,8 @@ module.exports.update = async (req, res) => {
 
   const workspace = Workspaces();
   try {
-    if (title === "") req.body.title = "Untitled";
-    if (description === "") req.body.description = "Add description here";
+    // if (title === "") req.body.title = "Untitled";
+    // if (description === "") req.body.description = "Add description here";
     const currWorkspace = await workspace.findOne({ _id: new ObjectId(id) });
 
     if (!currWorkspace) return res.status(404).json("board not found");
@@ -180,13 +180,7 @@ module.exports.update = async (req, res) => {
 
     const filter = { _id: currWorkspace._id };
     const updateDocument = {
-      $set: {
-        name: title,
-        content: description,
-        favourite: favourite,
-        icon: icon,
-        favpos: favpos,
-      },
+      $set: req.body,
     };
     const worksp = await workspace.updateOne(filter, updateDocument);
 
@@ -276,12 +270,13 @@ module.exports.searchUser = async(req,res)=>{
 module.exports.removal = async (req, res) => {
     const id = req.query.id;
     const sect = Sections();
+    const Task = Tasks();
     const workspaces = Workspaces();
     try{
         const cursor = await sect.find({workspace:new ObjectId(id)});
         const sections = await cursor.toArray();
         for(const section of sections){
-            await sect.deleteMany({_id:section._id});
+            await Task.deleteMany({section:section._id});
         }
         await sect.deleteMany({workspace:new ObjectId(id)});
         console.log("id",id);

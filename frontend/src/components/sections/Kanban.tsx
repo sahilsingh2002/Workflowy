@@ -200,12 +200,12 @@ const Kanban = ({datar,boardeId}:kanbans) => {
         </div>
         <Divider orientation='horizontal' className='margin-[10px]'/>
         <DragDropContext onDragEnd={onDragEnd}>
-          <div className='flex items-start w-[80%] lg:w-[Calc(80vw)] overflow-auto'>
+          <div className='flex items-start  lg:w-[Calc(80vw)] overflow-auto'>
             {data.map(section=>(
-              <div key={section._id} className='w-[300px] bg-[#F7F8F9]  dark:bg-[#161a1d] mr-2 rounded-md'>
+              <div key={section._id} className='w-[200px] lg:w-[300px] bg-[#F7F8F9]  dark:bg-[#161a1d] mr-2 rounded-md'>
               <Droppable isDropDisabled={user.role==='reader'} key={section._id} droppableId={section._id}>
                 {(provided)=>(
-                  <div ref={provided.innerRef}{...provided.droppableProps} className='w-[300px] p-[10px] mr-[10px]'>
+                  <div ref={provided.innerRef}{...provided.droppableProps} className='w-[200px] lg:w-[300px] p-[10px] mr-[10px]'>
                     <div className='flex items-center justify-between mb-[10px]'>
                       
                       <Textarea value={section?.title} disabled={user.role==='reader'}  onChange={(e)=>updateSectionTitle(e,section._id)}  placeholder='What to do?' minRows={1} size='lg' inputMode='text' color='secondary' className=' font-semibold text-xl  flex-grow'/>
