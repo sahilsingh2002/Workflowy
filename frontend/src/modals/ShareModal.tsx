@@ -78,7 +78,7 @@ function ShareModal({ onClose, boardId, share, currRole }) {
 
 
   return (
-      <Modal backdrop="blur" isOpen={share} onClose={onClose}>
+      <Modal backdrop="blur" placement='center' isOpen={share} onClose={onClose}>
         <ModalContent>
             <ModalBody className="border border-black" >
               <div className="flex items-center justify-start w-[100%]">

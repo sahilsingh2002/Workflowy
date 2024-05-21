@@ -52,8 +52,8 @@ function Favourites() {
     console.log("src",source);
     setIsDragging(false);
     const newList = [...list.value];
-    const [removed] = newList.splice(source.index,1);
     if(destination && destination!==null){
+      const [removed] = newList.splice(source.index,1);
       newList.splice(destination.index,0,removed);
     }
 
@@ -117,7 +117,7 @@ function Favourites() {
                    <div  onClick={() => {
                     
                      navigate(`/workspace/${item._id}`);
-                   }} ref = {provided.innerRef}{...provided.dragHandleProps}{...provided.draggableProps} className={`${index==activeIndex && 'bg-slate-400 dark:bg-slate-600'} pl-[20px] ${snapshot.isDragging?'cursor-grab':'cursor-pointer!important'} py-2  w-full hover:bg-neutral-400 dark:hover:bg-neutral-500  flex items-center text-sm font-medium text-muted-foreground/80`}>
+                   }} ref = {provided.innerRef}{...provided.dragHandleProps}{...provided.draggableProps} className={`${index==activeIndex && 'bg-[#E8F2FE] text-[#0D66E5] dark:text-[#579dff] dark:bg-[#1c2b41]'} pl-[20px] ${snapshot.isDragging?'cursor-grab':'cursor-pointer!important'} py-2  w-full hover:bg-[#E8F2FE] dark:hover:bg-[#1c2b41] rounded-md  flex items-center text-sm font-medium text-muted-foreground/80`}>
                      <Emoji unified={item.icon} size={25}/>
                      <div className='mx-2'>
                       {item.name}

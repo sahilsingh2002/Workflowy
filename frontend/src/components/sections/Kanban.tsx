@@ -189,8 +189,8 @@ const Kanban = ({datar,boardeId}:kanbans) => {
   };
   console.log(selectedTask);
   return (
-    <div>
-      <div className='flex items-center justify-between py-3'>
+    <div >
+      <div className='flex items-center justify-between py-3 '>
           <Button className='dark:hover:bg-[#22272b]' variant={"ghost"} disabled={user.role==='reader'} onClick={addSection}>
             Add Section
           </Button>
@@ -200,20 +200,19 @@ const Kanban = ({datar,boardeId}:kanbans) => {
         </div>
         <Divider orientation='horizontal' className='margin-[10px]'/>
         <DragDropContext onDragEnd={onDragEnd}>
-          <div className='flex items-start w-[80%] lg:w-[Calc(80vw)] overflow-x-auto'>
+          <div className='flex items-start  lg:w-[Calc(80vw)] overflow-auto'>
             {data.map(section=>(
-              <div key={section._id} className='w-[300px]'>
+              <div key={section._id} className='w-[200px] lg:w-[300px] bg-[#F7F8F9]  dark:bg-[#161a1d] mr-2 rounded-md'>
               <Droppable isDropDisabled={user.role==='reader'} key={section._id} droppableId={section._id}>
                 {(provided)=>(
-                  <div ref={provided.innerRef}{...provided.droppableProps} className='w-[300px] p-[10px] mr-[10px]'>
+                  <div ref={provided.innerRef}{...provided.droppableProps} className='w-[200px] lg:w-[300px] p-[10px] mr-[10px]'>
                     <div className='flex items-center justify-between mb-[10px]'>
                       
-                      <Textarea value={section?.title} disabled={user.role==='reader'}  onChange={(e)=>updateSectionTitle(e,section._id)}  placeholder='Untitled' minRows={1} size='lg' inputMode='text' color='secondary' className=' font-semibold text-xl  flex-grow'/>
+                      <Textarea value={section?.title} disabled={user.role==='reader'}  onChange={(e)=>updateSectionTitle(e,section._id)}  placeholder='What to do?' minRows={1} size='lg' inputMode='text' color='secondary' className=' font-semibold text-xl  flex-grow'/>
                       
-                      <Button size={"icon"} variant={"ghost"} disabled={user.role==='reader'}  className=' dark:hover:bg-[#22272b] ' >
-                        <SquarePlus className='h-4 w-4' onClick={()=>addTask(section._id)}/>
+                
 
-                      </Button>
+                    
                       <Button size={"icon"} variant={"ghost"} disabled={user.role==='reader'}  className='dark:hover:bg-[#22272b]'>
                         <Trash className='h-4 w-4' onClick={()=>deleteSection(section._id)}/>
 
@@ -224,7 +223,7 @@ const Kanban = ({datar,boardeId}:kanbans) => {
                       section.tasks.map((task:Task,index:number)=>(
                         <Draggable key = {task._id} draggableId={task._id} index = {index}>
                           {(provided,snapshot)=>(
-                            <Card  onClick={()=>{setSelectedTask(task)}} ref={provided.innerRef}{...provided.draggableProps}{...provided.dragHandleProps}>
+                            <Card className='hover:bg-[#E9EBEE] transition duration-200' onClick={()=>{setSelectedTask(task)}} ref={provided.innerRef}{...provided.draggableProps}{...provided.dragHandleProps}>
                             <CardHeader>
           <CardTitle className='text-xl'>{task.title===''?'Untitled':task.title}</CardTitle>
         </CardHeader>
@@ -237,6 +236,7 @@ const Kanban = ({datar,boardeId}:kanbans) => {
                     )
                     }
                     {provided.placeholder}
+                    <Button variant={"ghost"} onClick={()=>addTask(section._id)} className='w-full hover:bg-[#E9EBEE] dark:hover:bg-[#22272b] my-2'>create task</Button>
                   </div>
                 )}
               </Droppable>

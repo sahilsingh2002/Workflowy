@@ -2,10 +2,10 @@ import Sidebar from '@/components/sidebar/Sidebar'
 import { Button } from '@/components/ui/button';
 import axios from 'axios';
 import { Textarea} from "@nextui-org/react";
-import { Share, Star, Trash, UserPlus } from 'lucide-react';
+import { Share, Trash, UserPlus } from 'lucide-react';
 import { ChangeEvent, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom';
-import { TiStarFullOutline } from "react-icons/ti";
+import { FaRegStar,FaStar  } from "react-icons/fa6";
 import Picker from '@/components/emoji-picker/Picker';
 import { useDispatch, useSelector } from 'react-redux';
 import { setWork } from '@/redux/slices/workspaceSlice';
@@ -14,6 +14,7 @@ import Kanban from '@/components/sections/Kanban';
 import { RootState } from '@/redux/store';
 import { changeRole } from '@/redux/slices/userSlice';
 import ShareModal from '@/modals/ShareModal';
+import DescriptionModal from '@/modals/DescriptionModal';
 function Workspaces() {
   let timer:ReturnType<typeof setTimeout>;
   const navigate = useNavigate();
@@ -27,6 +28,8 @@ function Workspaces() {
   const [isFav, setIsFav] = useState(false);
   const [icon, setIcon] = useState('');
   const [share,setShare]= useState(false);
+  const [isOpen,setIsOpen] = useState(false);
+  const [coll,setColl] = useState(false);
   
   const workspaces = useSelector((state:RootState)=>state.workspace.value);
   const favlist = useSelector((state:RootState)=>state.favourite.value);
@@ -67,6 +70,8 @@ function Workspaces() {
     
    },[workspaceId,navigate,dispatch]);
 
+   
+
    const updateTitle = async(e:ChangeEvent<HTMLInputElement>)=>{
     clearTimeout(timer);
     const newTitle = e.target.value;
@@ -87,11 +92,7 @@ function Workspaces() {
             method:"PUT",
             url:`/api/workspace/update?id=${workspaceId}`,
             data:{
-              title:newTitle,
-              description,
-              favourite:isFav,
-              icon,
-              favpos:temp[index].favpos,
+              name:newTitle,
              }
              
            }
@@ -113,23 +114,23 @@ function Workspaces() {
     const temp = [...workspaces];
         const index = temp.findIndex(e=>e._id === workspaceId);
         temp[index]={...temp[index], content: newDesc}
-        if(isFav){
-          const tempfav = [...favlist];
-        const favindex = tempfav.findIndex(e=>e._id === workspaceId);
-        tempfav[favindex]={...tempfav[favindex], content: newDesc}
-        dispatch(setFav(tempfav));
-        }
+        // if(isFav){
+        //   const tempfav = [...favlist];
+        // const favindex = tempfav.findIndex(e=>e._id === workspaceId);
+        // tempfav[favindex]={...tempfav[favindex], content: newDesc}
+        // dispatch(setFav(tempfav));
+        // }
         dispatch(setWork(temp));
         timer = setTimeout(async()=>{
           const sendReqConfig = {
             method:"PUT",
             url:`/api/workspace/update?id=${workspaceId}`,
             data:{
-              title,
-              description:newDesc,
-              favourite:isFav,
-              icon,
-              favpos:temp[index].favpos,
+              // title,
+              content:newDesc,
+              // favourite:isFav,
+              // icon,
+              // favpos:temp[index].favpos,
              }
              
            }
@@ -147,22 +148,22 @@ function Workspaces() {
     const temp = [...workspaces];
     const index = temp.findIndex(e=>e._id === workspaceId);
     temp[index]={...temp[index], icon: newIcon}
-    if(isFav){
-      const tempfav = [...favlist];
-    const favindex = tempfav.findIndex(e=>e._id === workspaceId);
-    tempfav[favindex]={...tempfav[favindex], icon: newIcon}
-    dispatch(setFav(tempfav));
-    }
+    // if(isFav){
+    //   const tempfav = [...favlist];
+    // const favindex = tempfav.findIndex(e=>e._id === workspaceId);
+    // tempfav[favindex]={...tempfav[favindex], icon: newIcon}
+    // dispatch(setFav(tempfav));
+    // }
     dispatch(setWork(temp));
      const sendReqConfig = {
        method:"PUT",
        url:`/api/workspace/update?id=${workspaceId}`,
        data:{
-         title,
-         description,
-         favourite:isFav,
+        //  title,
+        //  description,
+        //  favourite:isFav,
          icon:newIcon,
-         favpos:temp[index].favpos,
+        //  favpos:temp[index].favpos,
         }
         
       }
@@ -244,20 +245,20 @@ function Workspaces() {
   return (<>
 
   {access ?<>
-      <Sidebar/>
-    <div className='flex flex-col w-full mx-5 overflow-x-hidden '>
+      <Sidebar modal={coll}/>
+    <div className='flex flex-col w-full mx-5 overflow-hidden '>
 
    {
     user.role==='owner' && 
-      <div className='flex  justify-between w-[100%]'>
+      <div className='flex justify-end w-[100%]'>
         
         <Button variant = {"ghost"} size={'icon'} className='rounded-full dark:hover:bg-[#22272b] ' onClick={addFav}>
           {
             !isFav?(
-              <Star className='h-5 w-5 '/>
+              <FaRegStar className='h-5 w-5 '/>
             ):(
 
-              <TiStarFullOutline className='h-5 w-5'/>
+              <FaStar className='h-5 w-5'/>
             )
           }
         </Button>
@@ -275,19 +276,17 @@ function Workspaces() {
    }
       <div className='py-[10px]'>
           <Picker icon={icon} onChange = {onIconChange}/>
-      <div>
-        <Textarea onChange={updateTitle} disabled={user.role==='reader'} placeholder='Untitled' value={title} minRows={1} className='w-full h-fit p-0 border-0 text-[2rem]  resize-none   border-neutral-300' />
-      </div>
-      <div>
-        <Textarea isMultiline value={description} disabled={user.role==='reader'} onChange={updateDescription}  placeholder='Add A Description'  className='w-full p-0 border-0 font-semibold text-[0.8rem] resize-none border-neutral-300' />
+      <div className='lg:flex lg:items-center'>
+        <Textarea onChange={updateTitle} disabled={user.role==='reader'} placeholder='Untitled' value={title} minRows={1} className=' w-full h-fit p-0 border-0 text-[2rem] lg:text-[3rem]  resize-none   border-neutral-300' />
+        <DescriptionModal setColl = {setColl} currRole={user.role} boardId={workspaceId} isOpened={isOpen} description={description} onClose={()=>setIsOpen(false)} titled={title}/>
       </div>
       </div>
-      <div>
+      <div >
         <Kanban datar={sections} boardeId={workspaceId}/>
+      </div>
       </div>
       <div>
         <ShareModal currRole={user.role} share = {share} onClose = {()=>{setShare(false)}} boardId={workspaceId}/>
-      </div>
       </div>
       </>:<>
       "no path"

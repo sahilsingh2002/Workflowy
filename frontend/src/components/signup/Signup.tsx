@@ -186,8 +186,8 @@ export function Signup() {
   const onSubmit: SubmitHandler<Inputs> = (data) => {signup_user(data);}
  
   return (
-    <div className="flex justify-center w-full items-center ">
-      <Card className="dark:bg-black w-full sm:max-w-md">
+    <div className="flex justify-center w-full h-screen  items-center ">
+      <Card className="dark:bg-[#1C2025] border-black border w-full sm:max-w-md">
         <CardHeader>
           <AxeIcon/>
           <CardTitle className="text-xl">Sign Up</CardTitle>
@@ -204,7 +204,7 @@ export function Signup() {
                 id="username"
                 type="text"
                 placeholder=""
-                className={`${!validUsername && username.length>0 && "border-red-500"}`}
+                className={`${!validUsername && username.length>0 && "border-red-500"} dark:bg-[#101315] border-0`}
                 {...register("username")}
                 onChange={(e)=>{
                   setUsername(e.target.value);
@@ -221,7 +221,7 @@ export function Signup() {
             
               <div className="grid gap-2">
                 <Label htmlFor="name">Name</Label>
-                <Input id="name" placeholder="Max Robinson" required {...register("name")} />
+                <Input id="name" placeholder="Max Robinson" className="dark:bg-[#101315] border-0" required {...register("name")} />
               </div>
              
             
@@ -231,6 +231,7 @@ export function Signup() {
                 id="email"
                 type="email"
                 placeholder="m@example.com"
+                className="dark:bg-[#101315] border-0"
                 required
                 {...register("email")}
                 onChange={(e)=>{setEmail(e.target.value)}}
@@ -240,19 +241,19 @@ export function Signup() {
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
               <div className="grid grid-flow-col grid-cols-2 gap-2">
-              <Input id="password" className="col-span-2" type={showPassword?"text":"password"} {...register("password")}/>
+              <Input id="password" className="col-span-2 dark:bg-[#101315] border-0" type={showPassword?"text":"password"} {...register("password")}/>
               <Button variant={!showPassword?"ghost":"default"} onClick={(e)=>{e.preventDefault();setShowPassword(!showPassword)}}>{showPassword?<FaRegEye/>:<FaRegEyeSlash/>}</Button>
 
               </div>
             </div>
-            <Button type="submit" className="w-full" disabled={!isFormValid || !isUnique || !isUniqueE}>
+            <Button type="submit" className=" dark:hover:bg-[#0b0c0e] dark:bg-[#22272b]  dark:text-[#9EADAC] w-full" disabled={!isFormValid || !isUnique || !isUniqueE}>
               Create an account
             </Button>
-            <Button variant="outline" className="w-full">
+            {/* <Button variant="outline" className="w-full">
               Sign up with GitHub
-            </Button>
+            </Button> */}
           </div>
-          <div className="mt-4 text-center text-sm">
+          <div className="  mt-4 text-center text-sm">
             Already have an account?{" "}
             <Link to="/login" className="underline">
               Sign in

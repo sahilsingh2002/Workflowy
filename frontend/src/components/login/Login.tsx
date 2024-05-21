@@ -73,7 +73,7 @@ export function Login() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex justify-center w-full min-h-screen items-center">
-      <Card className="dark:bg-black w-full sm:max-w-md overflow-auto">
+      <Card className="dark:bg-[#1C2025] border-black border w-full sm:max-w-md overflow-auto">
         <CardHeader>
           <CardTitle className="text-2xl">Login</CardTitle>
           <CardDescription>
@@ -89,6 +89,7 @@ export function Login() {
                 type="text"
                 placeholder=""
                 required
+                className="dark:bg-[#101315] border-0"
                 {...register("username")}
               />
             </div>
@@ -97,7 +98,7 @@ export function Login() {
                 <Label className="inline-block" htmlFor="password">Password</Label>
              
               <div className="grid grid-flow-col grid-cols-2 gap-2">
-                <Input id="password" className="col-span-2" type={showPassword ? "text" : "password"} {...register("password")} />
+                <Input id="password" className="dark:bg-[#101315] border-0 col-span-2" type={showPassword ? "text" : "password"} {...register("password")} />
                 <Button variant={!showPassword?"ghost":"default"} onClick={(e) => { e.preventDefault();
                    setShowPassword(!showPassword) }}>{showPassword ? <FaRegEye /> : <FaRegEyeSlash />}</Button>
               </div>
@@ -115,15 +116,15 @@ export function Login() {
           ))
         }
       />
-            <Button type="submit" className="w-full">
+            <Button type="submit" className=" dark:hover:bg-[#0b0c0e] dark:bg-[#22272b]  dark:text-[#9EADAC] w-full">
               Login
             </Button>
-            <Button variant="outline" className="w-full">
+            {/* <Button variant="outline" className="w-full">
               <span className="flex gap-2 items-center">
                 Login with Google 
               </span>
                 <FaGoogle className="h-4 w-4 mx-3" />
-            </Button>
+            </Button> */}
           </div>
           <div className="mt-4 text-center text-sm">
             Don&apos;t have an account?{" "}
