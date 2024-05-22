@@ -35,6 +35,24 @@ app.use('/api/workspace',workspaceRoutes)
 app.use('/api/workspace/:workspaceId/sections',sectionRoutes);
 app.use('/api/workspace/:workspaceId/tasks',taskRoutes);
 app.use('/',cookieParser);
+io.use(function(socket, next) {
+  var cookiestring = socket.request.headers.cookie;
+  const cookies = cookiestring.split('; ');
+ 
+  const userCookie = cookies.find(cookie => cookie.trim().startsWith(`user=`));
+  if (userCookie) {
+    console.log( userCookie.split('=')[1]);
+    socket.request.res="hello";
+    console.log(socket.request);
+    next();
+  }
+  else{
+    console.log("ohh");
+    next(new Error('not authorized'));
+  }
+  // JWT HEWERERE
+  
+});
 io.on('connection', (socket) => {
   console.log('A user connected:', socket.id);
   require('./handlers/WorkspaceHandler')(socket,io);
