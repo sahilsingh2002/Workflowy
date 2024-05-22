@@ -51,12 +51,12 @@ module.exports.getWorkspaces = async (req, res) => {
   try {
     const user = User();
     const workspace = Workspaces();
-    console.log("req",req.id);
+   
     const cursor = await workspace
       .find({ perms:{$elemMatch:{id: new ObjectId(req.id)}}})
       .sort({position:1});
     const workspaceIds = await cursor.toArray();
-    console.log("work",workspaceIds);
+    
 
     res.status(200).json(workspaceIds);
   } catch (error) {
@@ -75,14 +75,14 @@ module.exports.getOnepage = async (req, res) => {
   const tasker = Tasks();
   try {
     const result = await workspace.findOne({perms:{$elemMatch:{id: new ObjectId(req.id)}}, _id: new ObjectId(id) });
-    console.log("result",result);
+    
 
     if (!result) return res.status(404).json({status:false,message:"board not found"});
     
     const cursor = await sectioner.find({ workspace: new ObjectId(id) });
     const sections = await cursor.toArray();
 
-    console.log("sections",sections);
+    
     if (sections) {
       for (const section of sections) {
         const cursor = await tasker
@@ -125,7 +125,7 @@ module.exports.updatePosition = async (req, res) => {
       },
     }
     );
-      console.log(result);
+     
       
       
     }
@@ -150,34 +150,7 @@ module.exports.update = async (req, res) => {
     const currWorkspace = await workspace.findOne({ _id: new ObjectId(id) });
 
     if (!currWorkspace) return res.status(404).json("board not found");
-    if (favourite !== undefined && currWorkspace.favourite !== favourite) {
-      const favourites = await workspace.find({
-        perms:{$elemMatch:{id: currWorkspace.owner, role:'owner'}},
-        favourite: true,
-        _id: { $ne: id },
-      }).sort('favpos');
-      // const favourites = await cursor.toArray();
-      const count = await favourites.toArray();
-
-      if (favourite) {
-        console.log("here");
-      } else {
-        console.log(count.length);
-
-        for (let key = 0; key < count.length; key++) {
-          const element = count[key];
-          console.log(element._id);
-          const filt = { _id: element._id };
-          const updateDoc = {
-            $set: {
-              favpos: key,
-            },
-          };
-          const ans = await workspace.updateOne(filt, updateDoc);
-        }
-      }
-    }
-
+   
     const filter = { _id: currWorkspace._id };
     const updateDocument = {
       $set: req.body,
@@ -199,7 +172,7 @@ module.exports.getFavorite = async (req, res) => {
       .find({ perms:{$elemMatch:{id: new ObjectId(req.id), role:'owner'}}, favourite: true })
       .sort({favpos:1});
     const favourites = await cursor.toArray();
-    console.log(favourites);
+    
 
     res.status(200).json({ favourites: favourites });
   } catch (err) {
@@ -213,7 +186,7 @@ module.exports.updateFavPos = async (req, res) => {
   try {
     for (let key=0;key<workspaces.length;key++) {
       const worksp = workspaces[key];
-      console.log(worksp);
+      
       const filter = { _id: new ObjectId(worksp._id) };
       const updateDocument = {
         $set: {
@@ -235,7 +208,7 @@ module.exports.updateFavPos = async (req, res) => {
 module.exports.searchUser = async(req,res)=>{
   const {user,username} = req.body;
   if(!user || user.length===0) return res.status(400);
-  console.log(user);
+ 
   const workspaces = Workspaces();
   const usern = User();
   try{
@@ -279,9 +252,9 @@ module.exports.removal = async (req, res) => {
             await Task.deleteMany({section:section._id});
         }
         await sect.deleteMany({workspace:new ObjectId(id)});
-        console.log("id",id);
+        
         const currWork = await workspaces.findOne({_id:new ObjectId(id)});
-        console.log(currWork);
+        
         if(currWork.favourite){
           const favourites = await workspaces.find({
             perms:{$elemMatch:{id: currWork.owner, role:'owner'}},
@@ -291,7 +264,7 @@ module.exports.removal = async (req, res) => {
           const count = favourites.toArray();
           for (let key = 0; key < count.length; key++) {
             const element = count[key];
-            console.log(element._id);
+           
             const filt = { _id: element._id };
             const updateDoc = {
               $set: {
@@ -344,7 +317,7 @@ module.exports.updateUser = async(req,res)=>{
         },
         { returnOriginal: false } // To return the updated document
       );
-      console.log(result);
+   
       res.status(200).json({ result: result });
     } else {
       // ObjectId doesn't exist in the perms array, push a new object
@@ -355,7 +328,7 @@ module.exports.updateUser = async(req,res)=>{
         },
         { returnOriginal: false } // To return the updated document
       );
-      console.log(result);
+     
       res.status(200).json({ result: result });
     }
   } catch (err) {

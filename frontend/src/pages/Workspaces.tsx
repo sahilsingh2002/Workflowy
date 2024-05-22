@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import axios from 'axios';
 import { Textarea} from "@nextui-org/react";
 import { Share, Trash, UserPlus } from 'lucide-react';
-import { ChangeEvent, useEffect, useState } from 'react'
+import { ChangeEvent, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom';
 import { FaRegStar,FaStar  } from "react-icons/fa6";
 import Picker from '@/components/emoji-picker/Picker';
@@ -15,6 +15,8 @@ import { RootState } from '@/redux/store';
 import { changeRole } from '@/redux/slices/userSlice';
 import ShareModal from '@/modals/ShareModal';
 import DescriptionModal from '@/modals/DescriptionModal';
+import { createConnection } from '@/socket/Socket';
+
 function Workspaces() {
   let timer:ReturnType<typeof setTimeout>;
   const navigate = useNavigate();
@@ -35,40 +37,43 @@ function Workspaces() {
   const favlist = useSelector((state:RootState)=>state.favourite.value);
   const user = useSelector((state:RootState)=>state.user);
   
+
+  const socket = useMemo(()=> createConnection(),[]);
   
-  useEffect(()=>{
-    const handleGetpage = async(id:string)=>{
-      
-        const sendReqConfig = {
-          method:"GET",
-          url:`/api/workspace/getPage?id=${id}`,
-      }
-        try {
-          const result = await axios(sendReqConfig);
+  const handleGetpage = async(id:string)=>{
+    
+      const sendReqConfig = {
+        method:"GET",
+        url:`/api/workspace/getPage?id=${id}`,
+    }
+      try {
+        const result = await axios(sendReqConfig);
 
-          console.log("res",result);
+        console.log("res",result);
 
-          if(result.data.status===false){
-          
-            navigate('/home');
-          }
-          setTitle(result?.data?.page?.result?.name);
-          setDescription(result?.data?.page?.result?.content);
-          setSections(result?.data?.page?.result?.sections);
-          setIcon(result?.data?.page?.result?.icon);
-          setIsFav(result?.data?.page?.result?.favourite);
-          setAccess(true);
-          dispatch(changeRole(result?.data?.roles));
-          
-        } catch (error) {
-          console.log("Error : ",error);
-          
-          // navigate(`/workspace/`)
+        if(result.data.status===false){
+        
+          navigate('/home');
         }
-     }
+        setTitle(result?.data?.page?.result?.name);
+        setDescription(result?.data?.page?.result?.content);
+        setSections(result?.data?.page?.result?.sections);
+        setIcon(result?.data?.page?.result?.icon);
+        setIsFav(result?.data?.page?.result?.favourite);
+        setAccess(true);
+        dispatch(changeRole(result?.data?.roles));
+        
+      } catch (error) {
+        console.log("Error : ",error);
+        
+        // navigate(`/workspace/`)
+      }
+   }
+  useEffect(()=>{
      handleGetpage(workspaceId?workspaceId:'');
     
-   },[workspaceId,navigate,dispatch]);
+   },[workspaceId]);
+   
 
    
 
@@ -87,25 +92,39 @@ function Workspaces() {
         }
 
         dispatch(setWork(temp));
-        timer = setTimeout(async()=>{
-          const sendReqConfig = {
-            method:"PUT",
-            url:`/api/workspace/update?id=${workspaceId}`,
-            data:{
-              name:newTitle,
-             }
+        // timer = setTimeout(async()=>{
+          // const sendReqConfig = {
+          //   method:"PUT",
+          //   url:`/api/workspace/update?id=${workspaceId}`,
+          //   data:{
+          //     id:workspaceId,
+          //    changes:{ name:newTitle},
+          //    }
              
-           }
+          //  }
            try{
-             const result = await axios(sendReqConfig);
-             console.log(result);
-            
+            console.log(socket);
+            //  const result = await axios(sendReqConfig);
+            socket.emit('update',{id:workspaceId, changes:{name:newTitle}},(response)=>{
+              if(response.status){
+                 console.log(response);
+
+              }
+              else{
+                console.error('Error creating workspace:', response.message);
+              }
+            });
            }
          catch(err){
            console.log(err);
          }
-        },timeout);
+        // },timeout);
    }
+   useEffect(()=>{
+    socket.on('getWorkspaces',(data)=>{
+      handleGetpage(workspaceId);
+    })
+   },[]);
    const updateDescription = async(e:ChangeEvent<HTMLInputElement>)=>{
     clearTimeout(timer);
     const newDesc = e.target.value;

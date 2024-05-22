@@ -1,5 +1,5 @@
 import { ChevronDownIcon, ChevronsLeft, File, MenuIcon,  Search, Settings } from 'lucide-react'
-import {ElementRef, useRef, useState, useEffect} from 'react'
+import {ElementRef, useRef, useState, useEffect, useMemo} from 'react'
 import {useMediaQuery} from 'usehooks-ts';
 
 import {DragDropContext, Draggable, Droppable, OnDragEndResponder} from 'react-beautiful-dnd'
@@ -26,10 +26,12 @@ import Favourites from '../favourites/Favourites';
 import { RootState } from '@/redux/store';
 import LoadingSpinner from '../LoadingSpinner';
 import { changeRole } from '@/redux/slices/userSlice';
+import { createConnection } from '@/socket/Socket';
 
 
 
 function Sidebar({modal}) {
+  const socket = useMemo(()=> createConnection(),[]); 
   const [workLoad, setWorkLoad] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const { workspaceId } = useParams();
@@ -83,6 +85,12 @@ const collapse = ()=>{
     setTimeout(()=>setIsResetting(false),300);
   }
  }
+ useEffect(()=>{
+  socket.on('getWorkspaces',(data)=>{
+    getWork();
+    console.log(data);
+  })
+ },[]);
  useEffect(()=>{
 
    if(modal){
@@ -141,7 +149,6 @@ const collapse = ()=>{
     }
   }
   useEffect(()=>{
-    
     getWork();
     
   },[]);

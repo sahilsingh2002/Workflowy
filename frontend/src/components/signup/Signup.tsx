@@ -22,6 +22,7 @@ import { AxeIcon } from "lucide-react";
 import './signup.css'
 import { useForm, SubmitHandler } from "react-hook-form"
 import { toast } from "sonner";
+import { initiateSocketConnection } from "@/socket/Socket";
 
 
 
@@ -168,6 +169,7 @@ export function Signup() {
     const result = await axios(sendreqConfig);
     console.log(result);
     dispatch(changeUser(user));
+    initiateSocketConnection(result.data.token);
   
     toast.success(`Welcome, ${user.name}`)
 

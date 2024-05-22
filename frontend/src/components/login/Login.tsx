@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { useForm, SubmitHandler } from "react-hook-form"
 import { toast } from "sonner";
 import { ErrorMessage } from "@hookform/error-message"
+import { initiateSocketConnection } from "@/socket/Socket";
 
 
 
@@ -55,6 +56,7 @@ export function Login() {
       });
       dispatch(changeUser(result.data.data));
       console.log(result);
+      initiateSocketConnection(result.data.token);
       toast.success(`Welcome! ${result.data.data.username}`);
 
       navigate("/home");
