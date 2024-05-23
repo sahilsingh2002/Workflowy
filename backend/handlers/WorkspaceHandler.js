@@ -18,11 +18,19 @@ module.exports = (socket,io)=>{
       $set: changes,
     };
     const worksp = await workspace.updateOne(filter, updateDocument);
-    io.emit("getWorkspaces",({hello:"hello"}));
+    const clients = io.sockets.adapter.rooms.get(id);
+    console.log("clients: " , clients);
+
+    socket.broadcast.emit("getWorkspaces",({hello:"hello"}));
    callback({ status: true, board: worksp });
   } catch (error) {
     console.log(error);
     callback({status:false,error:error});
   }
-  })
+  });
+  socket.on('getroom',(data)=>{
+    
+    console.log(data);
+    socket.join(data);
+  });
 }

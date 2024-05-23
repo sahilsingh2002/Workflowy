@@ -85,12 +85,28 @@ const collapse = ()=>{
     setTimeout(()=>setIsResetting(false),300);
   }
  }
- useEffect(()=>{
-  socket.on('getWorkspaces',(data)=>{
+ useEffect(() => {
+  socket.on('getWorkspaces', (data) => {
     getWork();
-    console.log(data);
-  })
- },[]);
+    console.log("here",data);
+  });
+
+  socket.on('connect_error', (error) => {
+    console.error('Socket connection error:', error);
+    toast.error('Socket connection error');
+  });
+
+  socket.on('disconnect', () => {
+    console.warn('Socket disconnected');
+    toast.error('Socket disconnected');
+  });
+
+  return () => {
+    socket.off('getWorkspaces');
+    socket.off('connect_error');
+    socket.off('disconnect');
+  };
+}, [socket]);
  useEffect(()=>{
 
    if(modal){
@@ -239,6 +255,10 @@ const collapse = ()=>{
   const handleDragStart = () => {
     setIsDragging(true);
   };
+  const handleOnWorkspace=(roomid)=>{
+    socket.emit('getroom',roomid);
+    navigate(`/workspace/${roomid}`);
+  }
   
   return (
     
@@ -308,7 +328,7 @@ const collapse = ()=>{
                     {(provided,snapshot)=>(
                    
                       <div onClick={() => {
-                        navigate(`/workspace/${item._id}`);
+                       handleOnWorkspace(item._id);
                       }} ref = {provided.innerRef}{...provided.dragHandleProps}{...provided.draggableProps} className={`${index==activeIndex && 'bg-[#E8F2FE] text-[#0D66E5] dark:text-[#579dff] dark:bg-[#1c2b41]'} pl-[20px] ${snapshot.isDragging?'cursor-grab':'cursor-pointer!important'} py-2  w-full hover:bg-[#E8F2FE] dark:hover:bg-[#1c2b41] rounded-md  flex items-center text-sm font-medium text-muted-foreground/80`}>
                         <Emoji unified={item.icon} size={25}/>
                         <div className='mx-2'>

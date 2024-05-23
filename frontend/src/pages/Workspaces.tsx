@@ -71,6 +71,7 @@ function Workspaces() {
    }
   useEffect(()=>{
      handleGetpage(workspaceId?workspaceId:'');
+     socket.emit('getroom',workspaceId);
     
    },[workspaceId]);
    
@@ -125,44 +126,7 @@ function Workspaces() {
       handleGetpage(workspaceId);
     })
    },[]);
-   const updateDescription = async(e:ChangeEvent<HTMLInputElement>)=>{
-    clearTimeout(timer);
-    const newDesc = e.target.value;
-    setDescription(newDesc);
-    
-    const temp = [...workspaces];
-        const index = temp.findIndex(e=>e._id === workspaceId);
-        temp[index]={...temp[index], content: newDesc}
-        // if(isFav){
-        //   const tempfav = [...favlist];
-        // const favindex = tempfav.findIndex(e=>e._id === workspaceId);
-        // tempfav[favindex]={...tempfav[favindex], content: newDesc}
-        // dispatch(setFav(tempfav));
-        // }
-        dispatch(setWork(temp));
-        timer = setTimeout(async()=>{
-          const sendReqConfig = {
-            method:"PUT",
-            url:`/api/workspace/update?id=${workspaceId}`,
-            data:{
-              // title,
-              content:newDesc,
-              // favourite:isFav,
-              // icon,
-              // favpos:temp[index].favpos,
-             }
-             
-           }
-           try{
-             const result = await axios(sendReqConfig);
-             console.log(result);
-            
-           }
-         catch(err){
-           console.log(err);
-         }
-        },timeout);
-   }
+   
    const onIconChange = async(newIcon:string)=>{
     const temp = [...workspaces];
     const index = temp.findIndex(e=>e._id === workspaceId);
@@ -174,21 +138,17 @@ function Workspaces() {
     // dispatch(setFav(tempfav));
     // }
     dispatch(setWork(temp));
-     const sendReqConfig = {
-       method:"PUT",
-       url:`/api/workspace/update?id=${workspaceId}`,
-       data:{
-        //  title,
-        //  description,
-        //  favourite:isFav,
-         icon:newIcon,
-        //  favpos:temp[index].favpos,
-        }
-        
-      }
+     
       try{
-        const result = await axios(sendReqConfig);
-        console.log(result);
+        socket.emit('update',{id:workspaceId, changes:{icon:newIcon}},(response)=>{
+          if(response.status){
+             console.log(response);
+
+          }
+          else{
+            console.error('Error creating workspace:', response.message);
+          }
+        });
        
       }
     catch(err){

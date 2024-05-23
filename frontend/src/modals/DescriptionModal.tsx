@@ -1,5 +1,5 @@
 import { Modal, ModalContent, ModalBody, useDisclosure, Textarea, Divider } from "@nextui-org/react";
-import { ChangeEvent, useEffect, useState, useRef } from 'react';
+import { ChangeEvent, useEffect, useState, useRef, useMemo } from 'react';
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { useSelector, useDispatch } from "react-redux";
@@ -15,12 +15,14 @@ import 'froala-editor/js/plugins/char_counter.min.js';
 import 'froala-editor/js/plugins/save.min.js';
 import FroalaEditorView from "react-froala-wysiwyg/FroalaEditorView";
 import { setWork } from "@/redux/slices/workspaceSlice";
+import { createConnection } from "@/socket/Socket";
 
 const timeOut = 500;
 let timer;
 
 function DescriptionModal({setColl, boardId, titled, description, isOpened, onClose, currRole }) {
   const user = useSelector((state: RootState) => state.user);
+  const socket = useMemo(()=> createConnection(),[]);
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [desc, setDesc] = useState(description);
   const [title, setTitle] = useState(titled);
@@ -28,17 +30,26 @@ function DescriptionModal({setColl, boardId, titled, description, isOpened, onCl
   const dispatch = useDispatch();
   const editorRef = useRef(null);
 
+
   useEffect(() => {
     setDesc(description);
     setTitle(titled);
   }, [titled, description]);
 
   const updateDescription = async (newDesc) => {
-    clearTimeout(timer);
+   
 
-    timer = setTimeout(async () => {
+    setTimeout(async () => {
       try {
-        await axios.put(`/api/workspace/update?id=${boardId}`, { content: newDesc });
+        socket.emit('update',{id:boardId, changes:{content:newDesc}},(response)=>{
+          if(response.status){
+             console.log(response);
+
+          }
+          else{
+            console.error('Error creating workspace:', response.message);
+          }
+        });
         setDesc(newDesc);
         const temp = [...workspaces];
         const index = temp.findIndex(e => e._id === boardId);
@@ -47,7 +58,7 @@ function DescriptionModal({setColl, boardId, titled, description, isOpened, onCl
       } catch (err) {
         console.error(err);
       }
-    }, timeOut);
+    }, 50);
   };
 
   const onOpenChanger = () => {
@@ -55,23 +66,49 @@ function DescriptionModal({setColl, boardId, titled, description, isOpened, onCl
     setColl(false);
   };
 
-  const updateTitle = async (e: ChangeEvent<HTMLTextAreaElement>) => {
+  const updateTitle = async(e:ChangeEvent<HTMLInputElement>)=>{
     clearTimeout(timer);
     const newTitle = e.target.value;
     setTitle(newTitle);
     const temp = [...workspaces];
-    const index = temp.findIndex(e => e._id === boardId);
-    temp[index] = { ...temp[index], name: newTitle };
-    dispatch(setWork(temp));
+        const index = temp.findIndex(e=>e._id === workspaceId);
+        temp[index]={...temp[index], name: newTitle}
+        if(isFav){
+          const tempfav = [...favlist];
+        const favindex = tempfav.findIndex(e=>e._id === workspaceId);
+        tempfav[favindex]={...tempfav[favindex], name: newTitle}
+        dispatch(setFav(tempfav));
+        }
 
-    timer = setTimeout(async () => {
-      try {
-        await axios.put(`/api/workspace/update?id=${boardId}`, { name: newTitle });
-      } catch (err) {
-        console.error(err);
-      }
-    }, timeOut);
-  };
+        dispatch(setWork(temp));
+        // timer = setTimeout(async()=>{
+          // const sendReqConfig = {
+          //   method:"PUT",
+          //   url:`/api/workspace/update?id=${workspaceId}`,
+          //   data:{
+          //     id:workspaceId,
+          //    changes:{ name:newTitle},
+          //    }
+             
+          //  }
+           try{
+            console.log(socket);
+            //  const result = await axios(sendReqConfig);
+            socket.emit('update',{id:workspaceId, changes:{name:newTitle}},(response)=>{
+              if(response.status){
+                 console.log(response);
+
+              }
+              else{
+                console.error('Error creating workspace:', response.message);
+              }
+            });
+           }
+         catch(err){
+           console.log(err);
+         }
+        // },timeout);
+   }
 
   const onOpener = () => {
     onOpen();
@@ -93,8 +130,8 @@ function DescriptionModal({setColl, boardId, titled, description, isOpened, onCl
                   <Textarea
                     placeholder='Untitled'
                     value={title}
-                    onChange={updateTitle}
-                    disabled={currRole === 'reader'}
+                    
+                    disabled
                     minRows={1}
                     className='w-full h-fit p-0 border-0 text-[2rem] resize-none border-neutral-300'
                   />
