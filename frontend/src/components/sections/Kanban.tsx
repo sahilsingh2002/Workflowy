@@ -1,16 +1,17 @@
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Button } from '../ui/button'
 import { Divider } from '@nextui-org/divider'
 import {DragDropContext,Draggable,Droppable, OnDragEndResponder} from 'react-beautiful-dnd'
 import { Textarea } from '@nextui-org/input'
-import { Trash, SquarePlus } from 'lucide-react'
+import { Trash } from 'lucide-react'
 import axios from 'axios'
 import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import TaskModal from '@/modals/TaskModal'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/redux/store'
+import { getSocket } from '@/socket/Socket'
 
 interface kanbans  {
   datar:Workspace[];
@@ -37,6 +38,8 @@ interface Workspace {
 let timer:ReturnType<typeof setTimeout>;
 const timeOut = 500;
 const Kanban = ({datar,boardeId}:kanbans) => {
+  
+
   const user = useSelector((state:RootState)=>state.user);
   const boardId = boardeId;
   const [titleshow,setTitleShow] = useState(false);
@@ -44,6 +47,7 @@ const Kanban = ({datar,boardeId}:kanbans) => {
   const [loading,setLoading] = useState(false);
   const [selectedTask,setSelectedTask] = useState<Task | undefined>(undefined);
  
+  
   const onDragEnd:OnDragEndResponder = async({source,destination})=>{
     if(!destination) return;
     const sourceColIndex = data.findIndex(e=>e._id===source.droppableId);
@@ -66,19 +70,26 @@ const Kanban = ({datar,boardeId}:kanbans) => {
       data[destinationColIndex].tasks = destinationTasks;
     }
     try{
-      const sendReqConfig = {
-        method:"PUT",
-        url:`/api/workspace/${boardId}/tasks/update-position`,
-        data:{
-          resourceList:sourceTasks,
-          destinationList:destinationTasks,
-          resourceSectionId:sourceSectionId,
-          destinationSectionId:destinationSectionId
-        }
-      }
-      const result = await axios(sendReqConfig);
-      console.log(result);
-      setdata(data);
+      // const sendReqConfig = {
+      //   method:"PUT",
+      //   url:`/api/workspace/${boardId}/tasks/update-position`,
+      //   data:{
+          // resourceList:sourceTasks,
+          // destinationList:destinationTasks,
+          // resourceSectionId:sourceSectionId,
+          // destinationSectionId:destinationSectionId
+      //   }
+      // }
+      // const result = await axios(sendReqConfig);
+      const socket =await getSocket();
+      socket.emit('updateposition',({resourceList:sourceTasks,
+        destinationList:destinationTasks,
+        resourceSectionId:sourceSectionId,
+        destinationSectionId:destinationSectionId,
+      workspaceId:boardId}));
+
+      
+      // setdata(data);
     }
     catch(err){
       console.log(err);
@@ -91,16 +102,26 @@ const Kanban = ({datar,boardeId}:kanbans) => {
 
   console.log(data);
   const addSection = async()=>{
-    const sendReqConfig = {
-      method:"POST",
-      url:`/api/workspace/${boardId}/sections?id=${boardId}`,
-    }
+    
+    // const sendReqConfig = {
+    //   method:"POST",
+    //   url:`/api/workspace/${boardId}/sections?id=${boardId}`,
+    // }
     try {
-      setLoading(true);
-      const result = await axios(sendReqConfig);
-      console.log(result);
-      setdata([...data,result.data.section]);
-      toast.success('created a new Section');
+      const socket = await getSocket();
+      // setLoading(true);
+      // const result = await axios(sendReqConfig);
+      // console.log(result);
+     socket.emit('create',({id:boardId}),(response)=>{
+       if(response.status){
+         
+        //  setdata([...data,response.section]);
+         toast.success('created a new Section');
+       }
+       else{
+         console.error('Error creating Section:', response.message);
+       }
+     })
      
     } catch (error) {
       toast.error("Failed to add section");
@@ -112,15 +133,17 @@ const Kanban = ({datar,boardeId}:kanbans) => {
   }
   
   const deleteSection = async(sectionId:string)=>{
-    const sendReqConfig = {
-      method:"DELETE",
-      url:`/api/workspace/${boardId}/sections?id=${sectionId}`,
-    }
+    // const sendReqConfig = {
+    //   method:"DELETE",
+    //   url:`/api/workspace/${boardId}/sections?id=${sectionId}`,
+    // }
     try {
+      const socket = await getSocket();
       
-      await axios(sendReqConfig);
-      const newData = [...data].filter(e=>e._id!==sectionId);
-      setdata(newData);
+      // await axios(sendReqConfig);
+      socket.emit('deletesection',{workspaceId:boardId,sectId:sectionId});
+      // const newData = [...data].filter(e=>e._id!==sectionId);
+      // setdata(newData);
     } catch (err) {
       console.log(err);
     }
@@ -134,15 +157,16 @@ const Kanban = ({datar,boardeId}:kanbans) => {
     setdata(newData);
     
     timer = setTimeout(async()=>{
-      const sendReqConfig = {
-        method:"PUT",
-        url:`/api/workspace/${boardId}/sections?id=${sectionId}`,
-        data:{
-          title:newTitle
-        }
-      }
+      // const sendReqConfig = {
+      //   method:"PUT",
+      //   url:`/api/workspace/${boardId}/sections?id=${sectionId}`,
+      //   data:{
+      //     title:newTitle
+      //   }
+      // }
       try {
-        await axios(sendReqConfig);
+        const socket = await getSocket();
+       socket.emit('updatesection',({workid:boardId,sectId:sectionId,changes:{title:newTitle}}));
        
       } catch (err) {
         console.log(err);
@@ -150,18 +174,29 @@ const Kanban = ({datar,boardeId}:kanbans) => {
     },timeOut);
   }
   const addTask = async(sectionId:string)=>{
-    console.log(sectionId);
-    const sendReqConfig = {
-      method:"POST",
-      url:`/api/workspace/${boardId}/tasks?id=${sectionId}`,
-      data:{user:user.username},
-    }
+    // console.log(sectionId);
+    // const sendReqConfig = {
+    //   method:"POST",
+    //   url:`/api/workspace/${boardId}/tasks?id=${sectionId}`,
+    //   data:{user:user.username},
+    // }
     try {
-      const result = await axios(sendReqConfig);
-      const newData = [...data];
-      const index = newData.findIndex(e=>e._id===sectionId);
-      newData[index].tasks.unshift(result.data.task);
-      setdata(newData);
+      const socket = await getSocket();
+      console.log("here");
+      // const result = await axios(sendReqConfig);
+      socket.emit('createtask',({sectionId:sectionId,user:user.username,id:boardId}),(response)=>{
+        if(response.status){
+          console.log(response);
+          toast.success("created a new Task");
+          // const newData = [...data];
+          // const index = newData.findIndex(e=>e._id===sectionId);
+          // newData[index].tasks.unshift(response.task);
+          // setdata(newData);
+        }
+        else{
+          console.error('Error creating Task:', response.message);
+        }
+      })
       
     } catch (err) {
       console.log(err);

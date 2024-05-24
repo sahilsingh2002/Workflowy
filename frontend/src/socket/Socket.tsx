@@ -1,35 +1,49 @@
-import {io,Socket} from 'socket.io-client';
+// socketService.ts
+import { io, Socket } from 'socket.io-client';
 
-let socket:Socket;
-export const createConnection =()=>{
-  socket = io('http://localhost:7000', {
-    withCredentials: true,
-  });
+let socket: Socket | null = null;
+
+export const createConnection = (): Socket => {
+  if (!socket) {
+    socket = io('http://localhost:7000', {
+      withCredentials: true,
+    });
+
+    socket.on('connect', () => {
+      console.log('Connected to socket.io server', socket!.id);
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Disconnected from socket.io server');
+    });
+  }
   return socket;
-}
-
-export const initiateSocketConnection = (token) => {
-  socket = io('http://localhost:7000', {
-    query: { token },
-    withCredentials: true,
-  });
-  console.log("running");
-  socket.on('connect', () => {
-    console.log('Connected to socket.io server',socket.id);
-  });
-  socket.on('disconnect', () => {
-    console.log('Disconnected from socket.io server');
-  });
 };
 
-export const getSocket = async() => {
+export const initiateSocketConnection = (token: string): Socket => {
   if (!socket) {
-    await new Promise<void>((resolve) => {
-      // Wait for the socket to be initialized
-      socket.on('connect', () => {
-        resolve();
-      });
+    socket = io('http://localhost:7000', {
+      query: { token },
+      withCredentials: true,
     });
+
+    console.log('Running');
+    socket.on('connect', () => {
+      console.log('Connected to socket.io server', socket!.id);
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Disconnected from socket.io server');
+    });
+  } else {
+    console.log('Socket connection already exists');
+  }
+  return socket;
+};
+
+export const getSocket = async (): Promise<Socket> => {
+  if (!socket) {
+    throw new Error('Socket connection has not been initialized. Please call createConnection or initiateSocketConnection first.');
   }
   return socket;
 };

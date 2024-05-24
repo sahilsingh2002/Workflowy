@@ -75,6 +75,9 @@ else{
 io.on('connection', (socket) => {
   console.log('A user connected:', socket.id);
   require('./handlers/WorkspaceHandler')(socket,io);
+  require('./handlers/SectionHandlers')(socket,io);
+  require('./handlers/TaskHandler')(socket,io);
+
 
   socket.on('disconnect', () => {
 

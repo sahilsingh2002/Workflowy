@@ -1,6 +1,5 @@
 const { ObjectId } = require("mongodb");
 const {
-  User,
   Workspaces,
   Sections,
   Tasks,
@@ -31,10 +30,47 @@ module.exports = (socket,io)=>{
       }
       const section = await workspace.findOneAndUpdate(filter,updateDoc);
   
+      io.to(id).emit("getWorkspaces",({hello:"hello"}));
       callback({status:true,section:sectionmain});
     }
     catch(err){
       callback({status:false,error:err});
     }
+  })
+  socket.on('updatesection',async(data,callback)=>{
+    const {sectId} = data;
+    
+    const sect = Sections();
+    try{
+      const filter = {_id:new ObjectId(sectId)};
+      const updateDoc = {
+        $set:data.changes
+      }
+      
+      const section = await sect.updateOne(filter,updateDoc);
+      io.to(data.workid).emit("getWorkspaces",({hello:"hello"}));
+      
+      
+    }
+    catch(err){
+      console.log(err);
+    }
+  })
+  socket.on('deletesection',async(data)=>{
+    const {workspaceId,sectId} = data;
+    const sect = Sections();
+  const tasks = Tasks();
+  const worksp = Workspaces();
+  try{
+    await tasks.deleteMany({section: new ObjectId(sectId)});
+    await sect.deleteOne({_id:new ObjectId(sectId)});
+   const result =  await worksp.findOneAndUpdate({_id:new ObjectId(workspaceId)},
+  {$pull:{sections:new ObjectId(sectId)}});
+  console.log(result);
+  io.to(workspaceId).emit("getWorkspaces",({hello:"hello"}));
+  }
+  catch(err){
+   console.log(err);
+  }
   })
 }
