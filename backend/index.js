@@ -6,8 +6,11 @@ const workspaceRoutes = require("./routes/workspaceRoutes")
 const sectionRoutes = require("./routes/sectionRoutes")
 const taskRoutes = require("./routes/taskRoutes")
 const {createServer} = require('http');
+
+
 const {Server} = require("socket.io");
 const jwt = require('jsonwebtoken');
+
 
 
 const cors = require('cors');
@@ -15,17 +18,33 @@ const { authenticateUser } = require('./middlewares/auth');
 
 const port = 7000;
 const app = express();
-const server = createServer(app);
+const server =createServer(app);
+
 const io = new Server(server,{
   cors:{
-     origin: "http://localhost:3000", credentials: true 
+    origin:true,
+    credentials:true
+ 
   }
-});
+}
+);
+
 app.use(express.json());
 app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 app.use(cookieParser());
-connect();
 
+ 
+connect();
+io.on('connection',(socket)=>{
+  console.log('a user connected',socket.id);
+  require('./handlers/authHandlers')(socket, io);
+  io.on('disconnect',()=>{
+    console.log('user disconnected');
+  })
+})
+
+ 
+ 
 server.listen(port,()=>{
   console.log("server started on port " + port);
 });

@@ -12,6 +12,7 @@ import {
   CardHeader,
   CardTitle
 } from "@/components/ui/card"
+import socket from "@/socket/Scoket";
 
 
 
@@ -166,12 +167,14 @@ export function Signup() {
     data:user
   }
   try{
+
     const result = await axios(sendreqConfig);
     console.log(result);
     dispatch(changeUser(user));
     initiateSocketConnection(result.data.token);
+
   
-    toast.success(`Welcome, ${user.name}`)
+    // toast.success(`Welcome, ${user.name}`)
 
   }
   catch(err){

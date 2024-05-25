@@ -15,6 +15,7 @@ import { changeUser } from './redux/slices/userSlice'
 import Workspaces from './pages/Workspaces'
 import { Toaster } from 'sonner'
 import { RootState } from './redux/store'
+import socket from './socket/Scoket'
 
 
 
@@ -25,8 +26,15 @@ function App() {
   const [user, setUser] = useState(false);
   const [isLoading,setIsLoading] = useState(true);
 
-  
   useEffect(()=>{
+    socket.on('connect',()=>{
+      console.log("here is me",socket.id);
+    });
+      
+    
+  },[])
+  useEffect(()=>{
+    
     const handleUser = async () => {
       const sendreqConfig = {
         method:"POST",

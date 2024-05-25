@@ -4,6 +4,7 @@ import { FaRegEye, FaRegEyeSlash, FaGoogle } from "react-icons/fa";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import {changeUser} from '../../redux/slices/userSlice'
+import socket from "@/socket/Scoket";
 
 
 import { Button } from "@/components/ui/button";
@@ -56,7 +57,6 @@ export function Login() {
       });
       dispatch(changeUser(result.data.data));
       console.log(result);
-      initiateSocketConnection(result.data.token);
       toast.success(`Welcome! ${result.data.data.username}`);
 
       navigate("/home");
@@ -105,7 +105,7 @@ export function Login() {
                    setShowPassword(!showPassword) }}>{showPassword ? <FaRegEye /> : <FaRegEyeSlash />}</Button>
               </div>
                 <Link to="/" className="ml-auto inline-block text-sm underline">
-                  Forgot your password?
+                  Forgot your password?jkljkl
                 </Link>
             </div>
             <ErrorMessage
