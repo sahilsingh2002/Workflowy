@@ -21,7 +21,7 @@ module.exports = (socket,io)=>{
     const clients = io.sockets.adapter.rooms.get(id);
     console.log("clients: " , clients);
 
-    // io.to(id).emit("getWorkspaces",({hello:"hello"}));
+    socket.to(id).emit("getWorkspaces",({hello:"hello"}));
    callback({ status: true, board: worksp });
   } catch (error) {
     console.log(error);

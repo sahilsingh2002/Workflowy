@@ -97,4 +97,17 @@ module.exports = (socket,io)=>{
    console.log(err);
   }
   })
+  socket.on("updatetask",async(data,callback)=>{
+    const {taskId,user,workspaceId,changes} = data;
+ 
+  const tasker = Tasks();
+  try{
+    const task = await tasker.findOneAndUpdate({_id:new ObjectId(taskId)},
+  {$set:changes});
+  callback({status:true,task:task});
+  }
+  catch(err){
+    callback({status:false,error:err});
+  }
+  })
 }

@@ -123,6 +123,7 @@ function Workspaces() {
    }
    useEffect(()=>{
     socket.on('getWorkspaces',(data)=>{
+      
       handleGetpage(workspaceId);
     })
    },[]);

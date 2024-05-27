@@ -15,8 +15,6 @@ import { changeUser } from './redux/slices/userSlice'
 import Workspaces from './pages/Workspaces'
 import { Toaster } from 'sonner'
 import { RootState } from './redux/store'
-import socket from './socket/Scoket'
-
 
 
 
@@ -26,13 +24,7 @@ function App() {
   const [user, setUser] = useState(false);
   const [isLoading,setIsLoading] = useState(true);
 
-  useEffect(()=>{
-    socket.on('connect',()=>{
-      console.log("here is me",socket.id);
-    });
-      
-    
-  },[])
+  
   useEffect(()=>{
     
     const handleUser = async () => {
@@ -74,8 +66,8 @@ function App() {
        </>
      ):(  
       <div className='h-full flex dark:bg-[#1C2025] text-[#2f3a4d] dark:text-[#9EADAC] overflow-hidden'>
-        <Toaster richColors/>
-    
+    <Toaster richColors/>
+        
        
           {(!(userdetails.username!==null && userdetails?.username?.length > 0)) && (pathname !== '/login' && pathname !== '/signup') && <Navigate to="/" />}
     <Routes>

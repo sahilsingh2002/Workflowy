@@ -29,6 +29,7 @@ function TaskModal({ boardId, tasks, onClose, onUpdate, onDelete, currRole }) {
 
   useEffect(() => {
     setTask(tasks);
+    console.log(tasks);
     setTitle(tasks !== undefined ? tasks.title : '');
     setContent(tasks !== undefined ? tasks.content : '');
   }, [tasks]);
@@ -87,6 +88,7 @@ function TaskModal({ boardId, tasks, onClose, onUpdate, onDelete, currRole }) {
 
     if (!isModalClosed) {
       timer = setTimeout(async () => {
+        console.log(task);
         const sendReqConfig = {
           method: "PUT",
           url: `/api/workspace/${boardId}/tasks/${task._id}`,
@@ -110,7 +112,7 @@ function TaskModal({ boardId, tasks, onClose, onUpdate, onDelete, currRole }) {
 
   return (
     <>
-      <Modal size="3xl" placement="center" className="flex dark:text-white" backdrop="blur" radius="lg" isOpen={task !== undefined} onClose={onCloser}>
+      <Modal size="3xl" placement="center" className="flex dark:text-white" backdrop="blur" radius="lg" isOpen={tasks !== undefined} onClose={onCloser}>
         <ModalContent>
           {(onClose) => (
             <>

@@ -126,9 +126,7 @@ const Kanban = ({datar,boardeId}:kanbans) => {
     } catch (error) {
       toast.error("Failed to add section");
     }
-    finally{
-      setLoading(false);
-    }
+    
 
   }
   
