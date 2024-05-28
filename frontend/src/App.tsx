@@ -15,6 +15,7 @@ import { changeUser } from './redux/slices/userSlice'
 import Workspaces from './pages/Workspaces'
 import { Toaster } from 'sonner'
 import { RootState } from './redux/store'
+import { SocketProvider } from './context/SocketContext'
 
 
 
@@ -59,6 +60,9 @@ function App() {
   console.log("user",userdetails);
   const {pathname} = useLocation();
   return (
+    <SocketProvider>
+
+  
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
      {isLoading?(
        <>
@@ -85,6 +89,7 @@ function App() {
     )
     }
     </ThemeProvider>
+    </SocketProvider>
       
   )
 }

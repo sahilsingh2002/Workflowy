@@ -28,11 +28,12 @@ import { RootState } from '@/redux/store';
 import LoadingSpinner from '../LoadingSpinner';
 import { changeRole } from '@/redux/slices/userSlice';
 import { createConnection } from '@/socket/Socket';
+import { useSocket } from '@/context/SocketContext';
 
 
 
 function Sidebar({modal}) {
-  const socket = useMemo(()=> createConnection(),[]); 
+  const {socket,disconnectSocket} = useSocket();
   const [workLoad, setWorkLoad] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const { workspaceId } = useParams();
@@ -87,6 +88,9 @@ const collapse = ()=>{
   }
  }
  useEffect(() => {
+  if(socket){
+
+  
   socket.on('getWorkspaces', (data) => {
     getWork();
     console.log("here",data);
@@ -100,6 +104,7 @@ const collapse = ()=>{
   socket.on('disconnect', () => {
     console.warn('Socket disconnected');
     toast.error('Socket disconnected');
+    disconnectSocket();
   });
 
   return () => {
@@ -107,6 +112,8 @@ const collapse = ()=>{
     socket.off('connect_error');
     socket.off('disconnect');
   };
+}
+
 }, [socket]);
  useEffect(()=>{
 

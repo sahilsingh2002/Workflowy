@@ -23,11 +23,13 @@ import { AxeIcon } from "lucide-react";
 import './signup.css'
 import { useForm, SubmitHandler } from "react-hook-form"
 import { toast } from "sonner";
-import { initiateSocketConnection } from "@/socket/Socket";
+import { useSocket } from "@/context/SocketContext";
+
 
 
 
 export function Signup() {
+  const {connectSocket, disconnectSocket} = useSocket();
   const dispatch = useDispatch();
  
   type Inputs = {
@@ -171,13 +173,15 @@ export function Signup() {
     const result = await axios(sendreqConfig);
     console.log(result);
     dispatch(changeUser(user));
-    initiateSocketConnection(result.data.token);
+    connectSocket(result.data.token);
+    
 
   
-    // toast.success(`Welcome, ${user.name}`)
+    toast.success(`Welcome, ${user.name}`)
 
   }
   catch(err){
+    disconnectSocket();
      
     console.log(err);
   }

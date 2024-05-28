@@ -15,14 +15,14 @@ import 'froala-editor/js/plugins/char_counter.min.js';
 import 'froala-editor/js/plugins/save.min.js';
 import FroalaEditorView from "react-froala-wysiwyg/FroalaEditorView";
 import { setWork } from "@/redux/slices/workspaceSlice";
-import { createConnection } from "@/socket/Socket";
+
 
 const timeOut = 500;
 let timer;
 
 function DescriptionModal({setColl, boardId, titled, description, isOpened, onClose, currRole }) {
   const user = useSelector((state: RootState) => state.user);
-  const socket = useMemo(()=> createConnection(),[]);
+
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [desc, setDesc] = useState(description);
   const [title, setTitle] = useState(titled);

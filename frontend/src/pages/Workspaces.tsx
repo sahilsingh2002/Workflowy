@@ -15,9 +15,11 @@ import { RootState } from '@/redux/store';
 import { changeRole } from '@/redux/slices/userSlice';
 import ShareModal from '@/modals/ShareModal';
 import DescriptionModal from '@/modals/DescriptionModal';
-import { createConnection } from '@/socket/Socket';
+import { useSocket } from '@/context/SocketContext';
+
 
 function Workspaces() {
+  const {socket} = useSocket();
   let timer:ReturnType<typeof setTimeout>;
   const navigate = useNavigate();
   const [access,setAccess] = useState(false);
@@ -32,15 +34,15 @@ function Workspaces() {
   const [share,setShare]= useState(false);
   const [isOpen,setIsOpen] = useState(false);
   const [coll,setColl] = useState(false);
-  
   const workspaces = useSelector((state:RootState)=>state.workspace.value);
   const favlist = useSelector((state:RootState)=>state.favourite.value);
   const user = useSelector((state:RootState)=>state.user);
   
 
-  const socket = useMemo(()=> createConnection(),[]);
+  
   
   const handleGetpage = async(id:string)=>{
+    console.log("here");
     
       const sendReqConfig = {
         method:"GET",
@@ -71,7 +73,7 @@ function Workspaces() {
    }
   useEffect(()=>{
      handleGetpage(workspaceId?workspaceId:'');
-     socket.emit('getroom',workspaceId);
+     socket?.emit('getroom',workspaceId);
     
    },[workspaceId]);
    
@@ -79,8 +81,10 @@ function Workspaces() {
    
 
    const updateTitle = async(e:ChangeEvent<HTMLInputElement>)=>{
+    
     clearTimeout(timer);
     const newTitle = e.target.value;
+    socket?.emit('setNewTitle',{title:newTitle,id:workspaceId});
     setTitle(newTitle);
     const temp = [...workspaces];
         const index = temp.findIndex(e=>e._id === workspaceId);
@@ -106,7 +110,7 @@ function Workspaces() {
            try{
             console.log(socket);
             //  const result = await axios(sendReqConfig);
-            socket.emit('update',{id:workspaceId, changes:{name:newTitle}},(response)=>{
+            socket?.emit('update',{id:workspaceId, changes:{name:newTitle}},(response)=>{
               if(response.status){
                  console.log(response);
 
@@ -122,11 +126,15 @@ function Workspaces() {
         // },timeout);
    }
    useEffect(()=>{
-    socket.on('getWorkspaces',(data)=>{
+    socket?.on('makenewTitle',(data)=>{
+      console.log(data);
+      setTitle(data.title);
+    })
+    socket?.on('getWorkspaces',(data)=>{
       
       handleGetpage(workspaceId);
     })
-   },[]);
+   },[socket,workspaceId]);
    
    const onIconChange = async(newIcon:string)=>{
     const temp = [...workspaces];
@@ -141,7 +149,7 @@ function Workspaces() {
     dispatch(setWork(temp));
      
       try{
-        socket.emit('update',{id:workspaceId, changes:{icon:newIcon}},(response)=>{
+        socket?.emit('update',{id:workspaceId, changes:{icon:newIcon}},(response)=>{
           if(response.status){
              console.log(response);
 

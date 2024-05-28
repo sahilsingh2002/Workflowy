@@ -4,7 +4,6 @@ import { FaRegEye, FaRegEyeSlash, FaGoogle } from "react-icons/fa";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import {changeUser} from '../../redux/slices/userSlice'
-import socket from "@/socket/Scoket";
 
 
 import { Button } from "@/components/ui/button";
@@ -20,7 +19,7 @@ import { Label } from "@/components/ui/label";
 import { useForm, SubmitHandler } from "react-hook-form"
 import { toast } from "sonner";
 import { ErrorMessage } from "@hookform/error-message"
-import { initiateSocketConnection } from "@/socket/Socket";
+import { useSocket } from "@/context/SocketContext";
 
 
 
@@ -31,6 +30,7 @@ type Inputs = {
 }
 
 export function Login() {
+  const {connectSocket, disconnectSocket} = useSocket();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const {
@@ -58,12 +58,14 @@ export function Login() {
       dispatch(changeUser(result.data.data));
       console.log(result);
       toast.success(`Welcome! ${result.data.data.username}`);
+      connectSocket(result.data.token);
 
       navigate("/home");
      
     }
     catch(err){
       toast.error("Invalid Credentials");
+      disconnectSocket();
       
       console.log("error",err);
     }

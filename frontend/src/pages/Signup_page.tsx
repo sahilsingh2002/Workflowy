@@ -1,9 +1,12 @@
 import { Signup } from '@/components/signup/Signup'
-import React from 'react'
+
 
 function Signup_page() {
   return (
-   <Signup/>
+    
+
+      <Signup/>
+   
   )
 }
 

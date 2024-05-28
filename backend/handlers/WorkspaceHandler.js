@@ -7,6 +7,10 @@ const {
 } = require("../connectDB/allCollections");
 
 module.exports = (socket,io)=>{
+  socket.on('setNewTitle',(data)=>{
+   
+    socket.to(data.id).emit("makenewTitle",data);
+  })
   socket.on('update',async(data,callback)=>{
   const {id,changes} = data;
   try {
@@ -21,7 +25,7 @@ module.exports = (socket,io)=>{
     const clients = io.sockets.adapter.rooms.get(id);
     console.log("clients: " , clients);
 
-    socket.to(id).emit("getWorkspaces",({hello:"hello"}));
+    // socket.to(id).emit("getWorkspaces",({hello:"hello"}));
    callback({ status: true, board: worksp });
   } catch (error) {
     console.log(error);
