@@ -1,11 +1,10 @@
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from '../ui/button'
 import { Divider } from '@nextui-org/divider'
 import {DragDropContext,Draggable,Droppable, OnDragEndResponder} from 'react-beautiful-dnd'
 import { Textarea } from '@nextui-org/input'
 import { Trash } from 'lucide-react'
-import axios from 'axios'
 import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import TaskModal from '@/modals/TaskModal'
@@ -101,8 +100,26 @@ const Kanban = ({datar,boardeId}:kanbans) => {
     setdata(datar);
     
   },[datar]);
-
-  console.log(data);
+  useEffect(()=>{
+    if(socket){
+      socket.on("getSections",(datas)=>{
+        setdata((prevData) => [...prevData, datas.section]);
+        toast.success("New section created by : " + datas.user);
+      
+      });
+      socket.on("removeSection",(datas)=>{
+        const newData = [...data].filter(e=>e._id!==datas.sectId);
+        setdata(newData);
+      })
+    }
+    
+      return () => {
+        if (socket) {
+          socket.off("getSections");
+        }
+      };
+    
+  },[socket])
   const addSection = async()=>{
     
     // const sendReqConfig = {
@@ -114,10 +131,10 @@ const Kanban = ({datar,boardeId}:kanbans) => {
       // setLoading(true);
       // const result = await axios(sendReqConfig);
       // console.log(result);
-     socket?.emit('create',({id:boardId}),(response)=>{
+     socket?.emit('create',({id:boardId,user:user.username}),(response)=>{
        if(response.status){
          
-        //  setdata([...data,response.section]);
+         setdata([...data,response.section]);
          toast.success('created a new Section');
        }
        else{
@@ -142,8 +159,8 @@ const Kanban = ({datar,boardeId}:kanbans) => {
       
       // await axios(sendReqConfig);
       socket?.emit('deletesection',{workspaceId:boardId,sectId:sectionId});
-      // const newData = [...data].filter(e=>e._id!==sectionId);
-      // setdata(newData);
+      const newData = [...data].filter(e=>e._id!==sectionId);
+      setdata(newData);
     } catch (err) {
       console.log(err);
     }

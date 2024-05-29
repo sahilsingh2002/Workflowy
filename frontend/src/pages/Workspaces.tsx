@@ -74,7 +74,9 @@ function Workspaces() {
   useEffect(()=>{
      handleGetpage(workspaceId?workspaceId:'');
      socket?.emit('getroom',workspaceId);
-    
+    return ()=>{
+      socket?.emit('leaveroom',workspaceId);
+    }
    },[workspaceId]);
    
 
@@ -84,7 +86,7 @@ function Workspaces() {
     
     clearTimeout(timer);
     const newTitle = e.target.value;
-    socket?.emit('setNewTitle',{title:newTitle,id:workspaceId});
+    // socket?.emit('setNewTitle',{title:newTitle,id:workspaceId});
     setTitle(newTitle);
     const temp = [...workspaces];
         const index = temp.findIndex(e=>e._id === workspaceId);
@@ -128,7 +130,11 @@ function Workspaces() {
    useEffect(()=>{
     socket?.on('makenewTitle',(data)=>{
       console.log(data);
-      setTitle(data.title);
+      setTitle(data.name);
+    })
+    socket?.on('getnewIcon',(data)=>{
+      console.log(data);
+      setIcon(data.icon);
     })
     socket?.on('getWorkspaces',(data)=>{
       

@@ -7,10 +7,7 @@ const {
 } = require("../connectDB/allCollections");
 
 module.exports = (socket,io)=>{
-  socket.on('setNewTitle',(data)=>{
-   
-    socket.to(data.id).emit("makenewTitle",data);
-  })
+  
   socket.on('update',async(data,callback)=>{
   const {id,changes} = data;
   try {
@@ -23,9 +20,18 @@ module.exports = (socket,io)=>{
     };
     const worksp = await workspace.updateOne(filter, updateDocument);
     const clients = io.sockets.adapter.rooms.get(id);
-    console.log("clients: " , clients);
+    console.log(clients);
+    if(changes.name){
 
-    // socket.to(id).emit("getWorkspaces",({hello:"hello"}));
+      socket.to(id).emit("makenewTitle",changes);
+    }
+    else if(changes.icon){
+      console.log(changes.icon);
+      socket.to(id).emit("getnewIcon",changes);
+    }
+    else if(changes.content){
+      socket.to(id).emit("getnewContent",changes);
+    }
    callback({ status: true, board: worksp });
   } catch (error) {
     console.log(error);
@@ -37,4 +43,8 @@ module.exports = (socket,io)=>{
     console.log(data);
     socket.join(data);
   });
+  socket.on('leaveroom',(data)=>{
+    console.log("left",data);
+    socket.leave(data);
+  })
 }

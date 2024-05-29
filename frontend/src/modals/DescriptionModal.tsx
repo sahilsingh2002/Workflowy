@@ -15,12 +15,14 @@ import 'froala-editor/js/plugins/char_counter.min.js';
 import 'froala-editor/js/plugins/save.min.js';
 import FroalaEditorView from "react-froala-wysiwyg/FroalaEditorView";
 import { setWork } from "@/redux/slices/workspaceSlice";
+import { useSocket } from "@/context/SocketContext";
 
 
 const timeOut = 500;
 let timer;
 
 function DescriptionModal({setColl, boardId, titled, description, isOpened, onClose, currRole }) {
+  const {socket} = useSocket();
   const user = useSelector((state: RootState) => state.user);
 
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -35,13 +37,19 @@ function DescriptionModal({setColl, boardId, titled, description, isOpened, onCl
     setDesc(description);
     setTitle(titled);
   }, [titled, description]);
-
+useEffect(() => {
+  if(socket){
+    socket.on("getnewContent",(data)=>{
+      setDesc(data.content);
+    })
+  }
+},[socket]);
   const updateDescription = async (newDesc) => {
    
-
-    setTimeout(async () => {
+    clearTimeout(timer);
+     timer = setTimeout(async () => {
       try {
-        socket.emit('update',{id:boardId, changes:{content:newDesc}},(response)=>{
+        socket?.emit('update',{id:boardId, changes:{content:newDesc}},(response)=>{
           if(response.status){
              console.log(response);
 
@@ -58,7 +66,7 @@ function DescriptionModal({setColl, boardId, titled, description, isOpened, onCl
       } catch (err) {
         console.error(err);
       }
-    }, 50);
+    }, timeOut);
   };
 
   const onOpenChanger = () => {
