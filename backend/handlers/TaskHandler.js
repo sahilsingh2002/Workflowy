@@ -23,7 +23,6 @@ module.exports = (socket,io)=>{
           updated_at: Date.now(),
           created_by:user,
           updated_by:user,
-          
       });
       const T = await tasker.findOne({_id:task.insertedId});
       
@@ -32,7 +31,7 @@ module.exports = (socket,io)=>{
           tasks:task.insertedId
         }
       });
-      io.to(id).emit("getWorkspaces",({hello:"hello"}));
+      io.to(id).emit("addtask",({task:T}));
     callback({status:true,task:T});
     }
     catch(err){
@@ -73,7 +72,7 @@ module.exports = (socket,io)=>{
           }})
         
       }
-      socket.to(workspaceId).emit("getWorkspaces",({hello:"hello"}));
+      // socket.to(workspaceId).emit("getWorkspaces",({hello:"hello"}));
       callback({status:true});
     }
     catch(err){
@@ -91,7 +90,7 @@ module.exports = (socket,io)=>{
    const result =  await worksp.findOneAndUpdate({_id:new ObjectId(workspaceId)},
   {$pull:{sections:new ObjectId(sectId)}});
   console.log(result);
-  socket.to(workspaceId).emit("getWorkspaces",({hello:"hello"}));
+  // socket.to(workspaceId).emit("getWorkspaces",({hello:"hello"}));
   }
   catch(err){
    console.log(err);

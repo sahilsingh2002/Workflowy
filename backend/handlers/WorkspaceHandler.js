@@ -42,6 +42,7 @@ module.exports = (socket,io)=>{
     
     console.log(data);
     socket.join(data);
+    socket.emit('getWorkspaces',data);
   });
   socket.on('leaveroom',(data)=>{
     console.log("left",data);

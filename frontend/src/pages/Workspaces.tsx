@@ -41,43 +41,63 @@ function Workspaces() {
 
   
   
-  const handleGetpage = async(id:string)=>{
-    console.log("here");
-    
-      const sendReqConfig = {
-        method:"GET",
-        url:`/api/workspace/getPage?id=${id}`,
-    }
-      try {
-        const result = await axios(sendReqConfig);
-
-        console.log("res",result);
-
-        if(result.data.status===false){
-        
-          navigate('/home');
-        }
-        setTitle(result?.data?.page?.result?.name);
-        setDescription(result?.data?.page?.result?.content);
-        setSections(result?.data?.page?.result?.sections);
-        setIcon(result?.data?.page?.result?.icon);
-        setIsFav(result?.data?.page?.result?.favourite);
-        setAccess(true);
-        dispatch(changeRole(result?.data?.roles));
-        
-      } catch (error) {
-        console.log("Error : ",error);
-        
-        // navigate(`/workspace/`)
-      }
-   }
   useEffect(()=>{
-     handleGetpage(workspaceId?workspaceId:'');
+    const handleGetpage = async(id:string)=>{
+      console.log("here");
+      
+        const sendReqConfig = {
+          method:"GET",
+          url:`/api/workspace/getPage?id=${id}`,
+      }
+        try {
+          const result = await axios(sendReqConfig);
+  
+          console.log("res",result);
+  
+          if(result.data.status===false){
+          
+            navigate('/home');
+          }
+          setTitle(result?.data?.page?.result?.name);
+          setDescription(result?.data?.page?.result?.content);
+          setSections(result?.data?.page?.result?.sections);
+          setIcon(result?.data?.page?.result?.icon);
+          setIsFav(result?.data?.page?.result?.favourite);
+          setAccess(true);
+          dispatch(changeRole(result?.data?.roles));
+          
+        } catch (error) {
+          console.log("Error : ",error);
+          
+          // navigate(`/workspace/`)
+        }
+     }
+     socket?.on('makenewTitle',(data)=>{
+      console.log(data);
+      setTitle(data.name);
+    })
+    socket?.on('getnewIcon',(data)=>{
+      console.log(data);
+      setIcon(data.icon);
+    })
+    socket?.on('getWorkspaces',(data)=>{
+      console.log("getting workspace");
+      handleGetpage(workspaceId);
+    })
      socket?.emit('getroom',workspaceId);
+     console.log("hereasdmasldmaskld");
     return ()=>{
       socket?.emit('leaveroom',workspaceId);
     }
-   },[workspaceId]);
+   },[workspaceId,socket,navigate]);
+
+   useEffect(()=>{
+    if(socket){
+      if(workspaceId){
+        socket?.emit('getWorkspaces',workspaceId);
+      }
+    }
+   })
    
 
    
@@ -127,21 +147,6 @@ function Workspaces() {
          }
         // },timeout);
    }
-   useEffect(()=>{
-    socket?.on('makenewTitle',(data)=>{
-      console.log(data);
-      setTitle(data.name);
-    })
-    socket?.on('getnewIcon',(data)=>{
-      console.log(data);
-      setIcon(data.icon);
-    })
-    socket?.on('getWorkspaces',(data)=>{
-      
-      handleGetpage(workspaceId);
-    })
-   },[socket,workspaceId]);
-   
    const onIconChange = async(newIcon:string)=>{
     const temp = [...workspaces];
     const index = temp.findIndex(e=>e._id === workspaceId);

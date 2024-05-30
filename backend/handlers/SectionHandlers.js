@@ -48,9 +48,7 @@ module.exports = (socket,io)=>{
       }
       
       const section = await sect.updateOne(filter,updateDoc);
-      io.to(data.workid).emit("getWorkspaces",({hello:"hello"}));
-      
-      
+      socket.to(data.workid).emit("updateHere",data);
     }
     catch(err){
       console.log(err);
@@ -67,7 +65,7 @@ module.exports = (socket,io)=>{
    const result =  await worksp.findOneAndUpdate({_id:new ObjectId(workspaceId)},
   {$pull:{sections:new ObjectId(sectId)}});
   console.log(result);
-  io.to(workspaceId).emit("removesection",({sectId:sectId}));
+  socket.to(workspaceId).emit("removesection",({sectId:sectId}));
   }
   catch(err){
    console.log(err);
