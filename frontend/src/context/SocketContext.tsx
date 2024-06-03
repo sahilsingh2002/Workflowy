@@ -25,7 +25,6 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
       socket.disconnect();
       setSocket(null);
     }
-    Cookies.remove('user');
   };
 
   useEffect(() => {

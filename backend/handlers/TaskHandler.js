@@ -72,33 +72,33 @@ module.exports = (socket,io)=>{
           }})
         
       }
-      // socket.to(workspaceId).emit("getWorkspaces",({hello:"hello"}));
-      callback({status:true});
+      // callback({status:true});
+      socket.to(workspaceId).emit("getWorkspaces",{hello:"hello"})
     }
     catch(err){
       console.log({status:false,error:err});
     }
   })
-  socket.on('deletesection',async(data)=>{
-    const {workspaceId,sectId} = data;
-    const sect = Sections();
-  const tasks = Tasks();
-  const worksp = Workspaces();
+  socket.on('deleteTask',async(data,callback)=>{
+    const {taskId,boardId} = data;
+  const tasker = Tasks();
   try{
-    await tasks.deleteMany({section: new ObjectId(sectId)});
-    await sect.deleteOne({_id:new ObjectId(sectId)});
-   const result =  await worksp.findOneAndUpdate({_id:new ObjectId(workspaceId)},
-  {$pull:{sections:new ObjectId(sectId)}});
-  console.log(result);
-  // socket.to(workspaceId).emit("getWorkspaces",({hello:"hello"}));
+    const curr = await tasker.findOne({_id:new ObjectId(taskId)});
+    await tasker.deleteOne({_id:new ObjectId(taskId)});  
+    const cursor = await tasker.find({section : curr.section}).sort({'position':1});
+    const tasks = await cursor.toArray();
+    for(let key=0;key<tasks.length;key++){
+      await tasker.findOneAndUpdate({_id:tasks[key]._id},
+      {$set:{position:key}});
+    }
+    socket.to(boardId).emit("deleteit",(data));
   }
   catch(err){
-   console.log(err);
+    console.log({status:false,error:err});
   }
   })
   socket.on("updatetask",async(data,callback)=>{
-    const {taskId,user,workspaceId,changes} = data;
- 
+    const {taskId,workspaceId,changes} = data;
   const tasker = Tasks();
   try{
     const task = await tasker.findOneAndUpdate({_id:new ObjectId(taskId)},
@@ -108,5 +108,9 @@ module.exports = (socket,io)=>{
   catch(err){
     callback({status:false,error:err});
   }
+  })
+  socket.on("sendData",(data)=>{
+    // console.log(data);
+    socket.to(data.boardId).emit("haveData",data);
   })
 }

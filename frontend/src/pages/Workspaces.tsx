@@ -41,67 +41,64 @@ function Workspaces() {
 
   
   
-  useEffect(()=>{
-    const handleGetpage = async(id:string)=>{
-      console.log("here");
-      
-        const sendReqConfig = {
-          method:"GET",
-          url:`/api/workspace/getPage?id=${id}`,
-      }
-        try {
-          const result = await axios(sendReqConfig);
-  
-          console.log("res",result);
-  
-          if(result.data.status===false){
-          
-            navigate('/home');
-          }
-          setTitle(result?.data?.page?.result?.name);
-          setDescription(result?.data?.page?.result?.content);
-          setSections(result?.data?.page?.result?.sections);
-          setIcon(result?.data?.page?.result?.icon);
-          setIsFav(result?.data?.page?.result?.favourite);
-          setAccess(true);
-          dispatch(changeRole(result?.data?.roles));
-          
-        } catch (error) {
-          console.log("Error : ",error);
-          
-          // navigate(`/workspace/`)
+  const handleGetpage = async(id:string)=>{
+    console.log("here");
+    
+      const sendReqConfig = {
+        method:"GET",
+        url:`/api/workspace/getPage?id=${id}`,
+    }
+      try {
+        const result = await axios(sendReqConfig);
+
+        console.log("res",result);
+
+        if(result.data.status===false){
+        
+          navigate('/home');
         }
-     }
-     socket?.on('makenewTitle',(data)=>{
+        setTitle(result?.data?.page?.result?.name);
+        setDescription(result?.data?.page?.result?.content);
+        setSections(result?.data?.page?.result?.sections);
+        setIcon(result?.data?.page?.result?.icon);
+        setIsFav(result?.data?.page?.result?.favourite);
+        setAccess(true);
+        dispatch(changeRole(result?.data?.roles));
+        
+      } catch (error) {
+        console.log("Error : ",error);
+        
+        // navigate(`/workspace/`)
+      }
+   }
+  useEffect(()=>{
+    const makenewTitle = (data)=>{
+
       console.log(data);
       setTitle(data.name);
-    })
-    socket?.on('getnewIcon',(data)=>{
+    }
+    const makenewIcon = (data)=>{
       console.log(data);
       setIcon(data.icon);
-    })
-    socket?.on('getWorkspaces',(data)=>{
-      console.log("getting workspace");
+    }
+    const getWorkspaces = (data)=>{
+      console.log(data);
       handleGetpage(workspaceId);
-    })
+    }
+     socket?.on('makenewTitle',makenewTitle)
+    socket?.on('getnewIcon',makenewIcon)
+    socket?.on('getWorkspaces',getWorkspaces);
      socket?.emit('getroom',workspaceId);
-     console.log("hereasdmasldmaskld");
+     
     return ()=>{
       socket?.emit('leaveroom',workspaceId);
+      socket?.off('makenewTitle',makenewTitle);
+      socket?.off('getnewIcon',makenewIcon);
+      socket?.off('getWorkspaces',getWorkspaces);
+    
     }
-   },[workspaceId,socket,navigate]);
-
-   useEffect(()=>{
-    if(socket){
-      if(workspaceId){
-        socket?.emit('getWorkspaces',workspaceId);
-      }
-    }
-   })
+   },[workspaceId,socket]);
    
-
-   
-
    const updateTitle = async(e:ChangeEvent<HTMLInputElement>)=>{
     
     clearTimeout(timer);

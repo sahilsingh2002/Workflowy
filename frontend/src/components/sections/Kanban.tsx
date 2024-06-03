@@ -116,11 +116,30 @@ const Kanban = memo(({ datar, boardeId }: KanbansProps) => {
       newData[index].tasks.push(newTask);
       console.log(newData[index]);
       setdata(newData);
-
-
     }
+    const updatetask = async (datas) => {
+      const newData = [...data];
+      const sectionIndex = newData.findIndex(e => e._id === datas.task.section);
+      console.log(sectionIndex);
+      console.log(newData[sectionIndex]);
+      const taskIndex = newData[sectionIndex].tasks?.findIndex(e => e._id === datas.task._id);
+      newData[sectionIndex].tasks[taskIndex] = datas.task;
+      setdata(newData);
+    };
+    const deletetasker = (datas)=>{
+      const newData = [...data];
+      const sectionIndex = newData.findIndex(e => e._id === datas.task.section);
+      console.log(sectionIndex);
+      console.log(newData[sectionIndex]);
+      const taskIndex = newData[sectionIndex].tasks?.findIndex(e => e._id === datas.taskId);
+      newData[sectionIndex].tasks.splice(taskIndex,1);
+      setdata(newData);
+    }
+  
 
     if (socket) {
+      socket.on("haveData",updatetask);
+      socket.on("deleteit",deletetasker);
       socket.on('getAll', handleGetAll);
       socket.on('getSections', handleGetSections);
       socket.on('removesection', handleRemoveSection);
@@ -130,11 +149,13 @@ const Kanban = memo(({ datar, boardeId }: KanbansProps) => {
 
     return () => {
       if (socket) {
+        socket.off("haveData",updatetask);
         socket.off('getAll', handleGetAll);
         socket.off('getSections', handleGetSections);
         socket.off('removesection', handleRemoveSection);
         socket.off('updateHere', handleUpdateHere);
         socket.off('addtask',addoneTask);
+        socket.off('deleteit',deletetasker);
       }
     };
   }, [socket, data]);
@@ -199,7 +220,10 @@ const Kanban = memo(({ datar, boardeId }: KanbansProps) => {
     const newData = [...data];
     const sectionIndex = newData.findIndex(e => e._id === task.section);
     const taskIndex = newData[sectionIndex].tasks.findIndex(e => e._id === task._id);
+    console.log(task);
+    
     newData[sectionIndex].tasks[taskIndex] = task;
+    console.log(newData);
     setdata(newData);
   };
 

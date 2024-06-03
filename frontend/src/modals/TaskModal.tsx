@@ -15,6 +15,7 @@ import 'froala-editor/js/plugins/image.min.js';
 import 'froala-editor/js/plugins/char_counter.min.js';
 import 'froala-editor/js/plugins/save.min.js';
 import FroalaEditorView from "react-froala-wysiwyg/FroalaEditorView";
+import { useSocket } from "@/context/SocketContext";
 
 let timer;
 const timeOut = 500;
@@ -22,6 +23,7 @@ let isModalClosed = false;
 
 function TaskModal({ boardId, tasks, onClose, onUpdate, onDelete, currRole }) {
   const user = useSelector((state: RootState) => state.user);
+  const {socket} = useSocket();
   const { isOpen, onOpen } = useDisclosure();
   const [task, setTask] = useState(tasks);
   const [title, setTitle] = useState('');
@@ -33,6 +35,32 @@ function TaskModal({ boardId, tasks, onClose, onUpdate, onDelete, currRole }) {
     setTitle(tasks !== undefined ? tasks.title : '');
     setContent(tasks !== undefined ? tasks.content : '');
   }, [tasks]);
+  useEffect(()=>{
+    const getdata = (data)=>{
+      console.log(data);
+      setTask(data.task);
+      setTitle(data.task !== undefined ? data.task.title : '');
+    setContent(data.task !== undefined ? data.task.content : '');
+    }
+    const deleteit = (data)=>{
+      if(task && task._id === data.taskId){
+        onDelete(task);
+        setTask(null);
+        onCloser();
+      }
+    }
+if(socket){
+  socket.on("haveData",getdata);
+  socket.on("deleteit",deleteit);
+
+}
+    return ()=>{
+      if(socket){
+        socket.off("haveData",getdata);
+        socket.off("deleteit",deleteit);
+      }
+    }
+  },[socket]);
 
   const onCloser = () => {
     isModalClosed = true;
@@ -41,12 +69,10 @@ function TaskModal({ boardId, tasks, onClose, onUpdate, onDelete, currRole }) {
   };
 
   const deleteTask = async () => {
-    const sendReqConfig = {
-      method: "DELETE",
-      url: `/api/workspace/${boardId}/tasks/${task._id}`,
-    };
+    
     try {
-      const result = await axios(sendReqConfig);
+      // const result = await axios(sendReqConfig);
+      socket?.emit("deleteTask",({taskId:task._id,boardId:boardId,task:task}))
       onDelete(task);
       setTask(null);
       onCloser();
@@ -59,24 +85,41 @@ function TaskModal({ boardId, tasks, onClose, onUpdate, onDelete, currRole }) {
     clearTimeout(timer);
     const newTitle = e.target.value;
     timer = setTimeout(async () => {
-      const sendReqConfig = {
-        method: "PUT",
-        url: `/api/workspace/${boardId}/tasks/${task._id}`,
-        data: {
-          title: newTitle,
-          updated_by: user.username,
-        },
-      };
+      // const sendReqConfig = {
+      //   method: "PUT",
+      //   url: `/api/workspace/${boardId}/tasks/${task._id}`,
+      //   data: {
+      //     title: newTitle,
+      //     updated_by: user.username,
+      //   },
+      // };
+      const changes = {
+        title: newTitle,
+        updated_by: user.username
+      }
       try {
-        const result = await axios(sendReqConfig);
-        console.log("res", result);
+        socket?.emit("updatetask",({taskId:task._id,workspaceId:boardId,changes:changes}),(response)=>{
+          if(response.status){
+            console.log(response);
+            const newTask = {...task,title:newTitle,updated_by:user.username};
+            setTask(newTask);
+            onUpdate(newTask);
+            socket?.emit("sendData",({task:newTask,boardId:boardId}));
+          }
+          else{
+            console.error('Error updating task:', response.message);
+          }
+        });
+        // const result = await axios(sendReqConfig);
+        // console.log("res", result);
 
-        const newTask = { ...task, updated_by: user.username };
-        setTask(newTask);
-        onUpdate(newTask);
+        // const newTask = { ...task, updated_by: user.username };
+        // setTask(newTask);
+        // onUpdate(newTask);
+
       } catch (err) {
         console.log(err);
-      }
+      } 
     }, timeOut);
     setTask({ ...task, title: newTitle });
     setTitle(newTitle);
@@ -84,29 +127,46 @@ function TaskModal({ boardId, tasks, onClose, onUpdate, onDelete, currRole }) {
 
   const updateContent = async (newContent) => {
     isModalClosed = false;
+    setTask(tasks);
     clearTimeout(timer);
 
     if (!isModalClosed) {
       timer = setTimeout(async () => {
-        console.log(task);
-        const sendReqConfig = {
-          method: "PUT",
-          url: `/api/workspace/${boardId}/tasks/${task._id}`,
-          data: {
-            content: newContent,
-            updated_by: user.username,
-          },
-        };
+        // console.log(task);
+        // const sendReqConfig = {
+        //   method: "PUT",
+        //   url: `/api/workspace/${boardId}/tasks/${task._id}`,
+        //   data: {
+        //     content: newContent,
+        //     updated_by: user.username,
+        //   },
+        // };
+        const changes = { 
+          content: newContent,
+          updated_by: user.username
+        }
         try {
-          const result = await axios(sendReqConfig);
-          console.log("res", result);
+          socket?.emit("updatetask",({taskId:task._id,workspaceId:boardId,changes:changes}),(response)=>{
+            if(response.status){
+              console.log(response);
+              const newTask = {...task,content: newContent,updated_by:user.username};
+              console.log(newTask);
+              setTask(newTask);
+              onUpdate(newTask);
+              socket?.emit("sendData",({task:newTask,boardId:boardId}));
+            }
+            else{
+              console.error('Error updating task:', response.message);
+            }
+          });
         } catch (err) {
           console.log(err);
         }
+      
       }, timeOut);
       setTask({ ...task, content: newContent });
       setContent(newContent);
-      onUpdate({ ...task, content: newContent });
+      onUpdate(task);
     }
   };
 
@@ -154,10 +214,10 @@ function TaskModal({ boardId, tasks, onClose, onUpdate, onDelete, currRole }) {
                         imageUploadParams: { id: 'filename' },
                         imageAllowedTypes: ['jpeg', 'jpg', 'png'],
                         events: {
-                          'contentChanged': function () {
-                            const newContent = this.html.get();
-                            updateContent(newContent);
-                          },
+                          // 'contentChanged': function () {
+                          //   const newContent = this.html.get();
+                          //   updateContent(newContent);
+                          // },
                           'image.removed': function ($img) {
                             console.log($img);
                           },
@@ -183,7 +243,7 @@ function TaskModal({ boardId, tasks, onClose, onUpdate, onDelete, currRole }) {
                         }
                       }}
                       model={content}
-                      onModelChange={(newContent) => setContent(newContent)}
+                      onModelChange={(newContent) => updateContent(newContent)}
                     />
                   }
                 </div>

@@ -264,7 +264,7 @@ const collapse = ()=>{
     setIsDragging(true);
   };
   const handleOnWorkspace=(roomid)=>{
-    socket.emit('getroom',roomid);
+    socket?.emit('getroom',roomid);
     navigate(`/workspace/${roomid}`);
   }
   
