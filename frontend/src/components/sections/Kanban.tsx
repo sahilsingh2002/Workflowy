@@ -106,6 +106,7 @@ const Kanban = memo(({ datar, boardeId }: KanbansProps) => {
       setdata(newData);
     };
     const addoneTask = (datas)=>{
+      console.log(datas);
       const newTask = datas.task;
       const section = newTask.section;
       console.log(section);
@@ -266,7 +267,7 @@ const Kanban = memo(({ datar, boardeId }: KanbansProps) => {
                             <CardHeader>
                               <CardTitle className='text-xl'>{task.title === '' ? 'Untitled' : task.title}</CardTitle>
                             </CardHeader>
-                            <CardContent className='text-neutral-500 text-md'>{task.content === '' ? '(no Content yet)' : task.content.slice(0, 30) + '...'}</CardContent>
+                            <CardContent className='text-neutral-500 text-md'>{task?.content === '' ? '(no Content yet)' : task?.content?.slice(0, 30) + '...'}</CardContent>
                           </Card>
                         )}
                       </Draggable>

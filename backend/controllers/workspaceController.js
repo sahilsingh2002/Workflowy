@@ -74,33 +74,90 @@ module.exports.getOnepage = async (req, res) => {
   const sectioner = Sections();
   const tasker = Tasks();
   try {
-    const result = await workspace.findOne({perms:{$elemMatch:{id: new ObjectId(req.id)}}, _id: new ObjectId(id) });
     
-
-    if (!result) return res.status(404).json({status:false,message:"board not found"});
-    
-    const cursor = await sectioner.find({ workspace: new ObjectId(id) });
-    const sections = await cursor.toArray();
-
-    
-    if (sections) {
-      for (const section of sections) {
-        const cursor = await tasker
-          .find({ section: section._id }).sort("-position");
-
-          const tasks = await cursor.toArray();
-          section.tasks = tasks;
-      //   section = tasks;
+    const pipeline = [
+      {
+        $match: {
+          _id: new ObjectId(id),
+          perms: {
+            $elemMatch: {
+              id: new ObjectId(user)
+            }
+          }
+        }
+      },
+      {
+        $lookup: {
+          from: "section",
+          localField: "_id",
+          foreignField: "workspace",
+          as: "sections"
+        }
+      },
+      {
+        $unwind: {
+          path: "$sections",
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      {
+        $lookup: {
+          from: "task",
+          localField: "sections._id",
+          foreignField: "section",
+          as: "sections.tasks"
+        }
+      },
+      {
+      $set: {
+        'sections.tasks': {
+          $cond: {
+            if: { $isArray: '$sections.tasks' },
+            then: {
+              $sortArray: {
+                input: '$sections.tasks',
+                sortBy: { position: -1 }
+              }
+            },
+            else: null
+          }
+        }
       }
-      result.sections = sections;
-      
-      
-    }
-    const role = await result.perms.find(perms=>perms.id.equals(new ObjectId(req.id)));
-    
-    
-
-    res.status(200).json({ status: true, page: { result }, roles:role.role });
+    },
+      {
+        $group: {
+          _id: "$_id",
+          details: {
+            $first: "$$ROOT"
+          },
+          sections: {
+            $push: "$sections"
+          }
+        }
+      },
+      {
+        $set:{
+          "details.sections":{
+            $filter:{
+              input:"$sections",
+              as:"section",
+              cond:{$ne:['$$section',{}]}
+            }
+          }
+        }
+      },
+      {
+        $replaceRoot: {
+          newRoot: "$details"
+        }
+      }
+    ]
+    const resultArray = await workspace.aggregate(pipeline);
+    const resarr = await resultArray.toArray();
+    const result = resarr[0];
+    console.log("here",result);
+    const role = await result?.perms?.find(perms=>perms.id.equals(new ObjectId(req.id)));
+    res.status(200).json({ status: true, page: { result }, roles:role?.role });
   } catch (error) {
     console.error(error);
     res.status(500).json({ status: false, message: "Internal server error" });

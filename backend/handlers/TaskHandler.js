@@ -26,11 +26,14 @@ module.exports = (socket,io)=>{
       });
       const T = await tasker.findOne({_id:task.insertedId});
       
-      const result = await sect.findOneAndUpdate({_id:section._id},{
+      
+      const result = await sect.updateOne({_id:section._id},{
         $push:{
           tasks:task.insertedId
         }
       });
+     
+      
       io.to(id).emit("addtask",({task:T}));
     callback({status:true,task:T});
     }

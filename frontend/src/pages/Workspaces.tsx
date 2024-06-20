@@ -2,8 +2,8 @@ import Sidebar from '@/components/sidebar/Sidebar'
 import { Button } from '@/components/ui/button';
 import axios from 'axios';
 import { Textarea} from "@nextui-org/react";
-import { Share, Trash, UserPlus } from 'lucide-react';
-import { ChangeEvent, useEffect, useMemo, useState } from 'react'
+import { Trash, UserPlus } from 'lucide-react';
+import { ChangeEvent, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom';
 import { FaRegStar,FaStar  } from "react-icons/fa6";
 import Picker from '@/components/emoji-picker/Picker';
@@ -23,7 +23,6 @@ function Workspaces() {
   let timer:ReturnType<typeof setTimeout>;
   const navigate = useNavigate();
   const [access,setAccess] = useState(false);
-  const timeout = 500;
   const dispatch = useDispatch();
   const {workspaceId} = useParams();
   const [title,setTitle] = useState('');

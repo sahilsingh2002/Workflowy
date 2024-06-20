@@ -22,7 +22,7 @@ import { SocketProvider } from './context/SocketContext'
 function App() {
   
   const dispatch = useDispatch();
-  const [user, setUser] = useState(false);
+ 
   const [isLoading,setIsLoading] = useState(true);
 
   
@@ -37,13 +37,11 @@ function App() {
       try{
         const result = await axios(sendreqConfig);
         if(result.data.username && result.data.username!==null){
-          setUser(true);
+         
           console.log(result);
           dispatch(changeUser(result.data));
         }
-        else{
-          setUser(false);
-        }
+        
       }
       catch(err){
         console.log("error : ",err);
@@ -83,7 +81,6 @@ function App() {
       <Route path='/workspace' element={<Navigate to="/home" />}/>
       <Route path='/workspace/:workspaceId' element={<Workspaces/>}/>
       <Route path='*' element={<Home_page/>} />
-
     </Routes>
     </div>
     )
