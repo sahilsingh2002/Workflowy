@@ -32,7 +32,7 @@ module.exports = (socket,io)=>{
     else if(changes.content){
       socket.to(id).emit("getnewContent",changes);
     }
-   callback({ status: true, board: worksp });
+   callback({ status: true });
   } catch (error) {
     console.log(error);
     callback({status:false,error:error});

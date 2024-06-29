@@ -141,7 +141,7 @@ module.exports.getOnepage = async (req, res) => {
             $filter:{
               input:"$sections",
               as:"section",
-              cond:{$ne:['$$section',{}]}
+              cond:{$ne:['$$section',{'tasks':[]}]}
             }
           }
         }

@@ -10,8 +10,11 @@ import { toast } from 'sonner';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 
+interface ShareInterface{
+  boardId:string;
 
-function ShareModal({ onClose, boardId, share, currRole }) {
+}
+function ShareModal({ onClose, boardId, share }:ShareInterface) {
   const { isOpen } = useDisclosure();
   const user = useSelector((state:RootState)=>state.user);
   const timeout = 500;

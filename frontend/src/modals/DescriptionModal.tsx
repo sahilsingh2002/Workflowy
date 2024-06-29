@@ -1,6 +1,5 @@
 import { Modal, ModalContent, ModalBody, useDisclosure, Textarea, Divider } from "@nextui-org/react";
-import { ChangeEvent, useEffect, useState, useRef, useMemo } from 'react';
-import axios from "axios";
+import { useEffect, useState, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/redux/store";
@@ -17,13 +16,19 @@ import FroalaEditorView from "react-froala-wysiwyg/FroalaEditorView";
 import { setWork } from "@/redux/slices/workspaceSlice";
 import { useSocket } from "@/context/SocketContext";
 
-
+interface DescriptionInterface {
+  setColl:React.Dispatch<React.SetStateAction<boolean>>;
+  boardId:string;
+  titled:string;
+  description:string;
+  currRole:string;
+  
+}
 const timeOut = 500;
-let timer;
+let timer:ReturnType<typeof setTimeout>;
 
-function DescriptionModal({setColl, boardId, titled, description, isOpened, onClose, currRole }) {
+function DescriptionModal({setColl, boardId, titled, description, currRole }:DescriptionInterface) {
   const {socket} = useSocket();
-  const user = useSelector((state: RootState) => state.user);
 
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [desc, setDesc] = useState(description);
@@ -44,15 +49,15 @@ useEffect(() => {
     })
   }
 },[socket]);
-  const updateDescription = async (newDesc) => {
+  const updateDescription = async (newDesc:string) => {
    
     clearTimeout(timer);
      timer = setTimeout(async () => {
       try {
-        socket?.emit('update',{id:boardId, changes:{content:newDesc}},(response)=>{
+        socket?.emit('update',{id:boardId, changes:{content:newDesc}},(response:{status:boolean,message?:string})=>{
+         
           if(response.status){
-             console.log(response);
-
+           console.log("updated");
           }
           else{
             console.error('Error creating workspace:', response.message);
@@ -74,50 +79,6 @@ useEffect(() => {
     setColl(false);
   };
 
-  const updateTitle = async(e:ChangeEvent<HTMLInputElement>)=>{
-    clearTimeout(timer);
-    const newTitle = e.target.value;
-    setTitle(newTitle);
-    const temp = [...workspaces];
-        const index = temp.findIndex(e=>e._id === workspaceId);
-        temp[index]={...temp[index], name: newTitle}
-        if(isFav){
-          const tempfav = [...favlist];
-        const favindex = tempfav.findIndex(e=>e._id === workspaceId);
-        tempfav[favindex]={...tempfav[favindex], name: newTitle}
-        dispatch(setFav(tempfav));
-        }
-
-        dispatch(setWork(temp));
-        // timer = setTimeout(async()=>{
-          // const sendReqConfig = {
-          //   method:"PUT",
-          //   url:`/api/workspace/update?id=${workspaceId}`,
-          //   data:{
-          //     id:workspaceId,
-          //    changes:{ name:newTitle},
-          //    }
-             
-          //  }
-           try{
-            console.log(socket);
-            //  const result = await axios(sendReqConfig);
-            socket.emit('update',{id:workspaceId, changes:{name:newTitle}},(response)=>{
-              if(response.status){
-                 console.log(response);
-
-              }
-              else{
-                console.error('Error creating workspace:', response.message);
-              }
-            });
-           }
-         catch(err){
-           console.log(err);
-         }
-        // },timeout);
-   }
-
   const onOpener = () => {
     onOpen();
     setColl(true);
@@ -128,7 +89,7 @@ useEffect(() => {
       <Button onClick={onOpener} variant={"outline"} className="mx-5 dark:bg-[#161a1d] dark:border-[#1C2025] dark:hover:bg-[#22272b]">Description</Button>
       <Modal placement="center" scrollBehavior="outside" size="full" className="dark:text-white flex z-[9999999]" backdrop="blur" radius="lg" isOpen={isOpen} onOpenChange={onOpenChanger}>
         <ModalContent>
-          {(onCloser) => (
+          {() => (
             <>
               <ModalBody
                 className="border border-black rounded-lg dark:bg-[#1C2025] dark:text-[#9EADAC]"
@@ -170,19 +131,14 @@ useEffect(() => {
                             setDesc(newContent);
                             updateDescription(newContent);
                           },
-                          'image.removed': function ($img) {
-                            console.log($img);
+                          'image.uploaded': function (response:{"link":string}) {
+                            console.log("uploaded",response);
                           },
-                          'image.beforeUpload': function (images) {
-                            console.log("uploading");
+                          'image.inserted': function ($img:([]), response:{"link":string}) {
+                            console.log("inserted",$img, response);
                           },
-                          'image.uploaded': function (response) {
-                            console.log(response);
-                          },
-                          'image.inserted': function ($img, response) {
-                            console.log($img, response);
-                          },
-                          'image.error': function (error, response) {
+                          'image.error': function (error:{code:number,message:string}) {
+                            
                             if (error.code == 1) { console.log("1", error); }
                             else if (error.code == 2) { console.log("2", error); }
                             else if (error.code == 3) { console.log("3", error); }
@@ -194,7 +150,7 @@ useEffect(() => {
                         }
                       }}
                       model={desc}
-                      onModelChange={(newDesc) => {
+                      onModelChange={(newDesc:string) => {
                         setDesc(newDesc);
                       }}
                     />

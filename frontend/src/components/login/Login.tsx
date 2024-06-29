@@ -1,6 +1,6 @@
 import { Link,useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { FaRegEye, FaRegEyeSlash, FaGoogle } from "react-icons/fa";
+import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import {changeUser} from '../../redux/slices/userSlice'

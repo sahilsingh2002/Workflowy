@@ -273,7 +273,7 @@ function Workspaces() {
           <Picker icon={icon} onChange = {onIconChange}/>
       <div className='lg:flex lg:items-center'>
         <Textarea onChange={updateTitle} disabled={user.role==='reader'} placeholder='Untitled' value={title} minRows={1} className=' w-full h-fit p-0 border-0 text-[2rem] lg:text-[3rem]  resize-none   border-neutral-300' />
-        <DescriptionModal setColl = {setColl} currRole={user.role} boardId={workspaceId} isOpened={isOpen} description={description} onClose={()=>setIsOpen(false)} titled={title}/>
+        <DescriptionModal setColl = {setColl} currRole={user.role} boardId={workspaceId} description={description} titled={title}/>
       </div>
       </div>
       <div >

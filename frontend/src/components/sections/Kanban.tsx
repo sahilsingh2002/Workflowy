@@ -31,6 +31,26 @@ interface Workspace {
   updated_at: number;
   workspace: string;
   _id: string;
+  sections?:[];
+}
+interface SectionInterface {
+  created_at:number;
+  tasks:Task[];
+  title:string;
+  updated_at:number;
+  workspace:string;
+  _id:string;
+}
+interface Sect{
+  section : Workspace;
+  user:string;
+}
+interface UpdateInterface {
+  sectId:string;
+  workid:string;
+  changes:{
+    title:string;
+  }
 }
 
 let timer: ReturnType<typeof setTimeout>;
@@ -40,9 +60,7 @@ const Kanban = memo(({ datar, boardeId }: KanbansProps) => {
   const { socket } = useSocket();
   const user = useSelector((state: RootState) => state.user);
   const boardId = boardeId;
-  const [titleshow, setTitleShow] = useState(false);
   const [data, setdata] = useState<Workspace[]>([]);
-  const [loading, setLoading] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | undefined>(undefined);
 
   const onDragEnd: OnDragEndResponder = async ({ source, destination }) => {
@@ -83,55 +101,59 @@ const Kanban = memo(({ datar, boardeId }: KanbansProps) => {
   }, [datar]);
 
   useEffect(() => {
-    const handleGetAll = (datas) => {
-      setdata(datas.sections);
+    const handleGetAll = (datas:Sect) => {
+      setdata([datas.sections]);
+      // TODO get type
+      console.log("waaw",datas);
     };
     
-    const handleGetSections = (datas) => {
+    const handleGetSections = (datas:Sect) => {
       setdata((prevData) => [...prevData, datas.section]);
       toast.success("New section created by: " + datas.user);
     };
     
-    const handleRemoveSection = (datas) => { 
-      console.log("removed");
+    const handleRemoveSection = (datas:{sectId:string}) => { 
+    
       const newData = [...data].filter(e => e._id !== datas.sectId);
       setdata(newData);
     };
     
-    const handleUpdateHere = (datas) => {
+    const handleUpdateHere = (datas:UpdateInterface) => {
       const newTitle = datas.changes.title;
+      console.log("updating",datas);
       const newData = [...data];
       const index = newData.findIndex(e => e._id === datas.sectId);
       newData[index].title = newTitle;
       setdata(newData);
     };
-    const addoneTask = (datas)=>{
-      console.log(datas);
+    const addoneTask = (datas:{task:Task})=>{
+      
       const newTask = datas.task;
       const section = newTask.section;
-      console.log(section);
+     
       const newData = [...data];
-      console.log(newData);
+      
       const index = newData.findIndex(e => e._id === section);
-      console.log(index);
+      
       newData[index].tasks.push(newTask);
-      console.log(newData[index]);
+     
       setdata(newData);
     }
-    const updatetask = async (datas) => {
+    const updatetask = async (datas:{boardId:string,task:Task}) => {
+      
       const newData = [...data];
       const sectionIndex = newData.findIndex(e => e._id === datas.task.section);
-      console.log(sectionIndex);
-      console.log(newData[sectionIndex]);
+   
       const taskIndex = newData[sectionIndex].tasks?.findIndex(e => e._id === datas.task._id);
       newData[sectionIndex].tasks[taskIndex] = datas.task;
       setdata(newData);
     };
-    const deletetasker = (datas)=>{
+    const deletetasker = (datas:{taskId:string,boardId:string,task:Task})=>{
+      
       const newData = [...data];
       const sectionIndex = newData.findIndex(e => e._id === datas.task.section);
-      console.log(sectionIndex);
-      console.log(newData[sectionIndex]);
+     
+      
       const taskIndex = newData[sectionIndex].tasks?.findIndex(e => e._id === datas.taskId);
       newData[sectionIndex].tasks.splice(taskIndex,1);
       setdata(newData);
@@ -163,7 +185,7 @@ const Kanban = memo(({ datar, boardeId }: KanbansProps) => {
 
   const addSection = async () => {
     try {
-      socket?.emit('create', { id: boardId, user: user.username, sections: data }, (response) => {
+      socket?.emit('create', { id: boardId, user: user.username, sections: data }, (response:{status:boolean,section:SectionInterface,message?:string}) => {
         if (response.status) {
           setdata([...data, response.section]);
           toast.success('Created a new Section');
@@ -205,7 +227,7 @@ const Kanban = memo(({ datar, boardeId }: KanbansProps) => {
 
   const addTask = async (sectionId: string) => {
     try {
-      socket?.emit('createtask', { sectionId: sectionId, user: user.username, id: boardId }, (response) => {
+      socket?.emit('createtask', { sectionId: sectionId, user: user.username, id: boardId }, (response:{status:boolean,task:Task,message?:string}) => {
         if (response.status) {
           toast.success("Created a new Task");
         } else {
@@ -273,7 +295,7 @@ const Kanban = memo(({ datar, boardeId }: KanbansProps) => {
                       </Draggable>
                     ))}
                     {provided.placeholder}
-                    <Button variant={"ghost"} onClick={() => addTask(section._id)} className='w-full hover:bg-[#E9EBEE] dark:hover:bg-[#22272b] my-2'>Create task</Button>
+                    <Button variant={"ghost"} disabled={user.role === 'reader'} onClick={() => addTask(section._id)} className='w-full hover:bg-[#E9EBEE] dark:hover:bg-[#22272b] my-2'>Create task</Button>
                   </div>
                 )}
               </Droppable>

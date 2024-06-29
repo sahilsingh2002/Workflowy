@@ -1,4 +1,3 @@
-import * as React from "react"
 
 import {
   Select,
@@ -14,12 +13,12 @@ export function ShareOption() {
   return (
     <Select>
       <SelectTrigger  className="w-[180px]">
-        <SelectValue value={"reader"} placeholder="Select a Role" onClick={(e)=>{e.stopPropagation()}} />
+        <SelectValue placeholder="Select a Role"  />
       </SelectTrigger>
       <SelectContent >
         <SelectGroup>
           <SelectLabel>Roles</SelectLabel>
-          <SelectItem value="owner" onClick={(e)=>{e.stopPropagation()}}>owner</SelectItem>
+          <SelectItem value="owner" >owner</SelectItem>
           <SelectItem value="editor">editor</SelectItem>
           <SelectItem value="reader">reader</SelectItem>
 

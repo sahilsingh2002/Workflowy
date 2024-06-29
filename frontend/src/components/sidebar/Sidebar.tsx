@@ -1,17 +1,16 @@
 import { ChevronDownIcon, ChevronsLeft, File, MenuIcon,  Search, Settings } from 'lucide-react'
-import {ElementRef, useRef, useState, useEffect, useMemo} from 'react'
+import {ElementRef, useRef, useState, useEffect, } from 'react'
 import {useMediaQuery} from 'usehooks-ts';
 
 import {DragDropContext, Draggable, Droppable, OnDragEndResponder} from 'react-beautiful-dnd'
-import {Skeleton} from "@nextui-org/react";
-
+// TODO make skeletons
 
 
 import UserItem from '../useritem/UserItem';
 
 import { cn } from "@/lib/utils"
 import Item from "../item/Item"
-import {io} from 'socket.io-client';
+
 
 
 import axios from "axios"
@@ -26,13 +25,11 @@ import { Emoji } from 'emoji-picker-react';
 import Favourites from '../favourites/Favourites';
 import { RootState } from '@/redux/store';
 import LoadingSpinner from '../LoadingSpinner';
-import { changeRole } from '@/redux/slices/userSlice';
-import { createConnection } from '@/socket/Socket';
 import { useSocket } from '@/context/SocketContext';
 
 
 
-function Sidebar({modal}) {
+function Sidebar({modal}:{modal:boolean}) {
   const {socket,disconnectSocket} = useSocket();
   const [workLoad, setWorkLoad] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -263,7 +260,7 @@ const collapse = ()=>{
   const handleDragStart = () => {
     setIsDragging(true);
   };
-  const handleOnWorkspace=(roomid)=>{
+  const handleOnWorkspace=(roomid:string)=>{
     socket?.emit('getroom',roomid);
     navigate(`/workspace/${roomid}`);
   }
