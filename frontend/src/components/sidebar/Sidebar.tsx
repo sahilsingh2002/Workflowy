@@ -2,6 +2,9 @@ import { ChevronDownIcon, ChevronsLeft, File, MenuIcon,  Search, Settings } from
 import {ElementRef, useRef, useState, useEffect, } from 'react'
 import {useMediaQuery} from 'usehooks-ts';
 
+import { Player } from '@lottiefiles/react-lottie-player';
+import * as animationData from '@/components/animations/loading.json'
+
 import {DragDropContext, Draggable, Droppable, OnDragEndResponder} from 'react-beautiful-dnd'
 // TODO make skeletons
 
@@ -264,13 +267,21 @@ const collapse = ()=>{
     socket?.emit('getroom',roomid);
     navigate(`/workspace/${roomid}`);
   }
+
   
   return (
     
     <>
    
    {loading?
-   <LoadingSpinner/>:
+     <Player
+     autoplay={true}
+     loop={true}
+     controls={false}
+     src="https://lottie.host/9165917b-1a6a-4db2-b34f-09a69d118a98/hUi8I8l4tZ.json"
+     style={{ height: '300px', width: '300px' }}
+   ></Player>
+   :
    <div className={`relative h-screen ${isCollapsed ? "w-0":"w-fit"}  bg-white dark:bg-[#1C2025] `}>
     <aside ref={sidebarRef} id="sidebar"  className={cn(
           "group/sidebar h-screen bg-secondary overflow-auto relative flex w-60 flex-col z-[99999]",

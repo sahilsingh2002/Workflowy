@@ -16,6 +16,7 @@ import { changeRole } from '@/redux/slices/userSlice';
 import ShareModal from '@/modals/ShareModal';
 import DescriptionModal from '@/modals/DescriptionModal';
 import { useSocket } from '@/context/SocketContext';
+import { toast } from 'sonner';
 
 
 function Workspaces() {
@@ -31,7 +32,6 @@ function Workspaces() {
   const [isFav, setIsFav] = useState(false);
   const [icon, setIcon] = useState('');
   const [share,setShare]= useState(false);
-  const [isOpen,setIsOpen] = useState(false);
   const [coll,setColl] = useState(false);
   const workspaces = useSelector((state:RootState)=>state.workspace.value);
   const favlist = useSelector((state:RootState)=>state.favourite.value);
@@ -71,18 +71,20 @@ function Workspaces() {
       }
    }
   useEffect(()=>{
-    const makenewTitle = (data)=>{
+    const makenewTitle = (data:{name:string})=>{
 
       console.log(data);
       setTitle(data.name);
     }
-    const makenewIcon = (data)=>{
+    const makenewIcon = (data:{icon:string})=>{
       console.log(data);
       setIcon(data.icon);
     }
-    const getWorkspaces = (data)=>{
+    const getWorkspaces = (data:{hello:string})=>{
       console.log(data);
+      if(workspaceId)
       handleGetpage(workspaceId);
+    else toast.error("no Workspace selected");
     }
      socket?.on('makenewTitle',makenewTitle)
     socket?.on('getnewIcon',makenewIcon)
@@ -115,26 +117,16 @@ function Workspaces() {
         }
 
         dispatch(setWork(temp));
-        // timer = setTimeout(async()=>{
-          // const sendReqConfig = {
-          //   method:"PUT",
-          //   url:`/api/workspace/update?id=${workspaceId}`,
-          //   data:{
-          //     id:workspaceId,
-          //    changes:{ name:newTitle},
-          //    }
-             
-          //  }
+       
            try{
             console.log(socket);
-            //  const result = await axios(sendReqConfig);
-            socket?.emit('update',{id:workspaceId, changes:{name:newTitle}},(response)=>{
+            socket?.emit('update',{id:workspaceId, changes:{name:newTitle}},(response:{message?:string,status:boolean})=>{
+              console.log("updater",response);
               if(response.status){
                  console.log(response);
-
               }
               else{
-                console.error('Error creating workspace:', response.message);
+                toast.error('Error updating workspace: '+ response.message);
               }
             });
            }
@@ -156,13 +148,13 @@ function Workspaces() {
     dispatch(setWork(temp));
      
       try{
-        socket?.emit('update',{id:workspaceId, changes:{icon:newIcon}},(response)=>{
+        socket?.emit('update',{id:workspaceId, changes:{icon:newIcon}},(response:{message?:string,status:boolean})=>{
           if(response.status){
              console.log(response);
 
           }
           else{
-            console.error('Error creating workspace:', response.message);
+            toast.error('Error updating workspace: '+ response.message);
           }
         });
        
@@ -273,7 +265,7 @@ function Workspaces() {
           <Picker icon={icon} onChange = {onIconChange}/>
       <div className='lg:flex lg:items-center'>
         <Textarea onChange={updateTitle} disabled={user.role==='reader'} placeholder='Untitled' value={title} minRows={1} className=' w-full h-fit p-0 border-0 text-[2rem] lg:text-[3rem]  resize-none   border-neutral-300' />
-        <DescriptionModal setColl = {setColl} currRole={user.role} boardId={workspaceId} description={description} titled={title}/>
+        <DescriptionModal setColl = {setColl} currRole={user.role?user.role:"reader"} boardId={workspaceId} description={description} titled={title}/>
       </div>
       </div>
       <div >
@@ -281,7 +273,7 @@ function Workspaces() {
       </div>
       </div>
       <div>
-        <ShareModal currRole={user.role} share = {share} onClose = {()=>{setShare(false)}} boardId={workspaceId}/>
+        <ShareModal share = {share} onClose = {()=>{setShare(false)}} boardId={workspaceId}/>
       </div>
       </>:<>
       "no path"

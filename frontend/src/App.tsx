@@ -7,7 +7,7 @@ import { useLocation } from 'react-router-dom'
 import { useState,useEffect } from 'react'
 import axios from 'axios'
 import { useSelector, useDispatch } from 'react-redux'
-import LoadingSpinner from './components/LoadingSpinner'
+
 
 
 import Lander from './pages/Lander'
@@ -16,6 +16,7 @@ import Workspaces from './pages/Workspaces'
 import { Toaster } from 'sonner'
 import { RootState } from './redux/store'
 import { SocketProvider } from './context/SocketContext'
+import { Player } from '@lottiefiles/react-lottie-player'
 
 
 
@@ -64,7 +65,13 @@ function App() {
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
      {isLoading?(
        <>
-       <LoadingSpinner/>
+       <Player
+     autoplay={true}
+     loop={true}
+     controls={false}
+     src="https://lottie.host/9165917b-1a6a-4db2-b34f-09a69d118a98/hUi8I8l4tZ.json"
+     className='absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]'
+   ></Player>
        </>
      ):(  
       <div className='h-full flex dark:bg-[#1C2025] text-[#2f3a4d] dark:text-[#9EADAC] overflow-hidden'>

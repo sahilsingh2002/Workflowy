@@ -61,7 +61,7 @@ const Kanban = memo(({ datar, boardeId }: KanbansProps) => {
   const user = useSelector((state: RootState) => state.user);
   const boardId = boardeId;
   const [data, setdata] = useState<Workspace[]>([]);
-  const [selectedTask, setSelectedTask] = useState<Task | undefined>(undefined);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const onDragEnd: OnDragEndResponder = async ({ source, destination }) => {
     if (!destination) return;
@@ -101,7 +101,7 @@ const Kanban = memo(({ datar, boardeId }: KanbansProps) => {
   }, [datar]);
 
   useEffect(() => {
-    const handleGetAll = (datas:Sect) => {
+    const handleGetAll = (datas) => {
       setdata([datas.sections]);
       // TODO get type
       console.log("waaw",datas);
@@ -241,8 +241,8 @@ const Kanban = memo(({ datar, boardeId }: KanbansProps) => {
 
   const updateTask = async (task: Task) => {
     const newData = [...data];
-    const sectionIndex = newData.findIndex(e => e._id === task.section);
-    const taskIndex = newData[sectionIndex].tasks.findIndex(e => e._id === task._id);
+    const sectionIndex = newData.findIndex(e => e._id === task?.section);
+    const taskIndex = newData[sectionIndex].tasks.findIndex(e => e._id === task?._id);
     console.log(task);
     
     newData[sectionIndex].tasks[taskIndex] = task;
@@ -303,7 +303,7 @@ const Kanban = memo(({ datar, boardeId }: KanbansProps) => {
           ))}
         </div>
       </DragDropContext>
-      <TaskModal currRole={user.role} tasks={selectedTask} boardId={boardId} onClose={() => setSelectedTask(undefined)} onUpdate={updateTask} onDelete={deleteTask}/>
+      <TaskModal currRole={user.role} tasks={selectedTask} boardId={boardId} onClose={() => setSelectedTask(null)} onUpdate={updateTask} onDelete={deleteTask}/>
     </div>
   );
 });
