@@ -1,5 +1,5 @@
 import { Input } from '@/components/ui/input'
-import { Modal, ModalBody, ModalContent, useDisclosure } from '@nextui-org/react'
+import { Modal, ModalBody, ModalContent } from '@nextui-org/react'
 import {Listbox, ListboxItem} from "@nextui-org/react";
 import axios from 'axios';
 import { useEffect, useState } from 'react';
@@ -10,16 +10,26 @@ import { toast } from 'sonner';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 
+interface UserInterface {
+  _id:string;
+  username:string;
+  name:string;
+}
+interface ShareModalInterface{
+  onClose:()=>void;
+  boardId:string;
+  share:boolean;
+}
 
-function ShareModal({ onClose, boardId, share, currRole }) {
-  const { isOpen } = useDisclosure();
+
+function ShareModal({ onClose, boardId, share }:ShareModalInterface) {
   const user = useSelector((state:RootState)=>state.user);
   const timeout = 500;
   const [users, setUsers] = useState([]);
-  const [timer, setTimer] = useState(null);
+  let timer: string | number | NodeJS.Timeout | undefined;
   const [search,setSearch] = useState('');
-  const [role, setRole] = useState(null);
-  const putUser = async(userid,username)=>{
+  const [role, setRole] = useState<string | null>(null);
+  const putUser = async(userid: string,username: string)=>{
     const sendReqConfig = {
       method: "POST",
       url: '/api/workspace/filluser',
@@ -43,7 +53,7 @@ function ShareModal({ onClose, boardId, share, currRole }) {
   
       clearTimeout(timer);
   
-      const newTimer = setTimeout(async () => {
+      timer = setTimeout(async () => {
         const sendReqConfig = {
           method: "POST",
           url: '/api/workspace/finduser',
@@ -71,7 +81,6 @@ function ShareModal({ onClose, boardId, share, currRole }) {
         }
       }, timeout);
   
-      setTimer(newTimer);
     };
     searchUsers(search);
   },[search]);
@@ -94,7 +103,7 @@ function ShareModal({ onClose, boardId, share, currRole }) {
     </Select>
                 </div>
                 <Listbox >   
-                    {users && users?.map((user)=>(
+                    {users && users?.map((user:UserInterface)=>(
                       <ListboxItem key={user._id} className='z-[99999] cursor-pointer flex '>
                         <div className='flex justify-between items-center'>
 

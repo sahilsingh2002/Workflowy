@@ -1,8 +1,8 @@
-import { Modal, ModalContent, ModalBody, useDisclosure, Textarea, Divider } from "@nextui-org/react";
+import { Modal, ModalContent, ModalBody, Textarea, Divider } from "@nextui-org/react";
 import { Trash } from "lucide-react";
-import { useEffect, useState, useRef } from 'react';
+import {  SetStateAction, useEffect, useState } from 'react';
 import Moment from 'moment';
-import axios from "axios";
+
 import { Button } from "@/components/ui/button";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
@@ -17,15 +17,35 @@ import 'froala-editor/js/plugins/save.min.js';
 import FroalaEditorView from "react-froala-wysiwyg/FroalaEditorView";
 import { useSocket } from "@/context/SocketContext";
 
-let timer;
+interface Task{
+  _id: string;
+  section: string;
+  position: number;
+  title: string;
+  content: string;
+  updated_at?:number;
+  created_at?:number;
+  updated_by?:string | null;
+  updatedAt?:number;
+}
+interface TaskModalInterface {
+  boardId:string | undefined;
+  currRole:"owner" | "editor" | "reader" | null;
+  onClose:()=>void;
+  tasks : Task | undefined;
+  onUpdate:(task:Task | undefined)=>void;
+  onDelete:(task:Task | undefined)=>void;
+
+}
+let timer: string | number | NodeJS.Timeout | undefined;
 const timeOut = 500;
 let isModalClosed = false;
 
-function TaskModal({ boardId, tasks, onClose, onUpdate, onDelete, currRole }) {
+function TaskModal({ boardId, tasks, onClose, onUpdate, onDelete, currRole }:TaskModalInterface) {
   const user = useSelector((state: RootState) => state.user);
   const {socket} = useSocket();
-  const { isOpen, onOpen } = useDisclosure();
-  const [task, setTask] = useState(tasks);
+ 
+  const [task, setTask] = useState<Task | undefined>(tasks);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState("");
 
@@ -36,16 +56,17 @@ function TaskModal({ boardId, tasks, onClose, onUpdate, onDelete, currRole }) {
     setContent(tasks !== undefined ? tasks.content : '');
   }, [tasks]);
   useEffect(()=>{
-    const getdata = (data)=>{
-      console.log(data);
+    const getdata = (data:{task:Task,boardId:string})=>{
+
       setTask(data.task);
       setTitle(data.task !== undefined ? data.task.title : '');
     setContent(data.task !== undefined ? data.task.content : '');
     }
-    const deleteit = (data)=>{
+    const deleteit = (data:{boardId:string,taskId:string})=>{
+      // TODO don't send task, only taskid
       if(task && task._id === data.taskId){
         onDelete(task);
-        setTask(null);
+        setTask(undefined);
         onCloser();
       }
     }
@@ -72,16 +93,16 @@ if(socket){
     
     try {
       // const result = await axios(sendReqConfig);
-      socket?.emit("deleteTask",({taskId:task._id,boardId:boardId,task:task}))
+      socket?.emit("deleteTask",({taskId:task?._id,boardId:boardId}))
       onDelete(task);
-      setTask(null);
+      setTask(undefined);
       onCloser();
     } catch (err) {
       console.log(err);
     }
   };
 
-  const updateTitle = async (e) => {
+  const updateTitle = async (e: React.ChangeEvent<HTMLInputElement>) => {
     clearTimeout(timer);
     const newTitle = e.target.value;
     timer = setTimeout(async () => {
@@ -98,10 +119,14 @@ if(socket){
         updated_by: user.username
       }
       try {
-        socket?.emit("updatetask",({taskId:task._id,workspaceId:boardId,changes:changes}),(response)=>{
+        socket?.emit("updatetask",({taskId:task?._id,workspaceId:boardId,changes:changes}),(response: { status: boolean; message?: string; })=>{
           if(response.status){
-            console.log(response);
-            const newTask = {...task,title:newTitle,updated_by:user.username};
+            
+            const newTask = task;
+            if(newTask){
+              newTask.title = newTitle;
+              newTask.updated_by = user.username;
+            }
             setTask(newTask);
             onUpdate(newTask);
             socket?.emit("sendData",({task:newTask,boardId:boardId}));
@@ -121,11 +146,15 @@ if(socket){
         console.log(err);
       } 
     }, timeOut);
-    setTask({ ...task, title: newTitle });
+    const thisTask = task;
+    if(thisTask){
+      thisTask.title = newTitle;
+    }
+    setTask(thisTask);
     setTitle(newTitle);
   };
 
-  const updateContent = async (newContent) => {
+  const updateContent = async (newContent: string) => {
     isModalClosed = false;
     setTask(tasks);
     clearTimeout(timer);
@@ -146,10 +175,14 @@ if(socket){
           updated_by: user.username
         }
         try {
-          socket?.emit("updatetask",({taskId:task._id,workspaceId:boardId,changes:changes}),(response)=>{
+          socket?.emit("updatetask",({taskId:task?._id,workspaceId:boardId,changes:changes}),(response: { status: boolean; message?: string; })=>{
             if(response.status){
-              console.log(response);
-              const newTask = {...task,content: newContent,updated_by:user.username};
+              
+              const newTask = task;
+              if(newTask){
+                newTask.content = newContent;
+                newTask.updated_by = user.username;
+              }
               console.log(newTask);
               setTask(newTask);
               onUpdate(newTask);
@@ -164,7 +197,9 @@ if(socket){
         }
       
       }, timeOut);
-      setTask({ ...task, content: newContent });
+      const thisTask = task;
+      if(thisTask) thisTask.content = newContent; 
+      setTask(thisTask);
       setContent(newContent);
       onUpdate(task);
     }
@@ -209,7 +244,7 @@ if(socket){
                         placeholderText: "Start Writing",
                         saveInterval: 100,
                         imageUploadParam: 'filename',
-                        imageUploadURL: '/api/workspace/:workspaceId/tasks/upload_image',
+                        imageUploadURL: '/api/workspace/upload_image',
                         imageUploadMethod: 'POST',
                         imageUploadParams: { id: 'filename' },
                         imageAllowedTypes: ['jpeg', 'jpg', 'png'],
@@ -218,19 +253,8 @@ if(socket){
                           //   const newContent = this.html.get();
                           //   updateContent(newContent);
                           // },
-                          'image.removed': function ($img) {
-                            console.log($img);
-                          },
-                          'image.beforeUpload': function (images) {
-                            console.log("uploading");
-                          },
-                          'image.uploaded': function (response) {
-                            console.log(response);
-                          },
-                          'image.inserted': function ($img, response) {
-                            console.log($img, response);
-                          },
-                          'image.error': function (error, response) {
+                          
+                          'image.error': function (error: { code: number; }, response: {message:string,code:number}) {
                             // Handle image errors here
                             if (error.code == 1) { console.log("1", error); }
                             else if (error.code == 2) { console.log("2", error); }
@@ -243,7 +267,7 @@ if(socket){
                         }
                       }}
                       model={content}
-                      onModelChange={(newContent) => updateContent(newContent)}
+                      onModelChange={(newContent: any) => updateContent(newContent)}
                     />
                   }
                 </div>

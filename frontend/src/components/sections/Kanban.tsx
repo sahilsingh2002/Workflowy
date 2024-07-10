@@ -1,4 +1,4 @@
-import { useEffect, useState, memo, ChangeEvent } from 'react';
+import { useEffect, useState, memo, ChangeEvent, SetStateAction } from 'react';
 import { Button } from '../ui/button';
 import { Divider } from '@nextui-org/divider';
 import { DragDropContext, Draggable, Droppable, OnDragEndResponder } from 'react-beautiful-dnd';
@@ -22,6 +22,10 @@ interface Task {
   position: number;
   title: string;
   content: string;
+  updated_at?:number;
+  created_at?:number;
+  updated_by?:string;
+  created_by?:string;
 }
 
 interface Workspace {
@@ -40,9 +44,7 @@ const Kanban = memo(({ datar, boardeId }: KanbansProps) => {
   const { socket } = useSocket();
   const user = useSelector((state: RootState) => state.user);
   const boardId = boardeId;
-  const [titleshow, setTitleShow] = useState(false);
   const [data, setdata] = useState<Workspace[]>([]);
-  const [loading, setLoading] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | undefined>(undefined);
 
   const onDragEnd: OnDragEndResponder = async ({ source, destination }) => {
@@ -83,30 +85,30 @@ const Kanban = memo(({ datar, boardeId }: KanbansProps) => {
   }, [datar]);
 
   useEffect(() => {
-    const handleGetAll = (datas) => {
+    const handleGetAll = (datas: { sections: SetStateAction<Workspace[]>; }) => {
       setdata(datas.sections);
     };
     
-    const handleGetSections = (datas) => {
+    const handleGetSections = (datas: { section: Workspace; user: string; }) => {
       setdata((prevData) => [...prevData, datas.section]);
       toast.success("New section created by: " + datas.user);
     };
     
-    const handleRemoveSection = (datas) => { 
+    const handleRemoveSection = (datas: { sectId: string; }) => { 
       console.log("removed");
       const newData = [...data].filter(e => e._id !== datas.sectId);
       setdata(newData);
     };
     
-    const handleUpdateHere = (datas) => {
+    const handleUpdateHere = (datas: { changes: { title: string; }; sectId: string; }) => {
       const newTitle = datas.changes.title;
       const newData = [...data];
       const index = newData.findIndex(e => e._id === datas.sectId);
       newData[index].title = newTitle;
       setdata(newData);
     };
-    const addoneTask = (datas)=>{
-      console.log(datas);
+    const addoneTask = (datas:{task:Task})=>{
+      console.log("adding task",datas);
       const newTask = datas.task;
       const section = newTask.section;
       console.log(section);
@@ -118,7 +120,7 @@ const Kanban = memo(({ datar, boardeId }: KanbansProps) => {
       console.log(newData[index]);
       setdata(newData);
     }
-    const updatetask = async (datas) => {
+    const updatetask = async (datas: { task: Task; }) => {
       const newData = [...data];
       const sectionIndex = newData.findIndex(e => e._id === datas.task.section);
       console.log(sectionIndex);
@@ -127,7 +129,7 @@ const Kanban = memo(({ datar, boardeId }: KanbansProps) => {
       newData[sectionIndex].tasks[taskIndex] = datas.task;
       setdata(newData);
     };
-    const deletetasker = (datas)=>{
+    const deletetasker = (datas: { task: { section: string; }; taskId: string; })=>{
       const newData = [...data];
       const sectionIndex = newData.findIndex(e => e._id === datas.task.section);
       console.log(sectionIndex);
@@ -163,7 +165,7 @@ const Kanban = memo(({ datar, boardeId }: KanbansProps) => {
 
   const addSection = async () => {
     try {
-      socket?.emit('create', { id: boardId, user: user.username, sections: data }, (response) => {
+      socket?.emit('create', { id: boardId, user: user.username, sections: data }, (response: { status: boolean; section: Workspace; message: string; }) => {
         if (response.status) {
           setdata([...data, response.section]);
           toast.success('Created a new Section');
@@ -205,7 +207,7 @@ const Kanban = memo(({ datar, boardeId }: KanbansProps) => {
 
   const addTask = async (sectionId: string) => {
     try {
-      socket?.emit('createtask', { sectionId: sectionId, user: user.username, id: boardId }, (response) => {
+      socket?.emit('createtask', { sectionId: sectionId, user: user.username, id: boardId }, (response: { status: boolean; message: string; }) => {
         if (response.status) {
           toast.success("Created a new Task");
         } else {

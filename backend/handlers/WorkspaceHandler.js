@@ -5,6 +5,7 @@ const {
   Sections,
   Tasks,
 } = require("../connectDB/allCollections");
+const {getStorage,ref,getDownloadURL,uploadBytesResumable,deleteObject,refFromURL} = require("firebase/storage");
 
 module.exports = (socket,io)=>{
   

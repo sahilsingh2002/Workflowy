@@ -12,7 +12,7 @@ import {
   CardHeader,
   CardTitle
 } from "@/components/ui/card"
-import socket from "@/socket/Scoket";
+
 
 
 
@@ -155,29 +155,37 @@ export function Signup() {
  }
 
  const signup_user = async(data:Datas)=>{
-  const user = {
-    name:data.name,
-    email:data.email,
-    username:data.username,
-    password:data.password,
-    
-  }
  
     const sendreqConfig = {
     method:"POST",
     url:'/api/signup',
-    data:user
+    data:{
+      name: data.name,
+      email: data.email,
+      username: data.username,
+      password: data.password,
+    }
   }
   try{
 
     const result = await axios(sendreqConfig);
     console.log(result);
-    dispatch(changeUser(user));
+    dispatch(changeUser({
+        name: data.name,
+        email: data.email,
+        username: data.username,
+       role:"owner",
+      }));
     connectSocket(result.data.token);
     
 
   
-    toast.success(`Welcome, ${user.name}`)
+    toast.success(`Welcome, ${({
+        name: data.name,
+        email: data.email,
+        username: data.username,
+        password: data.password,
+      }).name}`)
 
   }
   catch(err){

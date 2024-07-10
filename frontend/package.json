@@ -79,6 +79,7 @@
   },
   "devDependencies": {
     "@types/emoji-mart": "^3.0.14",
+    "@types/js-cookie": "^3.0.6",
     "@types/node": "^20.12.2",
     "@types/react": "^18.2.66",
     "@types/react-beautiful-dnd": "^13.1.8",

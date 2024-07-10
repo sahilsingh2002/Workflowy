@@ -5,6 +5,7 @@ const {
   Sections,
   Tasks,
 } = require("../connectDB/allCollections");
+const {getStorage,ref,getDownloadURL,uploadBytesResumable,deleteObject,refFromURL} = require("firebase/storage")
 
 
 
@@ -394,4 +395,37 @@ module.exports.updateUser = async(req,res)=>{
       .json({ status: false, message: "An error occurred" });
   }
   
+}
+const giveCurrentDateTime = ()=>{
+  const today = new Date();
+  const date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+  const time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+  const dateTime = date+' '+time;
+  return dateTime;
+}
+module.exports.uploadImage = async(req,res)=>{
+  try {
+    const storage = getStorage();
+    const dateTime = giveCurrentDateTime();
+    const storageRef = ref(storage,`files/${req.file.originalname +"------" + dateTime}`);
+     const metadata = {
+      contentType:req.file.mimetype,
+     };
+     const snapshot = await uploadBytesResumable(storageRef,req.file.buffer,metadata);
+     const downloadURL = await getDownloadURL(snapshot.ref);
+     console.log('File successfully uploaded');
+
+     return res.send({link:downloadURL});
+  } catch (err) {
+    return res.status(400).send({err:err.message});
+  }
+}
+module.exports.deleteImage = async(req,res)=>{
+  try{
+    const storage = getStorage();
+   
+  }
+  catch (err) {
+    return res.status(400).send({err:err.message});
+  }
 }

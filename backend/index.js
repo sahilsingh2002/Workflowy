@@ -3,18 +3,12 @@ const {connect} = require('./connectDB/connectToDB');
 const authRoutes = require('./routes/authRoutes')
 const cookieParser = require('cookie-parser')
 const workspaceRoutes = require("./routes/workspaceRoutes")
-const sectionRoutes = require("./routes/sectionRoutes")
-const taskRoutes = require("./routes/taskRoutes")
 const {createServer} = require('http');
 
 
 const {Server} = require("socket.io");
 const jwt = require('jsonwebtoken');
-
-
-
 const cors = require('cors');
-const { authenticateUser } = require('./middlewares/auth');
 
 const port = 7000;
 const app = express();
@@ -35,13 +29,6 @@ app.use(cookieParser());
 
  
 connect();
-io.on('connection',(socket)=>{
-  console.log('a user connected',socket.id);
-  require('./handlers/authHandlers')(socket, io);
-  io.on('disconnect',()=>{
-    console.log('user disconnected');
-  })
-})
 
  
  
@@ -51,9 +38,8 @@ server.listen(port,()=>{
 
 app.use('/api',authRoutes);
 app.use('/api/workspace',workspaceRoutes)
-app.use('/api/workspace/:workspaceId/sections',sectionRoutes);
-app.use('/api/workspace/:workspaceId/tasks',taskRoutes);
 app.use('/',cookieParser);
+
 io.use(function(socket, next) {
   const cookiestring = socket?.handshake?.headers?.cookie;
   if(cookiestring) {
@@ -64,6 +50,7 @@ io.use(function(socket, next) {
     token = ( userCookie.split('=')[1]);
     if(token){
       const secret = "MindGrid_adm";
+      console.log("doers");
       jwt.verify(token,secret,(err,decoded)=>{
         if (err) {
           console.error('Error:', err.message);
