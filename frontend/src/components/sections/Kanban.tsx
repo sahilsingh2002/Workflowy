@@ -24,7 +24,7 @@ interface Task {
   content: string;
   updated_at?:number;
   created_at?:number;
-  updated_by?:string;
+  updated_by?:string | null;
   created_by?:string;
 }
 
@@ -219,21 +219,22 @@ const Kanban = memo(({ datar, boardeId }: KanbansProps) => {
     }
   };
 
-  const updateTask = async (task: Task) => {
+  const updateTask = async (task: Task | undefined) => {
     const newData = [...data];
-    const sectionIndex = newData.findIndex(e => e._id === task.section);
-    const taskIndex = newData[sectionIndex].tasks.findIndex(e => e._id === task._id);
-    console.log(task);
+    const sectionIndex = newData.findIndex(e => e._id === task?.section);
+    const taskIndex = newData[sectionIndex].tasks.findIndex(e => e._id === task?._id);
     
-    newData[sectionIndex].tasks[taskIndex] = task;
-    console.log(newData);
-    setdata(newData);
+    if(task){
+      newData[sectionIndex].tasks[taskIndex] = task;
+      console.log(newData);
+      setdata(newData);
+    }
   };
 
-  const deleteTask = async (task: Task) => {
+  const deleteTask = async (task: Task | undefined) => {
     const newData = [...data];
-    const sectionIndex = newData.findIndex(e => e._id === task.section);
-    const taskIndex = newData[sectionIndex].tasks.findIndex(e => e._id === task._id);
+    const sectionIndex = newData.findIndex(e => e._id === task?.section);
+    const taskIndex = newData[sectionIndex].tasks.findIndex(e => e._id === task?._id);
     newData[sectionIndex].tasks.splice(taskIndex, 1);
     setdata(newData);
   };
@@ -245,13 +246,13 @@ const Kanban = memo(({ datar, boardeId }: KanbansProps) => {
           Add Section
         </Button>
         <div className='text-sm font-[700]'>
-          {data.length} sections 
+          {data?.length} sections 
         </div>
       </div>
       <Divider orientation='horizontal' className='margin-[10px]'/>
       <DragDropContext onDragEnd={onDragEnd}>
         <div className='flex items-start lg:w-[Calc(80vw)] overflow-auto'>
-          {data.map(section => (
+          { data.map(section => (
             <div key={section._id} className='w-[200px] lg:w-[300px] bg-[#F7F8F9] dark:bg-[#161a1d] mr-2 rounded-md'>
               <Droppable isDropDisabled={user.role === 'reader'} key={section._id} droppableId={section._id}>
                 {(provided) => (

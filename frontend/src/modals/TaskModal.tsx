@@ -33,7 +33,7 @@ interface TaskModalInterface {
   currRole:"owner" | "editor" | "reader" | null;
   onClose:()=>void;
   tasks : Task | undefined;
-  onUpdate:(task:Task | undefined)=>void;
+  onUpdate:(task:Task | undefined)=>Promise<void>;
   onDelete:(task:Task | undefined)=>void;
 
 }

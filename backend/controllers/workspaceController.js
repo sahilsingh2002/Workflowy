@@ -110,21 +110,21 @@ module.exports.getOnepage = async (req, res) => {
         }
       },
       {
-      $set: {
-        'sections.tasks': {
-          $cond: {
-            if: { $isArray: '$sections.tasks' },
-            then: {
-              $sortArray: {
-                input: '$sections.tasks',
-                sortBy: { position: -1 }
-              }
-            },
-            else: null
+        $set: {
+          'sections.tasks': {
+            $cond: {
+              if: { $isArray: '$sections.tasks' },
+              then: {
+                $sortArray: {
+                  input: '$sections.tasks',
+                  sortBy: { position: -1 }
+                }
+              },
+              else: null
+            }
           }
         }
-      }
-    },
+      },
       {
         $group: {
           _id: "$_id",
@@ -137,14 +137,19 @@ module.exports.getOnepage = async (req, res) => {
         }
       },
       {
-        $set:{
-          "details.sections":{
-            $filter:{
-              input:"$sections",
-              as:"section",
-              cond:{$ne:['$$section',{}]}
+        $set: {
+          "details.sections": {
+            $filter: {
+              input: "$sections",
+              as: "section",
+              cond: { $ne: ["$$section", null] }
             }
           }
+        }
+      },
+      {
+        $match: {
+          "details.sections.0": { $exists: true }
         }
       },
       {
@@ -152,11 +157,16 @@ module.exports.getOnepage = async (req, res) => {
           newRoot: "$details"
         }
       }
-    ]
+    ];
     const resultArray = await workspace.aggregate(pipeline);
     const resarr = await resultArray.toArray();
     const result = resarr[0];
     console.log("here",result);
+    const allkeys = Object.keys(result.sections[0]);
+    if(allkeys[0]=='tasks'){
+      result.sections = [];
+    }
+
     const role = await result?.perms?.find(perms=>perms.id.equals(new ObjectId(req.id)));
     res.status(200).json({ status: true, page: { result }, roles:role?.role });
   } catch (error) {
