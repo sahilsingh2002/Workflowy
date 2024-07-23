@@ -4,6 +4,7 @@ const authRoutes = require('./routes/authRoutes')
 const cookieParser = require('cookie-parser')
 const workspaceRoutes = require("./routes/workspaceRoutes")
 const {createServer} = require('http');
+const {getS3Image} = require('./controllers/workspaceController');
 
 
 const {Server} = require("socket.io");
@@ -29,6 +30,10 @@ app.use(cookieParser());
 
  
 connect();
+async function getUrl(){
+  console.log(await getS3Image('testing.png'));
+}
+getUrl();
 
  
  

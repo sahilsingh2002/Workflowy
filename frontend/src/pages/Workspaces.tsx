@@ -31,7 +31,6 @@ function Workspaces() {
   const [isFav, setIsFav] = useState(false);
   const [icon, setIcon] = useState('');
   const [share,setShare]= useState(false);
-  const [isOpen,setIsOpen] = useState(false);
   const [coll,setColl] = useState(false);
   const workspaces = useSelector((state:RootState)=>state.workspace.value);
   const favlist = useSelector((state:RootState)=>state.favourite.value);
@@ -71,17 +70,17 @@ function Workspaces() {
       }
    }
   useEffect(()=>{
-    const makenewTitle = (data)=>{
+    const makenewTitle = (data:{name:string})=>{
 
       console.log(data);
       setTitle(data.name);
     }
-    const makenewIcon = (data)=>{
+    const makenewIcon = (data: { icon: string; })=>{
       console.log(data);
       setIcon(data.icon);
     }
-    const getWorkspaces = (data)=>{
-      console.log(data);
+    const getWorkspaces = ()=>{
+      if(workspaceId)
       handleGetpage(workspaceId);
     }
      socket?.on('makenewTitle',makenewTitle)
@@ -128,7 +127,7 @@ function Workspaces() {
            try{
             console.log(socket);
             //  const result = await axios(sendReqConfig);
-            socket?.emit('update',{id:workspaceId, changes:{name:newTitle}},(response)=>{
+            socket?.emit('update',{id:workspaceId, changes:{name:newTitle}},(response: { status: boolean; message?: string; })=>{
               if(response.status){
                  console.log(response);
 
@@ -156,7 +155,7 @@ function Workspaces() {
     dispatch(setWork(temp));
      
       try{
-        socket?.emit('update',{id:workspaceId, changes:{icon:newIcon}},(response)=>{
+        socket?.emit('update',{id:workspaceId, changes:{icon:newIcon}},(response: { status: any; message: any; })=>{
           if(response.status){
              console.log(response);
 
@@ -281,7 +280,7 @@ function Workspaces() {
       </div>
       </div>
       <div>
-        <ShareModal currRole={user.role} share = {share} onClose = {()=>{setShare(false)}} boardId={workspaceId}/>
+        <ShareModal share = {share} onClose = {()=>{setShare(false)}} boardId={workspaceId}/>
       </div>
       </>:<>
       "no path"

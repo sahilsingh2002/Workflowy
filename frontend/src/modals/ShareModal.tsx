@@ -17,7 +17,7 @@ interface UserInterface {
 }
 interface ShareModalInterface{
   onClose:()=>void;
-  boardId:string;
+  boardId:string | undefined;
   share:boolean;
 }
 

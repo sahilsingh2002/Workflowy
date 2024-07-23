@@ -5,14 +5,30 @@ const {
   Sections,
   Tasks,
 } = require("../connectDB/allCollections");
+const {S3Client, GetObjectCommand} = require('@aws-sdk/client-s3');
+const {getSignedUrl} = require('@aws-sdk/s3-request-presigner');
+const dotenv = require('dotenv');
 const {getStorage,ref,getDownloadURL,uploadBytesResumable,deleteObject,refFromURL} = require("firebase/storage")
 
-
+dotenv.config();
+const S3client = new S3Client({
+  region:'ap-south-1',
+  credentials:{
+    accessKeyId:process.env.AWS_ACCESS,
+    secretAccessKey:process.env.AWS_SECRET
+  }
+});
 
 // boards : user : objectId(ref - user), icon:string, default : 📃,  title:string default:untitled, description string, default: add description here, 🟢 you can add multiline desc. here., position : type:number, favourite L { type:boolean, def false} favpos type:number, default:0
-
+module.exports.getS3Image= async function(key){
+  const command = new GetObjectCommand({
+    Bucket:"projectsync-media",
+    Key:key
+  });
+  const url = getSignedUrl(S3client,command);
+  return url;
+}
 module.exports.addWorkspace = async (req, res) => {
-  const { username } = req.body;
 
   try {
     const workspace = Workspaces();
