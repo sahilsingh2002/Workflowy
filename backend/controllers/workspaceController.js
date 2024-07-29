@@ -5,12 +5,12 @@ const {
   Sections,
   Tasks,
 } = require("../connectDB/allCollections");
-const {S3Client, GetObjectCommand} = require('@aws-sdk/client-s3');
+const {S3Client,GetObjectCommand, PutObjectCommand,DeleteObjectCommand} = require('@aws-sdk/client-s3');
 const {getSignedUrl} = require('@aws-sdk/s3-request-presigner');
+const axios = require('axios');
 const dotenv = require('dotenv');
-const {getStorage,ref,getDownloadURL,uploadBytesResumable,deleteObject,refFromURL} = require("firebase/storage")
 
-dotenv.config();
+
 const S3client = new S3Client({
   region:'ap-south-1',
   credentials:{
@@ -20,12 +20,22 @@ const S3client = new S3Client({
 });
 
 // boards : user : objectId(ref - user), icon:string, default : 📃,  title:string default:untitled, description string, default: add description here, 🟢 you can add multiline desc. here., position : type:number, favourite L { type:boolean, def false} favpos type:number, default:0
+module.exports.putS3Image = async function(key,contentType){
+  const command = new PutObjectCommand({
+    Bucket:"projectsync-media",
+    Key:`uploads/${key}`,
+    ContentType:contentType
+  })
+  const url = await getSignedUrl(S3client,command);
+  return url;
+
+}
 module.exports.getS3Image= async function(key){
   const command = new GetObjectCommand({
     Bucket:"projectsync-media",
     Key:key
   });
-  const url = getSignedUrl(S3client,command);
+  const url = await getSignedUrl(S3client,command);
   return url;
 }
 module.exports.addWorkspace = async (req, res) => {
@@ -431,27 +441,42 @@ const giveCurrentDateTime = ()=>{
 }
 module.exports.uploadImage = async(req,res)=>{
   try {
-    const storage = getStorage();
     const dateTime = giveCurrentDateTime();
-    const storageRef = ref(storage,`files/${req.file.originalname +"------" + dateTime}`);
-     const metadata = {
-      contentType:req.file.mimetype,
-     };
-     const snapshot = await uploadBytesResumable(storageRef,req.file.buffer,metadata);
-     const downloadURL = await getDownloadURL(snapshot.ref);
-     console.log('File successfully uploaded');
-
-     return res.send({link:downloadURL});
+    const key = `files/${req.file.originalname +"------" + dateTime}`;
+    const contentType = req.file.mimetype;
+    const url = await(this.putS3Image(key,contentType));
+    const response = await axios.put(url, req.file.buffer, {
+      headers: {
+        'Content-Type': contentType,
+      }
+    });
+    if (response.status === 200) {
+      const downloadLink = await this.getS3Image(`uploads/${key}`);
+      res.send({ link: downloadLink });
+    } else {
+      res.status(response.status).json({ message: 'Failed to upload file' });
+    }
   } catch (err) {
     return res.status(400).send({err:err.message});
   }
 }
-module.exports.deleteImage = async(req,res)=>{
-  try{
-    const storage = getStorage();
-   
+module.exports.deleteImage = async (req, res) => {
+  try {
+    const { key } = req.body;
+
+    const command = new DeleteObjectCommand({
+      Bucket: "projectsync-media",
+      Key: `uploads/${key}`,
+    });
+
+    const response = await S3client.send(command);
+
+    if (response.$metadata.httpStatusCode === 204) {
+      res.status(200).json({ message: 'File successfully deleted' });
+    } else {
+      res.status(response.$metadata.httpStatusCode).json({ message: 'Failed to delete file' });
+    }
+  } catch (err) {
+    return res.status(400).send({ err: err.message });
   }
-  catch (err) {
-    return res.status(400).send({err:err.message});
-  }
-}
+};

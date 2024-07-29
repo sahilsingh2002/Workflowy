@@ -4,7 +4,7 @@ const authRoutes = require('./routes/authRoutes')
 const cookieParser = require('cookie-parser')
 const workspaceRoutes = require("./routes/workspaceRoutes")
 const {createServer} = require('http');
-const {getS3Image} = require('./controllers/workspaceController');
+// const {getS3Image} = require('./controllers/workspaceController');
 
 
 const {Server} = require("socket.io");
@@ -15,13 +15,13 @@ const port = 7000;
 const app = express();
 const server =createServer(app);
 
-const io = new Server(server,{
+const io = new Server(server,
+  {
   cors:{
     origin:true,
     credentials:true
- 
+    }
   }
-}
 );
 
 app.use(express.json());
@@ -30,10 +30,10 @@ app.use(cookieParser());
 
  
 connect();
-async function getUrl(){
-  console.log(await getS3Image('testing.png'));
-}
-getUrl();
+// async function getUrl(){
+//   console.log(await getS3Image('uploads/files/implementation.png------2024-7-24 12:1:13'));
+// }
+// getUrl();
 
  
  
@@ -80,7 +80,7 @@ io.use(function(socket, next) {
 else{
   next(new Error('not authorized'));
 }
-  // JWT HEWERERE
+  // JWT HERE
   
 });
 io.on('connection', (socket) => {
