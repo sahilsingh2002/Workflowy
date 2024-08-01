@@ -106,7 +106,6 @@ function ShareModal({ onClose, boardId, share }:ShareModalInterface) {
                     {users && users?.map((user:UserInterface)=>(
                       <ListboxItem key={user._id} className='z-[99999] cursor-pointer flex '>
                         <div className='flex justify-between items-center'>
-
                        
                         <div>
                           <p className='font-semibold'>
