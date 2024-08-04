@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { useForm, SubmitHandler } from "react-hook-form"
 import { toast } from "sonner";
 import { ErrorMessage } from "@hookform/error-message"
+import { useSocket } from "@/context/SocketContext";
 
 
 
@@ -29,6 +30,7 @@ type Inputs = {
 }
 
 export function Login() {
+  const {connectSocket, disconnectSocket} = useSocket();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const {
@@ -56,12 +58,14 @@ export function Login() {
       dispatch(changeUser(result.data.data));
       console.log(result);
       toast.success(`Welcome! ${result.data.data.username}`);
+      connectSocket(result.data.token);
 
       navigate("/home");
      
     }
     catch(err){
       toast.error("Invalid Credentials");
+      disconnectSocket();
       
       console.log("error",err);
     }
@@ -103,7 +107,7 @@ export function Login() {
                    setShowPassword(!showPassword) }}>{showPassword ? <FaRegEye /> : <FaRegEyeSlash />}</Button>
               </div>
                 <Link to="/" className="ml-auto inline-block text-sm underline">
-                  Forgot your password?
+                  Forgot your password?jkljkl
                 </Link>
             </div>
             <ErrorMessage

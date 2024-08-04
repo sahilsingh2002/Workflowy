@@ -25,11 +25,13 @@ import { Emoji } from 'emoji-picker-react';
 import Favourites from '../favourites/Favourites';
 import { RootState } from '@/redux/store';
 import LoadingSpinner from '../LoadingSpinner';
-import { changeRole } from '@/redux/slices/userSlice';
+
+import { useSocket } from '@/context/SocketContext';
 
 
 
-function Sidebar({modal}) {
+function Sidebar({modal}:{modal:boolean}) {
+  const {socket,disconnectSocket} = useSocket();
   const [workLoad, setWorkLoad] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const { workspaceId } = useParams();
@@ -83,6 +85,34 @@ const collapse = ()=>{
     setTimeout(()=>setIsResetting(false),300);
   }
  }
+ useEffect(() => {
+  if(socket){
+
+  
+  socket.on('getWorkspaces', (data) => {
+    getWork();
+    console.log("here",data);
+  });
+
+  socket.on('connect_error', (error) => {
+    console.error('Socket connection error:', error);
+    toast.error('Socket connection error');
+  });
+
+  socket.on('disconnect', () => {
+    console.warn('Socket disconnected');
+    toast.error('Socket disconnected');
+    disconnectSocket();
+  });
+
+  return () => {
+    socket.off('getWorkspaces');
+    socket.off('connect_error');
+    socket.off('disconnect');
+  };
+}
+
+}, [socket]);
  useEffect(()=>{
 
    if(modal){
@@ -141,7 +171,6 @@ const collapse = ()=>{
     }
   }
   useEffect(()=>{
-    
     getWork();
     
   },[]);
@@ -232,6 +261,10 @@ const collapse = ()=>{
   const handleDragStart = () => {
     setIsDragging(true);
   };
+  const handleOnWorkspace=(roomid: string)=>{
+    socket?.emit('getroom',roomid);
+    navigate(`/workspace/${roomid}`);
+  }
   
   return (
     
@@ -301,7 +334,7 @@ const collapse = ()=>{
                     {(provided,snapshot)=>(
                    
                       <div onClick={() => {
-                        navigate(`/workspace/${item._id}`);
+                       handleOnWorkspace(item._id);
                       }} ref = {provided.innerRef}{...provided.dragHandleProps}{...provided.draggableProps} className={`${index==activeIndex && 'bg-[#E8F2FE] text-[#0D66E5] dark:text-[#579dff] dark:bg-[#1c2b41]'} pl-[20px] ${snapshot.isDragging?'cursor-grab':'cursor-pointer!important'} py-2  w-full hover:bg-[#E8F2FE] dark:hover:bg-[#1c2b41] rounded-md  flex items-center text-sm font-medium text-muted-foreground/80`}>
                         <Emoji unified={item.icon} size={25}/>
                         <div className='mx-2'>

@@ -18,9 +18,11 @@ import { useSelector } from 'react-redux';
 import { ChevronsLeftRight } from 'lucide-react';
 import { ModeToggle } from '../mode-toggle';
 import { RootState } from '@/redux/store';
+import { useSocket } from '@/context/SocketContext';
 
 
 function UserItem() {
+  const {disconnectSocket} = useSocket();
   const user = useSelector((state:RootState) =>state.user);
   const Logout = async()=>{
     const sendReqConfig = {
@@ -30,6 +32,7 @@ function UserItem() {
     }
   try{
       await axios(sendReqConfig);
+      disconnectSocket();
       window.location.reload();
   }
   catch(err){

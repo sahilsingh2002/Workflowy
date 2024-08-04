@@ -5,13 +5,40 @@ const {
   Sections,
   Tasks,
 } = require("../connectDB/allCollections");
+const {S3Client,GetObjectCommand, PutObjectCommand,DeleteObjectCommand} = require('@aws-sdk/client-s3');
+const {getSignedUrl} = require('@aws-sdk/s3-request-presigner');
+const axios = require('axios');
+const dotenv = require('dotenv');
 
 
+const S3client = new S3Client({
+  region:'ap-south-1',
+  credentials:{
+    accessKeyId:process.env.AWS_ACCESS,
+    secretAccessKey:process.env.AWS_SECRET
+  }
+});
 
 // boards : user : objectId(ref - user), icon:string, default : 📃,  title:string default:untitled, description string, default: add description here, 🟢 you can add multiline desc. here., position : type:number, favourite L { type:boolean, def false} favpos type:number, default:0
+module.exports.putS3Image = async function(key,contentType){
+  const command = new PutObjectCommand({
+    Bucket:"projectsync-media",
+    Key:`uploads/${key}`,
+    ContentType:contentType
+  })
+  const url = await getSignedUrl(S3client,command);
+  return url;
 
+}
+module.exports.getS3Image= async function(key){
+  const command = new GetObjectCommand({
+    Bucket:"projectsync-media",
+    Key:key
+  });
+  const url = await getSignedUrl(S3client,command);
+  return url;
+}
 module.exports.addWorkspace = async (req, res) => {
-  const { username } = req.body;
 
   try {
     const workspace = Workspaces();
@@ -51,12 +78,12 @@ module.exports.getWorkspaces = async (req, res) => {
   try {
     const user = User();
     const workspace = Workspaces();
-    console.log("req",req.id);
+   
     const cursor = await workspace
       .find({ perms:{$elemMatch:{id: new ObjectId(req.id)}}})
       .sort({position:1});
     const workspaceIds = await cursor.toArray();
-    console.log("work",workspaceIds);
+    
 
     res.status(200).json(workspaceIds);
   } catch (error) {
@@ -74,33 +101,100 @@ module.exports.getOnepage = async (req, res) => {
   const sectioner = Sections();
   const tasker = Tasks();
   try {
-    const result = await workspace.findOne({perms:{$elemMatch:{id: new ObjectId(req.id)}}, _id: new ObjectId(id) });
-    console.log("result",result);
-
-    if (!result) return res.status(404).json({status:false,message:"board not found"});
     
-    const cursor = await sectioner.find({ workspace: new ObjectId(id) });
-    const sections = await cursor.toArray();
-
-    console.log("sections",sections);
-    if (sections) {
-      for (const section of sections) {
-        const cursor = await tasker
-          .find({ section: section._id }).sort("-position");
-
-          const tasks = await cursor.toArray();
-          section.tasks = tasks;
-      //   section = tasks;
+    const pipeline = [
+      {
+        $match: {
+          _id: new ObjectId(id),
+          perms: {
+            $elemMatch: {
+              id: new ObjectId(user)
+            }
+          }
+        }
+      },
+      {
+        $lookup: {
+          from: "section",
+          localField: "_id",
+          foreignField: "workspace",
+          as: "sections"
+        }
+      },
+      {
+        $unwind: {
+          path: "$sections",
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      {
+        $lookup: {
+          from: "task",
+          localField: "sections._id",
+          foreignField: "section",
+          as: "sections.tasks"
+        }
+      },
+      {
+        $set: {
+          'sections.tasks': {
+            $cond: {
+              if: { $isArray: '$sections.tasks' },
+              then: {
+                $sortArray: {
+                  input: '$sections.tasks',
+                  sortBy: { position: -1 }
+                }
+              },
+              else: null
+            }
+          }
+        }
+      },
+      {
+        $group: {
+          _id: "$_id",
+          details: {
+            $first: "$$ROOT"
+          },
+          sections: {
+            $push: "$sections"
+          }
+        }
+      },
+      {
+        $set: {
+          "details.sections": {
+            $filter: {
+              input: "$sections",
+              as: "section",
+              cond: { $ne: ["$$section", null] }
+            }
+          }
+        }
+      },
+      {
+        $match: {
+          "details.sections.0": { $exists: true }
+        }
+      },
+      {
+        $replaceRoot: {
+          newRoot: "$details"
+        }
       }
-      result.sections = sections;
-      
-      
+    ];
+    const resultArray = await workspace.aggregate(pipeline);
+    const resarr = await resultArray.toArray();
+    const result = resarr[0];
+    console.log("here",result);
+    const allkeys = Object.keys(result.sections[0]);
+    if(allkeys[0]=='tasks'){
+      result.sections = [];
     }
-    const role = await result.perms.find(perms=>perms.id.equals(new ObjectId(req.id)));
-    
-    
 
-    res.status(200).json({ status: true, page: { result }, roles:role.role });
+    const role = await result?.perms?.find(perms=>perms.id.equals(new ObjectId(req.id)));
+    res.status(200).json({ status: true, page: { result }, roles:role?.role });
   } catch (error) {
     console.error(error);
     res.status(500).json({ status: false, message: "Internal server error" });
@@ -125,7 +219,7 @@ module.exports.updatePosition = async (req, res) => {
       },
     }
     );
-      console.log(result);
+     
       
       
     }
@@ -150,34 +244,7 @@ module.exports.update = async (req, res) => {
     const currWorkspace = await workspace.findOne({ _id: new ObjectId(id) });
 
     if (!currWorkspace) return res.status(404).json("board not found");
-    if (favourite !== undefined && currWorkspace.favourite !== favourite) {
-      const favourites = await workspace.find({
-        perms:{$elemMatch:{id: currWorkspace.owner, role:'owner'}},
-        favourite: true,
-        _id: { $ne: id },
-      }).sort('favpos');
-      // const favourites = await cursor.toArray();
-      const count = await favourites.toArray();
-
-      if (favourite) {
-        console.log("here");
-      } else {
-        console.log(count.length);
-
-        for (let key = 0; key < count.length; key++) {
-          const element = count[key];
-          console.log(element._id);
-          const filt = { _id: element._id };
-          const updateDoc = {
-            $set: {
-              favpos: key,
-            },
-          };
-          const ans = await workspace.updateOne(filt, updateDoc);
-        }
-      }
-    }
-
+   
     const filter = { _id: currWorkspace._id };
     const updateDocument = {
       $set: req.body,
@@ -199,7 +266,7 @@ module.exports.getFavorite = async (req, res) => {
       .find({ perms:{$elemMatch:{id: new ObjectId(req.id), role:'owner'}}, favourite: true })
       .sort({favpos:1});
     const favourites = await cursor.toArray();
-    console.log(favourites);
+    
 
     res.status(200).json({ favourites: favourites });
   } catch (err) {
@@ -213,7 +280,7 @@ module.exports.updateFavPos = async (req, res) => {
   try {
     for (let key=0;key<workspaces.length;key++) {
       const worksp = workspaces[key];
-      console.log(worksp);
+      
       const filter = { _id: new ObjectId(worksp._id) };
       const updateDocument = {
         $set: {
@@ -235,7 +302,7 @@ module.exports.updateFavPos = async (req, res) => {
 module.exports.searchUser = async(req,res)=>{
   const {user,username} = req.body;
   if(!user || user.length===0) return res.status(400);
-  console.log(user);
+ 
   const workspaces = Workspaces();
   const usern = User();
   try{
@@ -279,9 +346,9 @@ module.exports.removal = async (req, res) => {
             await Task.deleteMany({section:section._id});
         }
         await sect.deleteMany({workspace:new ObjectId(id)});
-        console.log("id",id);
+        
         const currWork = await workspaces.findOne({_id:new ObjectId(id)});
-        console.log(currWork);
+        
         if(currWork.favourite){
           const favourites = await workspaces.find({
             perms:{$elemMatch:{id: currWork.owner, role:'owner'}},
@@ -291,7 +358,7 @@ module.exports.removal = async (req, res) => {
           const count = favourites.toArray();
           for (let key = 0; key < count.length; key++) {
             const element = count[key];
-            console.log(element._id);
+           
             const filt = { _id: element._id };
             const updateDoc = {
               $set: {
@@ -344,7 +411,7 @@ module.exports.updateUser = async(req,res)=>{
         },
         { returnOriginal: false } // To return the updated document
       );
-      console.log(result);
+   
       res.status(200).json({ result: result });
     } else {
       // ObjectId doesn't exist in the perms array, push a new object
@@ -355,7 +422,7 @@ module.exports.updateUser = async(req,res)=>{
         },
         { returnOriginal: false } // To return the updated document
       );
-      console.log(result);
+     
       res.status(200).json({ result: result });
     }
   } catch (err) {
@@ -365,3 +432,51 @@ module.exports.updateUser = async(req,res)=>{
   }
   
 }
+const giveCurrentDateTime = ()=>{
+  const today = new Date();
+  const date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+  const time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+  const dateTime = date+' '+time;
+  return dateTime;
+}
+module.exports.uploadImage = async(req,res)=>{
+  try {
+    const dateTime = giveCurrentDateTime();
+    const key = `files/${req.file.originalname +"------" + dateTime}`;
+    const contentType = req.file.mimetype;
+    const url = await(this.putS3Image(key,contentType));
+    const response = await axios.put(url, req.file.buffer, {
+      headers: {
+        'Content-Type': contentType,
+      }
+    });
+    if (response.status === 200) {
+      const downloadLink = await this.getS3Image(`uploads/${key}`);
+      res.send({ link: downloadLink });
+    } else {
+      res.status(response.status).json({ message: 'Failed to upload file' });
+    }
+  } catch (err) {
+    return res.status(400).send({err:err.message});
+  }
+}
+module.exports.deleteImage = async (req, res) => {
+  try {
+    const { key } = req.body;
+
+    const command = new DeleteObjectCommand({
+      Bucket: "projectsync-media",
+      Key: `uploads/${key}`,
+    });
+
+    const response = await S3client.send(command);
+
+    if (response.$metadata.httpStatusCode === 204) {
+      res.status(200).json({ message: 'File successfully deleted' });
+    } else {
+      res.status(response.$metadata.httpStatusCode).json({ message: 'Failed to delete file' });
+    }
+  } catch (err) {
+    return res.status(400).send({ err: err.message });
+  }
+};

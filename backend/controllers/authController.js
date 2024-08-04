@@ -94,7 +94,7 @@ module.exports.post_signup = async (req, res) => {
     res.cookie("user",token);
     return res.status(201).json({ status: true, message: "User created successfully", data:{
       username, email, name
-    } });
+    },token:token });
   } catch (err) {
     console.error("Error in post_signup:", err);
     return res.status(500).json({ status: false, message: "An error occurred" });
@@ -143,7 +143,7 @@ module.exports.post_login = async (req, res) => {
       name:userData.name,
       username:userData.username,
       email:userData.email,
-    }});
+    },token:token});
   } catch (err) {
     console.error("Error in post_login:", err);
     return res.status(500).json({ status: false, message: "An error occurred" });

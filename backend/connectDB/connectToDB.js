@@ -1,9 +1,11 @@
 const {MongoClient} = require('mongodb');
 const express = require('express');
+const dotenv = require('dotenv');
 
+dotenv.config();
 const port = 3000;
 const app = express();
-const URI = 'mongodb://127.0.0.1:27017/';
+const URI = process.env.MONGODB_URI;
 let db;
 const connect = async()=>{
   try{

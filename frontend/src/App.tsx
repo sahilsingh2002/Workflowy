@@ -15,18 +15,19 @@ import { changeUser } from './redux/slices/userSlice'
 import Workspaces from './pages/Workspaces'
 import { Toaster } from 'sonner'
 import { RootState } from './redux/store'
-
+import { SocketProvider } from './context/SocketContext'
 
 
 
 function App() {
   
   const dispatch = useDispatch();
-  const [user, setUser] = useState(false);
+ 
   const [isLoading,setIsLoading] = useState(true);
 
   
   useEffect(()=>{
+    
     const handleUser = async () => {
       const sendreqConfig = {
         method:"POST",
@@ -36,13 +37,11 @@ function App() {
       try{
         const result = await axios(sendreqConfig);
         if(result.data.username && result.data.username!==null){
-          setUser(true);
+         
           console.log(result);
           dispatch(changeUser(result.data));
         }
-        else{
-          setUser(false);
-        }
+        
       }
       catch(err){
         console.log("error : ",err);
@@ -59,6 +58,9 @@ function App() {
   console.log("user",userdetails);
   const {pathname} = useLocation();
   return (
+    <SocketProvider>
+
+  
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
      {isLoading?(
        <>
@@ -66,8 +68,8 @@ function App() {
        </>
      ):(  
       <div className='h-full flex dark:bg-[#1C2025] text-[#2f3a4d] dark:text-[#9EADAC] overflow-hidden'>
-        <Toaster richColors/>
-    
+    <Toaster richColors/>
+        
        
           {(!(userdetails.username!==null && userdetails?.username?.length > 0)) && (pathname !== '/login' && pathname !== '/signup') && <Navigate to="/" />}
     <Routes>
@@ -79,12 +81,12 @@ function App() {
       <Route path='/workspace' element={<Navigate to="/home" />}/>
       <Route path='/workspace/:workspaceId' element={<Workspaces/>}/>
       <Route path='*' element={<Home_page/>} />
-
     </Routes>
     </div>
     )
     }
     </ThemeProvider>
+    </SocketProvider>
       
   )
 }

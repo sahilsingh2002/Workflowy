@@ -2,7 +2,7 @@ import Sidebar from '@/components/sidebar/Sidebar'
 import { Button } from '@/components/ui/button';
 import axios from 'axios';
 import { Textarea} from "@nextui-org/react";
-import { Share, Trash, UserPlus } from 'lucide-react';
+import { Trash, UserPlus } from 'lucide-react';
 import { ChangeEvent, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom';
 import { FaRegStar,FaStar  } from "react-icons/fa6";
@@ -15,11 +15,14 @@ import { RootState } from '@/redux/store';
 import { changeRole } from '@/redux/slices/userSlice';
 import ShareModal from '@/modals/ShareModal';
 import DescriptionModal from '@/modals/DescriptionModal';
+import { useSocket } from '@/context/SocketContext';
+
+
 function Workspaces() {
+  const {socket} = useSocket();
   let timer:ReturnType<typeof setTimeout>;
   const navigate = useNavigate();
   const [access,setAccess] = useState(false);
-  const timeout = 500;
   const dispatch = useDispatch();
   const {workspaceId} = useParams();
   const [title,setTitle] = useState('');
@@ -28,53 +31,77 @@ function Workspaces() {
   const [isFav, setIsFav] = useState(false);
   const [icon, setIcon] = useState('');
   const [share,setShare]= useState(false);
-  const [isOpen,setIsOpen] = useState(false);
   const [coll,setColl] = useState(false);
-  
   const workspaces = useSelector((state:RootState)=>state.workspace.value);
   const favlist = useSelector((state:RootState)=>state.favourite.value);
   const user = useSelector((state:RootState)=>state.user);
   
+
   
-  useEffect(()=>{
-    const handleGetpage = async(id:string)=>{
-      
-        const sendReqConfig = {
-          method:"GET",
-          url:`/api/workspace/getPage?id=${id}`,
-      }
-        try {
-          const result = await axios(sendReqConfig);
-
-          console.log("res",result);
-
-          if(result.data.status===false){
-          
-            navigate('/home');
-          }
-          setTitle(result?.data?.page?.result?.name);
-          setDescription(result?.data?.page?.result?.content);
-          setSections(result?.data?.page?.result?.sections);
-          setIcon(result?.data?.page?.result?.icon);
-          setIsFav(result?.data?.page?.result?.favourite);
-          setAccess(true);
-          dispatch(changeRole(result?.data?.roles));
-          
-        } catch (error) {
-          console.log("Error : ",error);
-          
-          // navigate(`/workspace/`)
-        }
-     }
-     handleGetpage(workspaceId?workspaceId:'');
+  
+  const handleGetpage = async(id:string)=>{
+    console.log("here");
     
-   },[workspaceId,navigate,dispatch]);
+      const sendReqConfig = {
+        method:"GET",
+        url:`/api/workspace/getPage?id=${id}`,
+    }
+      try {
+        const result = await axios(sendReqConfig);
 
+        console.log("res",result);
+
+        if(result.data.status===false){
+        
+          navigate('/home');
+        }
+        setTitle(result?.data?.page?.result?.name);
+        setDescription(result?.data?.page?.result?.content);
+        setSections(result?.data?.page?.result?.sections);
+        setIcon(result?.data?.page?.result?.icon);
+        setIsFav(result?.data?.page?.result?.favourite);
+        setAccess(true);
+        dispatch(changeRole(result?.data?.roles));
+        
+      } catch (error) {
+        console.log("Error : ",error);
+        
+        // navigate(`/workspace/`)
+      }
+   }
+  useEffect(()=>{
+    const makenewTitle = (data:{name:string})=>{
+
+      console.log(data);
+      setTitle(data.name);
+    }
+    const makenewIcon = (data: { icon: string; })=>{
+      console.log(data);
+      setIcon(data.icon);
+    }
+    const getWorkspaces = ()=>{
+      if(workspaceId)
+      handleGetpage(workspaceId);
+    }
+     socket?.on('makenewTitle',makenewTitle)
+    socket?.on('getnewIcon',makenewIcon)
+    socket?.on('getWorkspaces',getWorkspaces);
+     socket?.emit('getroom',workspaceId);
+     
+    return ()=>{
+      socket?.emit('leaveroom',workspaceId);
+      socket?.off('makenewTitle',makenewTitle);
+      socket?.off('getnewIcon',makenewIcon);
+      socket?.off('getWorkspaces',getWorkspaces);
+    
+    }
+   },[workspaceId,socket]);
    
-
    const updateTitle = async(e:ChangeEvent<HTMLInputElement>)=>{
+    
     clearTimeout(timer);
     const newTitle = e.target.value;
+    // socket?.emit('setNewTitle',{title:newTitle,id:workspaceId});
     setTitle(newTitle);
     const temp = [...workspaces];
         const index = temp.findIndex(e=>e._id === workspaceId);
@@ -87,62 +114,33 @@ function Workspaces() {
         }
 
         dispatch(setWork(temp));
-        timer = setTimeout(async()=>{
-          const sendReqConfig = {
-            method:"PUT",
-            url:`/api/workspace/update?id=${workspaceId}`,
-            data:{
-              name:newTitle,
-             }
+        // timer = setTimeout(async()=>{
+          // const sendReqConfig = {
+          //   method:"PUT",
+          //   url:`/api/workspace/update?id=${workspaceId}`,
+          //   data:{
+          //     id:workspaceId,
+          //    changes:{ name:newTitle},
+          //    }
              
-           }
+          //  }
            try{
-             const result = await axios(sendReqConfig);
-             console.log(result);
-            
+            console.log(socket);
+            //  const result = await axios(sendReqConfig);
+            socket?.emit('update',{id:workspaceId, changes:{name:newTitle}},(response: { status: boolean; message?: string; })=>{
+              if(response.status){
+                 console.log(response);
+
+              }
+              else{
+                console.error('Error creating workspace:', response.message);
+              }
+            });
            }
          catch(err){
            console.log(err);
          }
-        },timeout);
-   }
-   const updateDescription = async(e:ChangeEvent<HTMLInputElement>)=>{
-    clearTimeout(timer);
-    const newDesc = e.target.value;
-    setDescription(newDesc);
-    
-    const temp = [...workspaces];
-        const index = temp.findIndex(e=>e._id === workspaceId);
-        temp[index]={...temp[index], content: newDesc}
-        // if(isFav){
-        //   const tempfav = [...favlist];
-        // const favindex = tempfav.findIndex(e=>e._id === workspaceId);
-        // tempfav[favindex]={...tempfav[favindex], content: newDesc}
-        // dispatch(setFav(tempfav));
-        // }
-        dispatch(setWork(temp));
-        timer = setTimeout(async()=>{
-          const sendReqConfig = {
-            method:"PUT",
-            url:`/api/workspace/update?id=${workspaceId}`,
-            data:{
-              // title,
-              content:newDesc,
-              // favourite:isFav,
-              // icon,
-              // favpos:temp[index].favpos,
-             }
-             
-           }
-           try{
-             const result = await axios(sendReqConfig);
-             console.log(result);
-            
-           }
-         catch(err){
-           console.log(err);
-         }
-        },timeout);
+        // },timeout);
    }
    const onIconChange = async(newIcon:string)=>{
     const temp = [...workspaces];
@@ -155,21 +153,17 @@ function Workspaces() {
     // dispatch(setFav(tempfav));
     // }
     dispatch(setWork(temp));
-     const sendReqConfig = {
-       method:"PUT",
-       url:`/api/workspace/update?id=${workspaceId}`,
-       data:{
-        //  title,
-        //  description,
-        //  favourite:isFav,
-         icon:newIcon,
-        //  favpos:temp[index].favpos,
-        }
-        
-      }
+     
       try{
-        const result = await axios(sendReqConfig);
-        console.log(result);
+        socket?.emit('update',{id:workspaceId, changes:{icon:newIcon}},(response: { status: any; message: any; })=>{
+          if(response.status){
+             console.log(response);
+
+          }
+          else{
+            console.error('Error creating workspace:', response.message);
+          }
+        });
        
       }
     catch(err){
@@ -278,7 +272,7 @@ function Workspaces() {
           <Picker icon={icon} onChange = {onIconChange}/>
       <div className='lg:flex lg:items-center'>
         <Textarea onChange={updateTitle} disabled={user.role==='reader'} placeholder='Untitled' value={title} minRows={1} className=' w-full h-fit p-0 border-0 text-[2rem] lg:text-[3rem]  resize-none   border-neutral-300' />
-        <DescriptionModal setColl = {setColl} currRole={user.role} boardId={workspaceId} isOpened={isOpen} description={description} onClose={()=>setIsOpen(false)} titled={title}/>
+        <DescriptionModal setColl = {setColl} currRole={user.role} boardId={workspaceId} description={description} titled={title}/>
       </div>
       </div>
       <div >
@@ -286,7 +280,7 @@ function Workspaces() {
       </div>
       </div>
       <div>
-        <ShareModal currRole={user.role} share = {share} onClose = {()=>{setShare(false)}} boardId={workspaceId}/>
+        <ShareModal share = {share} onClose = {()=>{setShare(false)}} boardId={workspaceId}/>
       </div>
       </>:<>
       "no path"

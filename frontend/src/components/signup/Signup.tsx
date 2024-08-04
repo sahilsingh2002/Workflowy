@@ -16,16 +16,20 @@ import {
 
 
 
+
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { AxeIcon } from "lucide-react";
 import './signup.css'
 import { useForm, SubmitHandler } from "react-hook-form"
 import { toast } from "sonner";
+import { useSocket } from "@/context/SocketContext";
+
 
 
 
 export function Signup() {
+  const {connectSocket, disconnectSocket} = useSocket();
   const dispatch = useDispatch();
  
   type Inputs = {
@@ -151,28 +155,41 @@ export function Signup() {
  }
 
  const signup_user = async(data:Datas)=>{
-  const user = {
-    name:data.name,
-    email:data.email,
-    username:data.username,
-    password:data.password,
-    
-  }
  
     const sendreqConfig = {
     method:"POST",
     url:'/api/signup',
-    data:user
+    data:{
+      name: data.name,
+      email: data.email,
+      username: data.username,
+      password: data.password,
+    }
   }
   try{
+
     const result = await axios(sendreqConfig);
     console.log(result);
-    dispatch(changeUser(user));
+    dispatch(changeUser({
+        name: data.name,
+        email: data.email,
+        username: data.username,
+       role:"owner",
+      }));
+    connectSocket(result.data.token);
+    
+
   
-    toast.success(`Welcome, ${user.name}`)
+    toast.success(`Welcome, ${({
+        name: data.name,
+        email: data.email,
+        username: data.username,
+        password: data.password,
+      }).name}`)
 
   }
   catch(err){
+    disconnectSocket();
      
     console.log(err);
   }
